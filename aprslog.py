@@ -9,7 +9,6 @@ from libfap import *
 from ctypes import *
 import socket
 import time
-import config
 import string
 #import ephem
 import pytz
@@ -64,6 +63,9 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 
+print "Start APRS logging  V1.1"
+print "========================"
+import config
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
@@ -91,8 +93,6 @@ dte=date.strftime("%y%m%d")             # today's date
 
 #----------------------ogn_SilentWingsInterface.py start-----------------------
 
-print "Start APRS logging  V1.0"
-print "========================"
 print "MySQL: Database:", DBname, " at Host:", DBhost
 print "Date: ", date, "UTC on:", socket.gethostname()
 date = datetime.now()
@@ -203,8 +203,7 @@ try:
         if  len(packet_str) > 0 and packet_str[0] <> "#":
 
         	msg=parseraprs(packet_str, msg)
-		print msg
-                id=msg['id']                         # id
+                id        = msg['id']                         # id
                 longitude = msg['longitude']
                 latitude  = msg['latitude']
                 altitude  = msg['altitude']

@@ -31,10 +31,15 @@ DBhost                  = cfg.get('server', 'DBhost').strip("'")
 DBuser                  = cfg.get('server', 'DBuser').strip("'")
 DBpasswd                = cfg.get('server', 'DBpasswd').strip("'")
 DBname                  = cfg.get('server', 'DBname').strip("'")
+LogDatas                = cfg.get('server', 'LogData').strip("'")
 if (MySQLtext == 'True'):
         MySQL = True
 else:
         MySQL = False
+if (LogDatas == 'True'):
+        LogData = True
+else:
+        LogData = False
 # --------------------------------------#
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
  
