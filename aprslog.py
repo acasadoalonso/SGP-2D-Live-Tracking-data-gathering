@@ -63,7 +63,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 
-print "Start APRS logging  V1.1"
+print "Start APRS logging  V1.2"
 print "========================"
 import config
 cin   = 0                               # input record counter
@@ -216,8 +216,19 @@ try:
                         print 'Callsign is: ', callsign, 'DST CallSign:', dst_callsign, 'Dest: ', destination, 'header: ', header, "OTime:", otime
                 cin += 1                                # one more file to create
                 if path == 'TCPIP*':                    # handle the TCPIP
+                        status=msg['status']
+			if len(status) > 254:
+				status=status[0:254]
+                        temp=msg['temp']
+                        version=msg['version']
+                        cpu=msg['cpu']
+                        rf=msg['rf']
                         if longitude == -1 and latitude == -1:
-                                continue                # wrong station
+                                latitude =fslla[id]
+                                longitude=fsllo[id]
+                                altitude =fslal[id]
+				otime=datetime.utcnow()
+                                #print "TTT:",         id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
                         if not id in fslod :
                            fslla[id]=latitude           # save the location of the station
                            fsllo[id]=longitude          # save the location of the station
@@ -225,22 +236,19 @@ try:
                            fslod[id]=(latitude, longitude) # save the location of the station
                            fsmax[id]=0.0                # initial coverage zero
                            fsalt[id]=0                  # initial coverage zero
-                        status=msg['status']
-                        temp=msg['temp']
-                        version=msg['version']
-                        cpu=msg['cpu']
-                        rf=msg['rf']
+			if data.find(":/") != -1:
+				continue		# we do not want that message 
                         inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
                                          (id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
                         try:
                                         curs.execute(inscmd)
                         except MySQLdb.Error, e:
                                         try:
-                                                print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+                                                print ">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1])
                                         except IndexError:
-                                                print ">>>MySQL Error: %s" % str(e)
-                                        print ">>>MySQL error:", cout, inscmd
-                                        print ">>>MySQL data :",  data
+                                                print ">>>MySQL2 Error: %s" % str(e)
+                                        print ">>>MySQL3 error:",  cout, inscmd
+                                        print ">>>MySQL4 data :",  data
                         cout +=1
                         conn.commit()
                         continue

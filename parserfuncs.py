@@ -175,7 +175,7 @@ def parseraprs(packet_str, msg):
                                 id=cc
                         station=id
                         p=data.find(' v0.')             # scan for the body of the APRS message
-                        status=data[p+1:p+80].rstrip()  # status information
+                        status=data[p+1:p+254].rstrip()  # status information
                         tempC=gdatal(data, "C ")        # temperature
                         if tempC == ' ':
                                 temp = -99.9
