@@ -1,7 +1,14 @@
-import datetime
+#
+# Parser functions for the OGN APRS applications
+#
+
+#import datetime
 from libfap import *
 from ctypes import *
 from datetime import datetime
+#
+# low lever parser functions
+#
 def get_longitude(packet):
     try:
         longitude=packet[0].longitude[0]
@@ -84,7 +91,34 @@ def get_station(data):
         station=data[data.find("qAS")+4:scolon] # get the station identifier
         station=station.upper()                 # translate to uppercase
         return (station)
-#######---------------------------------------------------------------------------------------------------------
+########################################################################
+def gdatal (data, typer):               	# get data on the left
+        p=data.find(typer)              	# scan for the type requested
+        if p == -1:
+                return (" ")
+        pb=p
+        while (data[pb] != ' '):
+                   pb -= 1
+        ret=data[pb:p]                  	# return the data requested
+        return(ret)
+########################################################################
+def gdatar (data, typer):               	# get data on the  right
+        p=data.find(typer)              	# scan for the type requested
+        if p == -1:
+                return (" ")
+        p=p+len(typer)
+        pb=p
+        max=len(data)-1
+        while (pb < max):
+                if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r':
+                        break
+                pb += 1
+        ret=data[p:pb]                  	# return the data requested
+        return(ret)
+########################################################################
+#
+# geo specifics validations
+#
 
 def spanishsta(station):                # return true if is an Spanish station
     if (station) == None:
@@ -123,44 +157,25 @@ def frenchsta(station):                # return true if is an French station
     else:
         return False
 ######################################################################### 
-def gdatal (data, typer):               # get data on the left
-        p=data.find(typer)              # scan for the type requested
-        if p == -1:
-                return (" ")
-        pb=p
-        while (data[pb] != ' '):
-                   pb -= 1
-        ret=data[pb:p]                  # return the data requested
-        return(ret)
-########################################################################
-def gdatar (data, typer):               # get data on the  right
-        p=data.find(typer)              # scan for the type requested
-        if p == -1:
-                return (" ")
-        p=p+len(typer)
-        pb=p
-        max=len(data)-1
-        while (pb < max):
-                if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r':
-                        break
-                pb += 1
-        ret=data[p:pb]                  # return the data requested
-        return(ret)
-########################################################################
+
+#
+# High level APRS parser function
+#
 
 def parseraprs(packet_str, msg):
-        # Parse packet using libfap.py into fields to process, eg:
+	# args: packet_str the packet stream with the data, msg the dict where to return the parsed data
+        # Parse packet using libfap.py into fields to process
         packet = libfap.fap_parseaprs(packet_str, len(packet_str), 0)
-        if  len(packet_str) > 0 and packet_str[0] <> "#":
+        if  len(packet_str) > 0 and packet_str[0] <> "#": # ignore if do data or just the keep alive message
                 callsign=packet[0].src_callsign     # get the call sign FLARM ID
                 id=callsign                         # id
-                longitude = get_longitude(packet)
-                latitude  = get_latitude(packet)
-                altitude  = get_altitude(packet)
-                speed     = get_speed(packet)
-                course    = get_course(packet)
-                path      = get_path(packet)
-                type      = get_type(packet)
+                longitude    = get_longitude(packet)
+                latitude     = get_latitude(packet)
+                altitude     = get_altitude(packet)
+                speed        = get_speed(packet)
+                course       = get_course(packet)
+                path         = get_path(packet)
+                type         = get_type(packet)
                 dst_callsign = get_dst_callsign(packet)
                 destination  = get_destination(packet)
                 header       = get_header(packet)
@@ -175,7 +190,7 @@ def parseraprs(packet_str, msg):
                                 id=cc
                         station=id
                         p=data.find(' v0.')             # scan for the body of the APRS message
-                        status=data[p+1:p+254].rstrip()  # status information
+                        status=data[p+1:p+254].rstrip() # status information
                         tempC=gdatal(data, "C ")        # temperature
                         if tempC == ' ':
                                 temp = -99.9
@@ -183,15 +198,13 @@ def parseraprs(packet_str, msg):
                                 temp=float(tempC)
                         version=gdatar(data, " v0.")    # version
                         cpus=gdatar(data,"CPU:")        # CPU usagea
-
-                        #print "CPU:", cpus, id
                         cpu=0.0
                         if (cpus != "" and cpus != " " and cpus[0] != "-" and cpus[0:3] != "0.-"):
                                 cpu=float(cpus)         # CPU usage
                         rf=gdatar(data, "RF:").rstrip() # RF noise
                         if len(rf)>20:
                                 rf=rf[0:20]             # sanity check
-                        msg['id']=id
+                        msg['id']=id			# return the parsed data into the dict
                         msg['path']=path
                         msg['station']=station
                         msg['type']=type
@@ -205,9 +218,9 @@ def parseraprs(packet_str, msg):
                         msg['rf']=rf
                         msg['status']=status
                         return (msg)
-                if path == 'qAS' or path == 'RELAY*':                       # if std records
-                        station=get_station(packet_str)
-                #
+
+                if path == 'qAS' or path == 'RELAY*':   # if std records
+                        station=get_station(packet_str) # get the station ID
                 p1=data.find(':/')+2                    # scan for the body of the APRS message
                 hora=data[p1:p1+6]                      # get the GPS time in UTC
                 p2=data.find('/A=')+3                   # scan for the altitude on the body of the message
@@ -219,20 +232,20 @@ def parseraprs(packet_str, msg):
                         extpos=' '
                 roclimb      = gdatal(data,"fpm ")      # get the rate of climb
                 rot          = gdatal(data,"rot")       # get the rate of turn
-                if rot == ' ':
+                if rot == ' ':				# if no rot provided
                         rot=0
                 sensitivity  = gdatal(data,"dB ")       # get the sensitivity
-                if sensitivity == ' ':
+                if sensitivity == ' ':			# if no sensitivity provided
                         sensitivity = 0
                 p6=data.find('gps')                     # scan for gps info
                 if p6 != -1:
                         gps      = data[p6+3:p6+6]      # get the gps
                 else:
-                        gps      = "NO"
-                date=datetime.utcnow()         # get the date
-                dte=date.strftime("%y%m%d")
+                        gps      = "NO"			# no GPS data
+                date=datetime.utcnow()         		# get the date
+                dte=date.strftime("%y%m%d")		# the aprs msgs has not date
 
-                msg['path']=path
+                msg['path']=path			# return the data parsed in the dict
                 msg['idflarm']=id
                 msg['id']=id
                 msg['date']=dte
@@ -253,8 +266,9 @@ def parseraprs(packet_str, msg):
                 msg['otime']=otime
                 return(msg)
         else:
-                return -1
+                return -1				# if length ZERO or just the keep alive
 #
 ########################################################################
 
 
+#import datetime

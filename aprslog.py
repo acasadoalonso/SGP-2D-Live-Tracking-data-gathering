@@ -32,6 +32,7 @@ def shutdown(sock, datafile):               # shutdown routine, close files and 
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
         print "Time now:", local_time, " Local time."
+	os.remove("APRS.alive")		# delete the mark of being alive
         return                          # job done
 
 #########################################################################
