@@ -97,9 +97,9 @@ def gdatal (data, typer):               	# get data on the left
         if p == -1:
                 return (" ")
         pb=p
-        while (data[pb] != ' '):
+        while (data[pb] != ' ' and data[pb] != '/'):
                    pb -= 1
-        ret=data[pb:p]                  	# return the data requested
+        ret=data[pb+1:p]                  	# return the data requested
         return(ret)
 ########################################################################
 def gdatar (data, typer):               	# get data on the  right
@@ -110,7 +110,7 @@ def gdatar (data, typer):               	# get data on the  right
         pb=p
         max=len(data)-1
         while (pb < max):
-                if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r':
+                if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r' :
                         break
                 pb += 1
         ret=data[p:pb]                  	# return the data requested
@@ -193,17 +193,20 @@ def parseraprs(packet_str, msg):
                         status=data[p+1:p+254].rstrip() # status information
                         tempC=gdatal(data, "C ")        # temperature
                         if tempC == ' ':
-                                temp = -99.9
+                                temp = -99.9		# -99 means no temp declared
                         else:
-                                temp=float(tempC)
+                                temp=float(tempC)	# temperature
                         version=gdatar(data, " v0.")    # version
                         cpus=gdatar(data,"CPU:")        # CPU usagea
                         cpu=0.0
                         if (cpus != "" and cpus != " " and cpus[0] != "-" and cpus[0:3] != "0.-"):
                                 cpu=float(cpus)         # CPU usage
-                        rf=gdatar(data, "RF:").rstrip() # RF noise
-                        if len(rf)>20:
-                                rf=rf[0:20]             # sanity check
+			rft=gdatar(data,"RF:").rstrip()	# look for the RF data
+                        if len(rft)>64:
+                                rft=rft[0:64]           # sanity check
+                        rf=gdatal(rft, "dB").rstrip()   # RF noise
+                        irf=rft.find  ('dB')
+			rft=rf[0:irf]			# delete the extra inforomation
                         msg['id']=id			# return the parsed data into the dict
                         msg['path']=path
                         msg['station']=station
