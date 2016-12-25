@@ -97,7 +97,7 @@ def gdatal (data, typer):               	# get data on the left
         if p == -1:
                 return (" ")
         pb=p
-        while (data[pb] != ' ' and data[pb] != '/'):
+        while (data[pb] != ' ' and data[pb] != '/' and pb >= 0):
                    pb -= 1
         ret=data[pb+1:p]                  	# return the data requested
         return(ret)
@@ -242,7 +242,7 @@ def parseraprs(packet_str, msg):
                         sensitivity = 0
                 p6=data.find('gps')                     # scan for gps info
                 if p6 != -1:
-                        gps      = data[p6+3:p6+6]      # get the gps
+                        gps      = gdatar(data, "gps")  # get the gpsdata 
                 else:
                         gps      = "NO"			# no GPS data
                 date=datetime.utcnow()         		# get the date
