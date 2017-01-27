@@ -24,11 +24,11 @@ APRS_FILTER_DETAILS     = APRS_FILTER_DETAILS + '\n '
 
 FLOGGER_LATITUDE        = cfg.get('location', 'location_latitude').strip("'").strip('"')
 FLOGGER_LONGITUDE       = cfg.get('location', 'location_longitud').strip("'").strip('"')
+SPIDERtext              = cfg.get('location', 'SPIDER').strip("'").strip('"')
+SPOTtext                = cfg.get('location', 'SPOT').strip("'").strip('"')
 
 DBpath                  = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')
-SPIDERtext              = cfg.get('server', 'MySQL').strip("'").strip('"')
-SPOTtext                = cfg.get('server', 'MySQL').strip("'").strip('"')
 DBhost                  = cfg.get('server', 'DBhost').strip("'").strip('"')
 DBuser                  = cfg.get('server', 'DBuser').strip("'").strip('"')
 DBpasswd                = cfg.get('server', 'DBpasswd').strip("'").strip('"')

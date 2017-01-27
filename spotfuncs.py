@@ -108,11 +108,14 @@ def spotfindpos(ttime, conn):
 
 	curs=conn.cursor()                      # set the cursor
 	cursG=conn.cursor()                      # set the cursor
-	cursG.execute("select id, spotid from SPOTDEVICES; " )
+	cursG.execute("select id, spotid, active from SPOTDEVICES; " )
         for rowg in cursG.fetchall(): # look for that registration on the OGN database
                                 
         	reg=rowg[0]
         	spotID=rowg[1]
+        	active=rowg[2]
+		if active == 0:
+			continue
 		url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
 		spotpos={"spotpos":[]}
 		jsondata=spotgetapidata(url)
