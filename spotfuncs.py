@@ -15,13 +15,9 @@ import MySQLdb                              # the SQL data base routines^M
 import config
 
 
-# simple wrapper function to encode the username & pass
-def encodeUserData(user, password):
-    return "Basic " + (user + ":" + password).encode("base64").rstrip()
+def spotgetapidata(url):                      	# get the data from the API server
 
-def spotgetapidata(url):                      # get the data from the API server
-
-        req = urllib2.Request(url)
+        req = urllib2.Request(url)		# buil the request
 	req.add_header("Content-Type","application/json")
 	req.add_header("Content-type", "application/x-www-form-urlencoded")
         r = urllib2.urlopen(req)                # open the url resource
@@ -29,13 +25,13 @@ def spotgetapidata(url):                      # get the data from the API server
         return j_obj                            # return the JSON object
 
 
-def spotaddpos(msg, spotpos, ttime, regis):
+def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON object
 
-	unixtime=msg["unixTime"] 
+	unixtime=msg["unixTime"] 		# the time from the epoch
 	if (unixtime < ttime):
-		return (False)
+		return (False)			# if is lower than the last time just ignore it
 	reg=regis
-	lat=msg["latitude"] 
+	lat=msg["latitude"] 			# extract from the JSON object the data that we need
 	lon=msg["longitude"] 
 	alt=msg["altitude"] 
 	id =msg["id"] 
@@ -47,31 +43,32 @@ def spotaddpos(msg, spotpos, ttime, regis):
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
 	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance}
-	spotpos['spotpos'].append(pos)
+	spotpos['spotpos'].append(pos)		# and store it on the dict
 	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg
-	print "POS:", pos
-	return (True)
+	print "POS:", pos			# print it as a control
+	return (True)				# indicate that we added an entry to the dict
 
-def spotgetaircraftpos(data, spotpos, ttime, regis):			# return on a dictionary the position of all spidertracks
-	response    =data['response']
-	if response.get('errors'):
-		return(False)
-	feed        =response["feedMessageResponse"]
-	msgcount    =feed['count']
-	messages    =feed['messages']
-	message     =messages['message']
+def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary the position of all spidertracks
+	response    =data['response']		# get the response entry
+	if response.get('errors'):		# if error found
+		return(False)			# return indicating errors
+
+	feed        =response["feedMessageResponse"]	# get the message response
+	msgcount    =feed['count']		# get the count of messages
+	messages    =feed['messages']		# get the messages
+	message     =messages['message']	# get the individual message
 	found=False
 	#print "M:", message
-	if msgcount == 1:
+	if msgcount == 1:			# if only one message, that is the message
 		found=spotaddpos(message, spotpos, ttime, regis)
 	else:
-		for msg in message:
+		for msg in message:		# if not iterate the set of messages
 			found=spotaddpos(msg, spotpos, ttime, regis)
-	return (found)
+	return (found)				# return if we found a message or not
 
-def spotstoreitindb(datafix, curs, conn):
-	for fix in datafix['spotpos']:
-		id=fix['registration'] 
+def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
+	for fix in datafix['spotpos']:		# for each fix on the dict
+		id=fix['registration'] 		# extract the information
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="SPOT"
@@ -90,7 +87,7 @@ def spotstoreitindb(datafix, curs, conn):
 		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
-        	try:
+        	try:				# store it on the DDBB
               		curs.execute(addcmd)
         	except MySQLdb.Error, e:
               		try:
@@ -99,34 +96,35 @@ def spotstoreitindb(datafix, curs, conn):
                      		print ">>>MySQL Error: %s" % str(e)
                      		print ">>>MySQL error:", cout, addcmd
                     		print ">>>MySQL data :",  data
-			return (False)
+			return (False)	# indicate that we have errors
         conn.commit()                   # commit the DB updates
-	return(True)
+	return(True)			# indicate that we have success
 
 
-def spotfindpos(ttime, conn):
+def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 
-	curs=conn.cursor()                      # set the cursor
-	cursG=conn.cursor()                      # set the cursor
-	cursG.execute("select id, spotid, active from SPOTDEVICES; " )
-        for rowg in cursG.fetchall(): # look for that registration on the OGN database
+	curs=conn.cursor()              # set the cursor for storing the fixes
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	cursG.execute("select id, spotid, active from SPOTDEVICES; " ) 	# get all the devices with SPOT
+        for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
                                 
-        	reg=rowg[0]
-        	spotID=rowg[1]
-        	active=rowg[2]
+        	reg=rowg[0]		# registration to report
+        	spotID=rowg[1]		# SPOTID
+        	active=rowg[2]		# if active or not
 		if active == 0:
-			continue
+			continue	# if not active, just ignore it
+					# build the URL to call to the SPOT server
 		url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
-		spotpos={"spotpos":[]}
-		jsondata=spotgetapidata(url)
-		j=json.dumps(jsondata, indent=4)
+		spotpos={"spotpos":[]}			# init the dict
+		jsondata=spotgetapidata(url)		# get the JSON data from the SPOT server
+		j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
 		#print j
-		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg)
-		spotstoreitindb(spotpos, curs, conn)
+		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg)	# find the gliders since TTIME
+		spotstoreitindb(spotpos, curs, conn)			# and store it on the DDBB
 	
 	now=datetime.utcnow()
-	td=now-datetime(1970,1,1)         # number of second until beginning of the day
-	ts=int(td.total_seconds())
-	return (ts)
+	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
+	ts=int(td.total_seconds())	# as an integer
+	return (ts)			# return TTIME for next call
 
 

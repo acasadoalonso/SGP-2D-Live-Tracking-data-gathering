@@ -19,41 +19,42 @@ import config
 def encodeUserData(user, password):
     return "Basic " + (user + ":" + password).encode("base64").rstrip()
 
-def spigetapidata(url, data):                      # get the data from the API server
+def spigetapidata(url, data):               	# get the data from the API server
 
-	username="acasado@acm.org"
+	username="acasado@acm.org"		# userbane/password for the Vitacura
 	password="spider123"
-        req = urllib2.Request(url, data)
+        req = urllib2.Request(url, data)	# build the req
+
 	req.add_header("Content-Type","application/xml")
 	req.add_header("Content-type", "application/x-www-form-urlencoded")
 	req.add_header('Authorization', encodeUserData(username, password))
         r = urllib2.urlopen(req)                # open the url resource
-	html=r.read()
-        return(html)
+	html=r.read()				# read the data received
+        return(html)				# return the data received
 
-def  spigetdataXML(ttime): 				# prepare the data POST request
+def  spigetdataXML(ttime): 			# prepare the data POST request
 
 	data='<?xml version="1.0" encoding="utf-8"?> <data xmlns="https://aff.gov/affSchema" sysId="Club de Planeadores de Vitacura" rptTime="'+ttime+'" version="2.23"> <msgRequest to="Spidertracks" from="Club de Planeadores de Vitacura" msgType="Data Request" subject="Async" dateTime="'+ttime+'"> <body>'+ttime+'</body> </msgRequest> </data>'
 	return (data)
 
 
-def spigetaircraftpos(html, spipos):			# return on a dictionary the position of all spidertracks
-	doc = ET.fromstring(html)
+def spigetaircraftpos(html, spipos):		# return on a dictionary the position of all spidertracks
+	doc = ET.fromstring(html)		# parse the html data into a XML tree
 	ttime=doc.attrib['rptTime']
-	for child in doc:				# one level down
-		for ch in child:			# second level down
+	for child in doc:			# one level down
+		for ch in child:		# second level down
 			#print "TTT:", ch.tag, "AAA:", ch.attrib
 			UnitID  =ch.attrib['UnitID']
 			DateTime=ch.attrib['dateTime'] 
-			ttime	=ch.attrib['dataCtrDateTime']
-			print "T:", ttime
-			dte=DateTime[2:4]+DateTime[5:7]+DateTime[8:10] 
-			tme=DateTime[11:13]+DateTime[14:16]+DateTime[17:19] 
-			pos={"UnitID" : UnitID}
+			ttime	=ch.attrib['dataCtrDateTime']	# store the ttime for next request
+			#print "T:", ttime
+			dte=DateTime[2:4]+DateTime[5:7]+DateTime[8:10] 		# get the date
+			tme=DateTime[11:13]+DateTime[14:16]+DateTime[17:19] 	# and the time
+			pos={"UnitID" : UnitID}					# save the unitID as a check
 			pos["date"]=dte
 			pos["time"]=tme
-			reg="CC-UFO"
-			for chh in ch:			# therid level down
+			reg="CC-UFO"		# by defualt
+			for chh in ch:		# third level down
 				#print "TTTT:", chh.tag, "AAAA:", chh.attrib, "X:",chh.text
 				name=chh.tag
 				p=name.find('}')
@@ -68,18 +69,18 @@ def spigetaircraftpos(html, spipos):			# return on a dictionary the position of 
 			lon=pos["Long"] 
 			vitlat   =config.FLOGGER_LATITUDE
 			vitlon   =config.FLOGGER_LONGITUDE
-			distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
+			distance=vincenty((lat, lon),(vitlat,vitlon)).km    	# distance to the station VITACURA
 			pos["dist"]=distance
 			if pos['registration'] == 'HBEAT':
-				print  "P: HBEAT"
+				print  "P: HBEAT", ttime
 			else:
-				print "P:", pos
-			spipos['spiderpos'].append(pos)
-	return (ttime)
+				print "P:", pos, ttime
+			spipos['spiderpos'].append(pos) 			# append the position infomatio to the dict
+	return (ttime)								# return the ttime as a reference for next request
 
-def spistoreitindb(data, curs, conn):
-	for fix in data['spiderpos']:
-		id=fix['registration'] 
+def spistoreitindb(data, curs, conn):		# store the spider position into the database
+	for fix in data['spiderpos']:		# for each position that we have on the dict
+		id=fix['registration'] 		# extract the information to store on the DDBB
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="SPIDER"
@@ -95,13 +96,13 @@ def spistoreitindb(data, curs, conn):
 		uniqueid=fix["UnitID"]
 		dist=fix['dist']
 		extpos=""
-		if id == "HBEAT":
+		if id == "HBEAT":		# if it is the heartbeat just ignore it
 			continue
 		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:
-              		curs.execute(addcmd)
+              		curs.execute(addcmd)	# store it on the DDBB
         	except MySQLdb.Error, e:
               		try:
                      		print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
@@ -109,20 +110,20 @@ def spistoreitindb(data, curs, conn):
                      		print ">>>MySQL Error: %s" % str(e)
                      		print ">>>MySQL error:", cout, addcmd
                     		print ">>>MySQL data :",  data
-			return (False)
+			return (False)	# report the error
         conn.commit()                   # commit the DB updates
-	return(True)
+	return(True)			# report success
 
 
-def spifindspiderpos(ttime, conn):
+def spifindspiderpos(ttime, conn):	# find all the fixes since last time
 
-	curs=conn.cursor()
-	url="https://go.spidertracks.com/api/aff/feed" 
-	spipos={"spiderpos":[]}
-	data=spigetdataXML(ttime)
-	html=spigetapidata(url,data)
-	ttime=spigetaircraftpos(html, spipos)
-	spistoreitindb(spipos, curs, conn)
-	return (ttime)
+	curs=conn.cursor()		# gen the cursor
+	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
+	spipos={"spiderpos":[]}		# init the dict
+	data=spigetdataXML(ttime)	# get the data for the POST request passing the TTIME
+	html=spigetapidata(url,data)	# get the data on HTML format
+	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
+	spistoreitindb(spipos, curs, conn)	# store the fixes on the DDBB
+	return (ttime)			# return the TTIME for the next request
 
 
