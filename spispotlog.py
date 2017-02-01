@@ -27,7 +27,8 @@ def shutdown():               			# shutdown routine, close files and report on a
         conn.close()                    	# close the database
         local_time = datetime.now() 		# report date and time now
         print "Time now:", local_time, " Local time."
-        os.remove("SPISPOT.alive")         	# delete the mark of being alive
+	if os.path.exists("./SPISPOT.alive"):
+        	os.remove(  "SPISPOT.alive")   	# delete the mark of being alive
         return                          	# job done
 
 #########################################################################
@@ -76,16 +77,24 @@ min5=timedelta(seconds=300)		# 5 minutes ago
 now=now-min5
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 count=1					# loop counter
-td=now-datetime(1970,1,1)         	# number of second until beginning of the day
+td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
 print count, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 while True:				# until 22:00 h
+	now=datetime.utcnow()	# get the UTC time
 	if SPIDER:			# if we have SPIDER according with the config
 
 		ttime=spifindspiderpos(ttime, conn)
+	else: 
+		ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+
 	if SPOT:			# if we have the SPOT according with the configuration
 
 		ts   =spotfindpos(ts, conn)
+	else:
+
+		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+		ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 	time.sleep(300)  		# sleep for 5 minutes
 	count += 1

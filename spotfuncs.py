@@ -37,15 +37,16 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	id =msg["id"] 
 	mid=msg["modelId"] 
 	dte=msg["dateTime"] 
+	extpos=msg["batteryState"] 
 	date=dte[2:4]+dte[5:7]+dte[8:10]
         time=dte[11:13]+dte[14:16]+dte[17:19]
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance}
+	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "extpos":extpos}
 	spotpos['spotpos'].append(pos)		# and store it on the dict
 	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg
-	print "POS:", pos			# print it as a control
+	#print "POS:", pos			# print it as a control
 	return (True)				# indicate that we added an entry to the dict
 
 def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary the position of all spidertracks
@@ -60,10 +61,14 @@ def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary th
 	found=False
 	#print "M:", message
 	if msgcount == 1:			# if only one message, that is the message
+		print json.dumps(message, indent=4)        # convert JSON to dictionary
 		found=spotaddpos(message, spotpos, ttime, regis)
 	else:
 		for msg in message:		# if not iterate the set of messages
+			#print json.dumps(msg, indent=4)        # convert JSON to dictionary
 			found=spotaddpos(msg, spotpos, ttime, regis)
+			if 'GOOD' not in msg.get('batteryState', 'GOOD'):
+        			print "WARNING: spot battery is in state: %s" % message.get('batteryState')
 	return (found)				# return if we found a message or not
 
 def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
@@ -83,7 +88,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 		gps=""
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
-		extpos=""
+		extpos=fix['extpos']
 		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "

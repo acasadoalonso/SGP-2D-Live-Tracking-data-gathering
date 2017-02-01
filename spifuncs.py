@@ -47,10 +47,16 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			UnitID  =ch.attrib['UnitID']
 			DateTime=ch.attrib['dateTime'] 
 			ttime	=ch.attrib['dataCtrDateTime']	# store the ttime for next request
+			source	=ch.attrib['source']	# store the source 
+			fix	=ch.attrib['fix']	# store the fix 
+			hdop	=ch.attrib['hdop']	# store the hdop 
 			#print "T:", ttime
 			dte=DateTime[2:4]+DateTime[5:7]+DateTime[8:10] 		# get the date
 			tme=DateTime[11:13]+DateTime[14:16]+DateTime[17:19] 	# and the time
 			pos={"UnitID" : UnitID}					# save the unitID as a check
+			pos={"GPS" : source}		# store the Source GPS 
+			pos={"sensitivity" : hdop}	# store the GPS accuracy on the sensitivity		
+			pos={"extpos" : fix}		# store 3D/2D on the extended position
 			pos["date"]=dte
 			pos["time"]=tme
 			reg="CC-UFO"		# by defualt
@@ -91,11 +97,11 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 		course=fix['heading'] 
 		roclimb=0
 		rot=0
-		sensitivity=0
-		gps=""
+		sensitivity=fix['sensitivity']
+		gps=fix['GPS']
 		uniqueid=fix["UnitID"]
 		dist=fix['dist']
-		extpos=""
+		extpos=fix['extpos']
 		if id == "HBEAT":		# if it is the heartbeat just ignore it
 			continue
 		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
