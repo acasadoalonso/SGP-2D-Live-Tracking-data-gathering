@@ -43,7 +43,7 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "extpos":extpos}
+	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "GPS":mid, "dist":distance, "extpos":extpos}
 	spotpos['spotpos'].append(pos)		# and store it on the dict
 	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, extpos
 	#print "POS:", pos			# print it as a control
@@ -85,7 +85,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 		roclimb=0
 		rot=0
 		sensitivity=0
-		gps=""
+		gps=fix['GPS']
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
