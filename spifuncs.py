@@ -54,11 +54,11 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			dte=DateTime[2:4]+DateTime[5:7]+DateTime[8:10] 		# get the date
 			tme=DateTime[11:13]+DateTime[14:16]+DateTime[17:19] 	# and the time
 			pos={"UnitID" : UnitID}					# save the unitID as a check
-			pos={"GPS" : source}		# store the Source GPS 
-			pos={"sensitivity" : hdop}	# store the GPS accuracy on the sensitivity		
-			pos={"extpos" : fix}		# store 3D/2D on the extended position
-			pos["date"]=dte
-			pos["time"]=tme
+			pos["GPS"]         = source	# store the Source GPS 
+			pos["sensitivity"] = hdop	# store the GPS accuracy on the sensitivity		
+			pos["extpos"]      = fix	# store 3D/2D on the extended position
+			pos["date"]        = dte
+			pos["time"]        = tme
 			reg="CC-UFO"		# by defualt
 			for chh in ch:		# third level down
 				#print "TTTT:", chh.tag, "AAAA:", chh.attrib, "X:",chh.text
