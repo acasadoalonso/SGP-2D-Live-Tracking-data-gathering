@@ -49,7 +49,7 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			ttime	=ch.attrib['dataCtrDateTime']	# store the ttime for next request
 			source	=ch.attrib['source']	# store the source 
 			fix	=ch.attrib['fix']	# store the fix 
-			hdop	=ch.attrib['hdop']	# store the hdop 
+			hdop	=ch.attrib['HDOP']	# store the hdop 
 			#print "T:", ttime
 			dte=DateTime[2:4]+DateTime[5:7]+DateTime[8:10] 		# get the date
 			tme=DateTime[11:13]+DateTime[14:16]+DateTime[17:19] 	# and the time
