@@ -22,7 +22,7 @@ def alive(first='no'):				# routine to indicate that we are alive
 #########################################################################
 def shutdown():               			# shutdown routine, close files and report on activity
                                                                                 # shutdown before exit
-        print 'Records read:',count
+        print 'SHUTDOWN: Records read:',count
         conn.commit()                   	# commit the DB updates
         conn.close()                    	# close the database
         local_time = datetime.now() 		# report date and time now
@@ -102,9 +102,9 @@ while True:				# until 22:00 h
 
 	alive()				# indicate that we are still alive
 	local_time = datetime.now()	# check the local time
-        if local_time.hour == 21:	# at 22:00 finish
+        if local_time.hour >= 21:	# at 21:00 finish
 		break
-print "Time is now:", local_time
+print "End of day ... Time is now:", local_time
 shutdown()
 
 sys.exit(1)
