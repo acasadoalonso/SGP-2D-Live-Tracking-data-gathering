@@ -45,7 +45,7 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
 	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "extpos":extpos}
 	spotpos['spotpos'].append(pos)		# and store it on the dict
-	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg
+	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, extpos
 	#print "POS:", pos			# print it as a control
 	return (True)				# indicate that we added an entry to the dict
 
