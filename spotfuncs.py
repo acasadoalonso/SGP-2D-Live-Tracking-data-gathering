@@ -110,16 +110,20 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
-	cursG.execute("select id, spotid, active from SPOTDEVICES; " ) 	# get all the devices with SPOT
+	cursG.execute("select id, spotid, spotpasswd, active from SPOTDEVICES; " ) 	# get all the devices with SPOT
         for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
         	spotID=rowg[1]		# SPOTID
-        	active=rowg[2]		# if active or not
+        	spotpasswd=rowg[2]	# SPOTID password
+        	active=rowg[3]		# if active or not
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the URL to call to the SPOT server
-		url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
+		if spotpasswd == '':
+			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
+		else:
+			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+spotpasswd
 		spotpos={"spotpos":[]}			# init the dict
 		jsondata=spotgetapidata(url)		# get the JSON data from the SPOT server
 		j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
