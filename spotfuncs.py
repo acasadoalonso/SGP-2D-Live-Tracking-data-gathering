@@ -123,7 +123,7 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 		if spotpasswd == '':
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
 		else:
-			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+spotpasswd
+			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+str(spotpasswd)
 		spotpos={"spotpos":[]}			# init the dict
 		jsondata=spotgetapidata(url)		# get the JSON data from the SPOT server
 		j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
