@@ -120,7 +120,7 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the URL to call to the SPOT server
-		if spotpasswd == '':
+		if spotpasswd == '' or spotpasswd == None:
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
 		else:
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+str(spotpasswd)
