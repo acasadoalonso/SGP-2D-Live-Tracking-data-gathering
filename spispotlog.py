@@ -1,10 +1,7 @@
 #!/usr/bin/python
 from datetime import datetime, timedelta
-from spifuncs import *
-from spotfuncs import *
 import MySQLdb
 import socket
-import config
 import signal
 
 #########################################################################
@@ -50,8 +47,11 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 print "Start SPIDER & SPOT logging  V1.1"
 print "================================="
 
+import config
+from spifuncs import *
+from spotfuncs import *
 #
-# get the SPIDER TRACK information
+# get the SPIDER TRACK  & SPOT information
 #
 # --------------------------------------#
 DBhost   =config.DBhost
