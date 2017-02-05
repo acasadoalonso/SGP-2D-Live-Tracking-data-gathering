@@ -68,7 +68,7 @@ def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary th
 			#print json.dumps(msg, indent=4)        # convert JSON to dictionary
 			found=spotaddpos(msg, spotpos, ttime, regis)
 			if 'GOOD' not in msg.get('batteryState', 'GOOD'):
-        			print "WARNING: spot battery is in state: %s" % message.get('batteryState')
+        			print "WARNING: spot battery is in state: %s" % msg.get('batteryState')
 	return (found)				# return if we found a message or not
 
 def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
