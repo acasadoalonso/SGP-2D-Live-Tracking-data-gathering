@@ -40,6 +40,8 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	extpos=msg["batteryState"] 
 	date=dte[2:4]+dte[5:7]+dte[8:10]
         time=dte[11:13]+dte[14:16]+dte[17:19]
+	if 'GOOD' not in msg.get('batteryState', 'GOOD'):
+       		print "WARNING: spot battery is in state: %s ID=%s " % (msg.get('batteryState'), id)
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
@@ -67,8 +69,6 @@ def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary th
 		for msg in message:		# if not iterate the set of messages
 			#print json.dumps(msg, indent=4)        # convert JSON to dictionary
 			found=spotaddpos(msg, spotpos, ttime, regis)
-			if 'GOOD' not in msg.get('batteryState', 'GOOD'):
-        			print "WARNING: spot battery is in state: %s" % msg.get('batteryState')
 	return (found)				# return if we found a message or not
 
 def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
