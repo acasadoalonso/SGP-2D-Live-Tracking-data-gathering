@@ -44,7 +44,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 
 
-print "Start SPIDER & SPOT logging  V1.1"
+print "Start SPIDER & SPOT logging  V1.2"
 print "================================="
 
 import config
@@ -60,6 +60,8 @@ DBpasswd =config.DBpasswd
 DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
+username =config.SPIuser  
+password =config.SPIpassword  
 # --------------------------------------#
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
@@ -84,7 +86,7 @@ while True:				# until 22:00 h
 	now=datetime.utcnow()	# get the UTC time
 	if SPIDER:			# if we have SPIDER according with the config
 
-		ttime=spifindspiderpos(ttime, conn)
+		ttime=spifindspiderpos(ttime, conn, username, password)
 	else: 
 		ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 

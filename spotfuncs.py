@@ -41,7 +41,7 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	date=dte[2:4]+dte[5:7]+dte[8:10]
         time=dte[11:13]+dte[14:16]+dte[17:19]
 	if 'GOOD' not in msg.get('batteryState', 'GOOD'):
-       		print "WARNING: spot battery is in state: %s ID=%s " % (msg.get('batteryState'), id)
+       		print "WARNING: spot battery is in state: %s ID=%s " % (msg.get('batteryState'), regis)
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio

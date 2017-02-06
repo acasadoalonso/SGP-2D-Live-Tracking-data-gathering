@@ -26,6 +26,8 @@ FLOGGER_LATITUDE        = cfg.get('location', 'location_latitude').strip("'").st
 FLOGGER_LONGITUDE       = cfg.get('location', 'location_longitud').strip("'").strip('"')
 SPIDERtext              = cfg.get('location', 'SPIDER').strip("'").strip('"')
 SPOTtext                = cfg.get('location', 'SPOT').strip("'").strip('"')
+SPIuser                 = cfg.get('location', 'SPIuser').strip("'").strip('"')
+SPIpassword             = cfg.get('location', 'SPIpassword').strip("'").strip('"')
 
 DBpath                  = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')

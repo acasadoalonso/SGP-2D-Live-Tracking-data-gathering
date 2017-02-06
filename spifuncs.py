@@ -19,10 +19,8 @@ import config
 def encodeUserData(user, password):
     return "Basic " + (user + ":" + password).encode("base64").rstrip()
 
-def spigetapidata(url, data):               	# get the data from the API server
+def spigetapidata(url, data, username, password): 	# get the data from the API server
 
-	username="acasado@acm.org"		# userbane/password for the Vitacura
-	password="spider123"
         req = urllib2.Request(url, data)	# build the req
 
 	req.add_header("Content-Type","application/xml")
@@ -121,13 +119,13 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 	return(True)			# report success
 
 
-def spifindspiderpos(ttime, conn):	# find all the fixes since last time
+def spifindspiderpos(ttime, conn, username, password):	# find all the fixes since last time
 
 	curs=conn.cursor()		# gen the cursor
 	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
 	spipos={"spiderpos":[]}		# init the dict
 	data=spigetdataXML(ttime)	# get the data for the POST request passing the TTIME
-	html=spigetapidata(url,data)	# get the data on HTML format
+	html=spigetapidata(url,data, username, password) # get the data on HTML format
 	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
 	spistoreitindb(spipos, curs, conn)	# store the fixes on the DDBB
 	return (ttime)			# return the TTIME for the next request
