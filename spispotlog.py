@@ -44,30 +44,50 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 
 
-print "Start SPIDER & SPOT logging  V1.2"
-print "================================="
+print "Start SPIDER, SPOT & LT24 logging  V1.3"
+print "======================================="
 
 import config
-from spifuncs import *
-from spotfuncs import *
+
+# --------------------------------------#
 #
-# get the SPIDER TRACK  & SPOT information
+# get the SPIDER TRACK SPOT and TL24 information
 #
 # --------------------------------------#
+DBpath   =config.DBpath
 DBhost   =config.DBhost
 DBuser   =config.DBuser
 DBpasswd =config.DBpasswd
 DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
-username =config.SPIuser  
-password =config.SPIpassword  
+LT24     =config.LT24  
+
+if SPIDER:
+	from spifuncs import *
+	spiusername =config.SPIuser  
+	spipassword =config.SPIpassword  
+
+if SPOT:
+	from spotfuncs import *
+
+if LT24:
+	from lt24funcs import *
+	lt24username =config.LT24username  
+	lt24password =config.LT24password  
+	LT24qwe=" "
+	LT24_appSecret= " "
+	LT24_appKey= " "
+	LT24path=DBpath+"LT24/" 
+	LT24login=False
+	LT24firsttime=True
 # --------------------------------------#
+
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
 date=datetime.utcnow()         		# get the date
 
-print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT
+print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
 print "Date: ", date, "UTC on:", socket.gethostname()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
@@ -81,26 +101,36 @@ ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 count=1					# loop counter
 td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
+if LT24:
+	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
+	lt24ts=ts
+	LT24firsttime=True
 print count, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 while True:				# until 22:00 h
 	now=datetime.utcnow()	# get the UTC time
 	if SPIDER:			# if we have SPIDER according with the config
 
-		ttime=spifindspiderpos(ttime, conn, username, password)
+		ttime=spifindspiderpos(ttime, conn, spiusername, spipassword)
 	else: 
 		ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
 	if SPOT:			# if we have the SPOT according with the configuration
-
 		ts   =spotfindpos(ts, conn)
 	else:
-
 		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 		ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
+	if LT24:			# if we have the LT24 according with the configuration
+		
+		lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime)
+		LT24firsttime=False	# only once the addpos
+	else:
+		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+		lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+
 	time.sleep(300)  		# sleep for 5 minutes
 	count += 1
-	print count, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
+	print count, "---> TTime:", ttime, "SPOT Unix time:", ts, "Z: LT24 Unix time", lt24ts, datetime.utcnow().isoformat()
 
 	alive()				# indicate that we are still alive
 	local_time = datetime.now()	# check the local time

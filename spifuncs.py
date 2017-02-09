@@ -76,9 +76,9 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			distance=vincenty((lat, lon),(vitlat,vitlon)).km    	# distance to the station VITACURA
 			pos["dist"]=distance
 			if pos['registration'] == 'HBEAT':
-				print  "P: HBEAT", ttime
+				print "SPIDPOS : HBEAT", ttime
 			else:
-				print "P:", pos, ttime
+				print "SPIDPOS :", pos, ttime
 			spipos['spiderpos'].append(pos) 			# append the position infomatio to the dict
 	return (ttime)								# return the ttime as a reference for next request
 

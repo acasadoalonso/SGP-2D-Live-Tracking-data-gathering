@@ -32,7 +32,8 @@ def shutdown(sock, datafile):               # shutdown routine, close files and 
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
         print "Time now:", local_time, " Local time."
-	os.remove("APRS.alive")		# delete the mark of being alive
+ 	if os.path.exists("APRS.alive"):
+		os.remove("APRS.alive")	# delete the mark of being alive
         return                          # job done
 
 #########################################################################
@@ -64,9 +65,14 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 
-print "Start APRS logging  V1.2"
-print "========================"
+print "Start APRS, SPIDER , SPOT and LT24 logging  V1.4"
+print "================================================"
+#
+# get the SPIDER TRACK  & SPOT information
+#
+# --------------------------------------#
 import config
+
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
@@ -82,10 +88,36 @@ fsalt={'NONE  ' : 0}                    # maximun altitude
 # --------------------------------------#
 DATA=True
 RECV=True
+DBpath   =config.DBpath
 DBhost   =config.DBhost
 DBuser   =config.DBuser
 DBpasswd =config.DBpasswd
 DBname   =config.DBname
+SPIDER   =config.SPIDER
+SPOT     =config.SPOT  
+LT24     =config.LT24  
+
+if SPIDER:
+	from spifuncs import *
+	spiusername =config.SPIuser  
+	spipassword =config.SPIpassword  
+
+if SPOT:
+	from spotfuncs import *
+
+if LT24:
+	from lt24funcs import *
+	lt24username =config.LT24username  
+	lt24password =config.LT24password  
+	LT24qwe=" "
+	LT24_appSecret= " "
+	LT24_appKey= " "
+	LT24path=DBpath+"LT24/" 
+	LT24login=False
+	LT24firsttime=True
+# --------------------------------------#
+
+
 # --------------------------------------#
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
@@ -93,8 +125,8 @@ date=datetime.utcnow()         # get the date
 dte=date.strftime("%y%m%d")             # today's date
 
 #----------------------ogn_SilentWingsInterface.py start-----------------------
+print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
 
-print "MySQL: Database:", DBname, " at Host:", DBhost
 print "Date: ", date, "UTC on:", socket.gethostname()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
@@ -142,9 +174,23 @@ keepalive_time = time.time()
 alive("yes")
 #
 #-----------------------------------------------------------------
-# Initialise API for computing sunrise and sunset
+# Initialise API for SPIDER & SPOT & LT24
 #-----------------------------------------------------------------
 #
+now=datetime.utcnow()			# get the UTC time
+min5=timedelta(seconds=300)		# 5 minutes ago
+now=now-min5				# now less 5 minutes
+td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
+ts=int(td.total_seconds())		# Unix time - seconds from the epoch
+spispotcount=1				# loop counter
+ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+
+if LT24:
+	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
+	lt24ts=ts
+	LT24firsttime=True
+
+print spispotcount, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 
 date = datetime.now()
 
@@ -162,12 +208,39 @@ try:
                         # Make sure keepalive gets sent. If not flushed then buffered
                         sock_file.flush()
                         datafile.flush()
-                        alive()                                 # indicate that we are alive
+                        alive()                          # indicate that we are alive
                         run_time = time.time() - start_time
                         if prt:
                                 print "Send keepalive no: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
                         keepalive_time = current_time
                         keepalive_count = keepalive_count + 1
+			now=datetime.utcnow()	# get the UTC time
+			if SPIDER:				# if we have SPIDER according with the config
+
+				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword)
+
+			else: 
+				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+
+			if SPOT:				# if we have the SPOT according with the configuration
+
+				ts   =spotfindpos(ts, conn)
+			else:
+
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if LT24:				# if we have the LT24 according with the configuration
+		
+				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime)
+				LT24firsttime=False		# only once the addpos
+			else:
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+
+			spispotcount += 1
+			print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, datetime.utcnow().isoformat()
+
+
                 except Exception, e:
                         print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
 

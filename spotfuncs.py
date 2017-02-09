@@ -47,8 +47,7 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
 	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "GPS":mid, "dist":distance, "extpos":extpos}
 	spotpos['spotpos'].append(pos)		# and store it on the dict
-	print "POS:", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, extpos
-	#print "POS:", pos			# print it as a control
+	print "SPOTPOS :", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, extpos
 	return (True)				# indicate that we added an entry to the dict
 
 def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary the position of all spidertracks
@@ -86,6 +85,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 		rot=0
 		sensitivity=0
 		gps=fix['GPS']
+		gps=gps[0:6]
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
@@ -110,7 +110,7 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
-	cursG.execute("select id, spotid, spotpasswd, active from SPOTDEVICES; " ) 	# get all the devices with SPOT
+	cursG.execute("select id, spotid, spotpasswd, active from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
         for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report

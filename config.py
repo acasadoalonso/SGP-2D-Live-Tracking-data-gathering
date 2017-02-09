@@ -24,10 +24,19 @@ APRS_FILTER_DETAILS     = APRS_FILTER_DETAILS + '\n '
 
 FLOGGER_LATITUDE        = cfg.get('location', 'location_latitude').strip("'").strip('"')
 FLOGGER_LONGITUDE       = cfg.get('location', 'location_longitud').strip("'").strip('"')
-SPIDERtext              = cfg.get('location', 'SPIDER').strip("'").strip('"')
 SPOTtext                = cfg.get('location', 'SPOT').strip("'").strip('"')
-SPIuser                 = cfg.get('location', 'SPIuser').strip("'").strip('"')
-SPIpassword             = cfg.get('location', 'SPIpassword').strip("'").strip('"')
+try:
+	LT24text        = cfg.get('location', 'LT24').strip("'").strip('"')
+	LT24username    = cfg.get('location', 'LT24username').strip("'").strip('"')
+	LT24password    = cfg.get('location', 'LT24password').strip("'").strip('"')
+except:
+	LT24text='False'
+try:
+	SPIDERtext      = cfg.get('location', 'SPIDER').strip("'").strip('"')
+	SPIuser         = cfg.get('location', 'SPIuser').strip("'").strip('"')
+	SPIpassword     = cfg.get('location', 'SPIpassword').strip("'").strip('"')
+except:
+	SPItext='False'
 
 DBpath                  = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')
@@ -52,12 +61,16 @@ if (SPOTtext == 'True'):
         SPOT = True
 else:
         SPOT = False
+if (LT24text == 'True'):
+        LT24 = True
+else:
+        LT24 = False
 # --------------------------------------#
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
  
 LogData=False                                                                               # report the configuration paramenters
 print "Config server values:",                  MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			FLOGGER_LATITUDE, FLOGGER_LONGITUDE
+print "Config location :",     			FLOGGER_LATITUDE, FLOGGER_LONGITUDE, SPIDER, SPOT, LT24
 # --------------------------------------#
 
