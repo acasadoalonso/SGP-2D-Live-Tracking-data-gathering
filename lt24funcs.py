@@ -171,7 +171,7 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 		now=datetime.utcnow()
 		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
 		sync=int(td.total_seconds())	# as an integer
-	return (sync)			# return TTIME for next call
+	return (sync+1)			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
 def lt24addpos(msg, lt24pos, ttime, regis):	# extract the data of the last know position from the JSON object
