@@ -218,53 +218,57 @@ def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a 
 	else:
 		return (int(since))		# nothing found
 		
-	trackid=trk[0]				# first data is the trackid
-	data=tracks[str(trackid)]
-	trackFields = data.split(":")
+	for trackid in trk:			# inspect eack track
 
-	username = trackFields[0]
-	userID = trackFields[1]
-	TMs  = lt24unpackDelta( trackFields[2] )
-	Lats = lt24unpackDelta( trackFields[3] )
-	Lons = lt24unpackDelta( trackFields[4] )
-	Alts = lt24unpackDelta( trackFields[5] )
-	SOGs = lt24unpackDelta( trackFields[6] )
-	COGs = lt24unpackDelta( trackFields[7] )
-	AGLs = lt24unpackDelta( trackFields[8] )
-	VROs = lt24unpackDelta( trackFields[9] )
-	if len(Lats) != len(Lons) and Lons[0] == 0.0:
+		data=tracks[str(trackid)]	# get the data for this track
+		trackFields = data.split(":")	# divide it on the different items
+
+		username = trackFields[0]	# the first is the user name
+		userID = trackFields[1]		# the second the userID associated to that user name
+		TMs  = lt24unpackDelta( trackFields[2] )	# timestamps
+		Lats = lt24unpackDelta( trackFields[3] )	# Latitudes
+		Lons = lt24unpackDelta( trackFields[4] )	# longitudes
+		Alts = lt24unpackDelta( trackFields[5] )	# altitudes
+		SOGs = lt24unpackDelta( trackFields[6] )	# Speed
+		COGs = lt24unpackDelta( trackFields[7] )	# courses
+		AGLs = lt24unpackDelta( trackFields[8] )	# altitude above the ground
+		VROs = lt24unpackDelta( trackFields[9] )	# vertical speed / rate of climb
+		if len(Lats) != len(Lons) and Lons[0] == 0.0:	# works ourund a bug
 			Lons.pop(0)
-	for i in range(len(Lats)):
-    		Lats[i] = Lats[i] / 60000
-    		Lons[i] = Lons[i] / 60000
-    		VROs[i] = VROs[i] / 100
-    		COGs[i] = COGs[i] * 2
+		for i in range (len(Lats) -1):			# adjust accoring to the formula
+    			Lats[i] = Lats[i] / 60000
+    			Lons[i] = Lons[i] / 60000
+    			VROs[i] = VROs[i] / 100
+    			COGs[i] = COGs[i] * 2
 
-	#print ":::", username, "UserID", userID, "\nTM",TMs, "\nlat",Lats, "\nlon", Lons, "\nAlt", Alts, "\nSOG", SOGs, "\nCOG", COGs, "\nAgl", AGLs, "\nVRO", VROs
-	for i in range(len(Lats)):
-		lon      =Lons[i]
-		lat      =Lats[i]
-		alt      =Alts[i]
-		course   =COGs[i]
-		speed    =SOGs[i]
-		roc      =int(VROs[i])
-		extpos   =str(AGLs[i])
-		vitlat   =config.FLOGGER_LATITUDE
-        	vitlon   =config.FLOGGER_LONGITUDE
-        	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-		dte=datetime.utcfromtimestamp(TMs[i])
-		date=dte.strftime("%y%m%d")
-		time=dte.strftime("%H%M%S")
-		gps="YES"
-		if TMs[i] < since:
-			print "Nothing to do... SINCE=", since, "Time fix:", TMs[i], "SYNC", sync
-		else:
-
-			pos={"registration": username, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":userID, "dist":distance, "course": course, "speed": speed, "roc":roc, "GPS":gps , "extpos":extpos}
+		#print ":::", username, "UserID", userID, "\nTM",TMs, "\nlat",Lats, "\nlon", Lons, "\nAlt", Alts, "\nSOG", SOGs, "\nCOG", COGs, "\nAgl", AGLs, "\nVRO", VROs
+		for i in range(len(Lats) -1):	# handle the unpacked data of each track
+			lon      =Lons[i]
+			lat      =Lats[i]
+			alt      =Alts[i]
+			course   =COGs[i]
+			speed    =SOGs[i]
+			if i <= len(VROs):
+				roc = int(VROs[i])
+			else:
+				roc = 0
+			extpos   =str(AGLs[i])	# we repoort the AGL omn the exppos of the DDBB
+			vitlat   =config.FLOGGER_LATITUDE
+        		vitlon   =config.FLOGGER_LONGITUDE
+        		distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the central location
+			dte=datetime.utcfromtimestamp(TMs[i])	# get the data/time for the timestamp
+			date=dte.strftime("%y%m%d")		# date format
+			time=dte.strftime("%H%M%S")		# time format
+			gps="GPS"
+			if TMs[i] < since:			# if the timestamp is earlier than the since param
+				print "Nothing to do... SINCE=", since, "Time fix:", TMs[i], "SYNC", sync
+			else:
+	
+				pos={"registration": username, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":userID, "dist":distance, "course": course, "speed": speed, "roc":roc, "GPS":gps , "extpos":extpos}
 			#print "POS:", pos
         		lt24pos['lt24pos'].append(pos)          # and store it on the dict
 			print "LT24POS2:", round(lat,4), round(lon,4), alt, userID,  round(distance,4), dte, date, time, username, trackid
 
-	return (int(sync))
+	return (int(sync))		# return the SYNC for next call
 
 
