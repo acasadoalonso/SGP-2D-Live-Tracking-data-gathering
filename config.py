@@ -37,6 +37,10 @@ try:
 	SPIpassword     = cfg.get('location', 'SPIpassword').strip("'").strip('"')
 except:
 	SPItext='False'
+try:
+	SKYLINEtext     = cfg.get('location', 'SKYLINE').strip("'").strip('"')
+except:
+	SKYLINEtext='False'
 
 DBpath                  = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')
@@ -65,6 +69,10 @@ if (LT24text == 'True'):
         LT24 = True
 else:
         LT24 = False
+if (SKYLINEtext == 'True'):
+        SKYLINE = True
+else:
+        SKYLINE = False
 # --------------------------------------#
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
  

@@ -62,7 +62,8 @@ DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
 LT24     =config.LT24  
-
+SKYLINE  =config.SKYLINE
+SKYLINE=True
 if SPIDER:
 	from spifuncs import *
 	spiusername =config.SPIuser  
@@ -81,13 +82,16 @@ if LT24:
 	LT24path=DBpath+"LT24/" 
 	LT24login=False
 	LT24firsttime=True
+
+if SKYLINE:
+	from skylfuncs import *
 # --------------------------------------#
 
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
 date=datetime.utcnow()         		# get the date
 
-print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
+print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24, "SKYLINE", SKYLINE
 print "Date: ", date, "UTC on:", socket.gethostname()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
@@ -101,10 +105,12 @@ ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 count=1					# loop counter
 td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
+skylts=ts
 if LT24:
 	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
 	lt24ts=ts
 	LT24firsttime=True
+
 print count, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 while True:				# until 22:00 h
 	now=datetime.utcnow()	# get the UTC time
@@ -128,6 +134,11 @@ while True:				# until 22:00 h
 		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 		lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
+	if SKYLINE:			# if we have the SPOT according with the configuration
+		ts   =skylfindpos(skylts, conn)
+	else:
+		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+		skylts=int(td.total_seconds())	# Unix time - seconds from the epoch
 	time.sleep(300)  		# sleep for 5 minutes
 	count += 1
 	print count, "---> TTime:", ttime, "SPOT Unix time:", ts, "Z: LT24 Unix time", lt24ts, datetime.utcnow().isoformat()

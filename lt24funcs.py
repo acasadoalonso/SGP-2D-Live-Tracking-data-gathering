@@ -159,7 +159,13 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	jsondata=lt24req(req)		# get the JSON data from the lt24 server
 	pos=json.loads(jsondata)	# convert JSON to dictionary
 	#print json.dumps(pos, indent=4) # convert JSON to dictionary
-	result=pos["result"]		# get the result part
+	if 'result' in pos:
+		result=pos["result"]	# get the result part
+	else:
+		now=datetime.utcnow()
+		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
+		return (int(td.total_seconds() ))
+
 	k= result.keys()		# get the key or track id
 	jsondata = result[str(k[0])] 	# only the first track
 	if once:			# only the very first time
@@ -252,8 +258,11 @@ def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a 
 				roc = int(VROs[i])
 			else:
 				roc = 0
-			extpos   =str(AGLs[i])	# we repoort the AGL omn the exppos of the DDBB
-			vitlat   =config.FLOGGER_LATITUDE
+			extpos   =str(AGLs[i])			# we repoort the AGL omn the exppos of the DDBB
+			if len(extpos) > 5:
+				extpos=extpos[0:5]		# limit the length to 5 chars
+
+			vitlat   =config.FLOGGER_LATITUDE	# get the coordenates of the base location (Vitacura, Lillo, ...)
         		vitlon   =config.FLOGGER_LONGITUDE
         		distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the central location
 			dte=datetime.utcfromtimestamp(TMs[i])	# get the data/time for the timestamp
