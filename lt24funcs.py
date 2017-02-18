@@ -98,13 +98,14 @@ def lt24getapidata(url, auth):                  # get the data from the API serv
 
 
 def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
+
 	for fix in datafix['lt24pos']:		# for each fix on the dict
 		id=fix['registration'][0:16]	# extract the information
 		if len(id) > 9:
                         id=id[0:9] 
 		dte=fix['date'] 
 		hora=fix['time'] 
-		station="LT24"
+		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
 		altim=fix['altitude'] 
@@ -173,7 +174,7 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	if once:			# only the very first time
 		ts=lt24addpos(jsondata, lt24pos, ttime, userList)	# find the gliders since TTIME
 	sync=lt24gettrackpoints(lt24pos, ttime, userList)		# get now all the fixes/tracks
-	lt24storeitindb(lt24pos, curs, conn)				# and store it on the DDBB
+	lt24storeitindb(lt24pos, curs, conn)		# and store it on the DDBB
 	
 	if sync == 0:			# just in case of not tracks at all, built the current time
 		now=datetime.utcnow()

@@ -37,7 +37,7 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 		id=fix['registration'][0:9]	# extract the information
 		dte=fix['date'] 
 		hora=fix['time'] 
-		station="SKYL"
+		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
 		altim=fix['altitude'] 

@@ -97,6 +97,7 @@ SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
 LT24     =config.LT24  
 
+
 if SPIDER:
 	from spifuncs import *
 	spiusername =config.SPIuser  
@@ -235,7 +236,7 @@ try:
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 			if LT24:				# if we have the LT24 according with the configuration
 		
-				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime)
+				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime) # find the position and add it to the DDBB
 				LT24firsttime=False		# only once the addpos
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day

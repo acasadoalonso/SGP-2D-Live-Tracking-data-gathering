@@ -24,7 +24,14 @@ APRS_FILTER_DETAILS     = APRS_FILTER_DETAILS + '\n '
 
 FLOGGER_LATITUDE        = cfg.get('location', 'location_latitude').strip("'").strip('"')
 FLOGGER_LONGITUDE       = cfg.get('location', 'location_longitud').strip("'").strip('"')
-SPOTtext                = cfg.get('location', 'SPOT').strip("'").strip('"')
+try:
+	location_name   = cfg.get('location', 'location_name').strip("'").strip('"')
+except:
+	location_name   = ' '
+try:
+	SPOTtext        = cfg.get('location', 'SPOT').strip("'").strip('"')
+except:
+	SPOTtext='False'
 try:
 	LT24text        = cfg.get('location', 'LT24').strip("'").strip('"')
 	LT24username    = cfg.get('location', 'LT24username').strip("'").strip('"')
@@ -49,6 +56,7 @@ DBuser                  = cfg.get('server', 'DBuser').strip("'").strip('"')
 DBpasswd                = cfg.get('server', 'DBpasswd').strip("'").strip('"')
 DBname                  = cfg.get('server', 'DBname').strip("'").strip('"')
 LogDatas                = cfg.get('server', 'LogData').strip("'").strip('"')
+# --------------------------------------#
 if (MySQLtext == 'True'):
         MySQL = True
 else:
@@ -79,6 +87,6 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 LogData=False                                                                               # report the configuration paramenters
 print "Config server values:",                  MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			FLOGGER_LATITUDE, FLOGGER_LONGITUDE, SPIDER, SPOT, LT24
+print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, SPIDER, SPOT, LT24, SKYLINE
 # --------------------------------------#
 

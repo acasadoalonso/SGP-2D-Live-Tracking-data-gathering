@@ -89,7 +89,7 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 			id=id[0:9] 
 		dte=fix['date'] 
 		hora=fix['time'] 
-		station="SPIDER"
+		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
 		altim=fix['altitude'] 

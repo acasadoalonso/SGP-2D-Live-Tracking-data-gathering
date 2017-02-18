@@ -77,7 +77,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 			id=id[0:9]
 		dte=fix['date'] 
 		hora=fix['time'] 
-		station="SPOT"
+		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
 		altim=fix['altitude'] 
