@@ -85,6 +85,8 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 def spistoreitindb(data, curs, conn):		# store the spider position into the database
 	for fix in data['spiderpos']:		# for each position that we have on the dict
 		id=fix['registration'] 		# extract the information to store on the DDBB
+		if len(id) > 9:
+			id=id[0:9] 
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="SPIDER"
@@ -102,9 +104,9 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 		extpos=fix['extpos']
 		if id == "HBEAT":		# if it is the heartbeat just ignore it
 			continue
-		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:
               		curs.execute(addcmd)	# store it on the DDBB
         	except MySQLdb.Error, e:

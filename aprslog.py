@@ -215,6 +215,10 @@ try:
                         keepalive_time = current_time
                         keepalive_count = keepalive_count + 1
 			now=datetime.utcnow()	# get the UTC time
+                except Exception, e:
+                        print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
+
+                try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 			if SPIDER:				# if we have SPIDER according with the config
 
 				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword)
@@ -237,12 +241,12 @@ try:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
-			spispotcount += 1
-			print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, datetime.utcnow().isoformat()
+			spispotcount += 1			# we report a counter of calls to the interfaces 
+			print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
 
                 except Exception, e:
-                        print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
+                        print ('something\'s wrong with interface functions Exception type is %s' % (`e`))
 
         if prt:
                 print "In main loop. Count= ", i
@@ -363,7 +367,7 @@ try:
                         dte=date.strftime("%y%m%d")             # today's date
                         addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                         str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-                                        ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+                                        ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'OGN' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
                         try:
                                 curs.execute(addcmd)
                         except MySQLdb.Error, e:

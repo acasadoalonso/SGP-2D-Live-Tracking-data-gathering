@@ -100,6 +100,8 @@ def lt24getapidata(url, auth):                  # get the data from the API serv
 def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 	for fix in datafix['lt24pos']:		# for each fix on the dict
 		id=fix['registration'][0:16]	# extract the information
+		if len(id) > 9:
+                        id=id[0:9] 
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="LT24"
@@ -115,9 +117,9 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
-		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'LT24' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:				# store it on the DDBB
 			#print addcmd
               		curs.execute(addcmd)
@@ -275,7 +277,8 @@ def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a 
 	
 				pos={"registration": username, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":userID, "dist":distance, "course": course, "speed": speed, "roc":roc, "GPS":gps , "extpos":extpos}
 			#print "POS:", pos
-        		lt24pos['lt24pos'].append(pos)          # and store it on the dict
+			if lat != 0.0 and lon != 0.0 :
+        			lt24pos['lt24pos'].append(pos)          # and store it on the dict
 			print "LT24POS2:", round(lat,4), round(lon,4), alt, userID,  round(distance,4), dte, date, time, username, trackid
 
 	return (int(sync))		# return the SYNC for next call

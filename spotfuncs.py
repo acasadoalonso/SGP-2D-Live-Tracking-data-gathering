@@ -73,6 +73,8 @@ def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary th
 def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 	for fix in datafix['spotpos']:		# for each fix on the dict
 		id=fix['registration'] 		# extract the information
+		if len(id) > 9:
+			id=id[0:9]
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="SPOT"
@@ -89,9 +91,9 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
-		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SPOT' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:				# store it on the DDBB
               		curs.execute(addcmd)
         	except MySQLdb.Error, e:

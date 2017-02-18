@@ -34,7 +34,7 @@ def skylgetapidata(url): 	                 # get the data from the API server
 
 def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 	for fix in datafix['skylpos']:		# for each fix on the dict
-		id=fix['registration'][0:16]	# extract the information
+		id=fix['registration'][0:9]	# extract the information
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station="SKYL"
@@ -50,9 +50,9 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
-		addcmd="insert into SPIDERSPOTDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SKYL' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:				# store it on the DDBB
 			#print addcmd
               		curs.execute(addcmd)
