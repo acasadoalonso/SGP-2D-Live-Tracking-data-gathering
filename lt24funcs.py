@@ -140,21 +140,24 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 
 def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
 
+	flarmids={}			# list of flarm ids
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	userList=''
 	lt24pos={"lt24pos":[]}	# init the dicta
-	cursG.execute("select id, Registration, active from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
+	cursG.execute("select id, Registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
         	deviceID=rowg[1]	# Glider registration EC-???
         	active=rowg[2]		# if active or not
+        	flarmid=rowg[3]		# flarmid
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the userlist to call to the LT24 server
 		userList += reg		# build the user list
 		userList += ","		# separated by comas
+		flarmids[reg]=flarmid   # add flarmid to the list
 
 	userList=userList.rstrip(',')	# clear the last comma
 					# request for the time being, just the last position of the glider
@@ -172,8 +175,8 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	k= result.keys()		# get the key or track id
 	jsondata = result[str(k[0])] 	# only the first track
 	if once:			# only the very first time
-		ts=lt24addpos(jsondata, lt24pos, ttime, userList)	# find the gliders since TTIME
-	sync=lt24gettrackpoints(lt24pos, ttime, userList)		# get now all the fixes/tracks
+		ts=lt24addpos(jsondata, lt24pos, ttime, userList, flarmid)	# find the gliders since TTIME
+	sync=lt24gettrackpoints(lt24pos, ttime, userList, flarmids)		# get now all the fixes/tracks
 	lt24storeitindb(lt24pos, curs, conn)		# and store it on the DDBB
 	
 	if sync == 0:			# just in case of not tracks at all, built the current time
@@ -183,7 +186,7 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	return (sync+1)			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
-def lt24addpos(msg, lt24pos, ttime, regis):	# extract the data of the last know position from the JSON object
+def lt24addpos(msg, lt24pos, ttime, regis, flarmid):	# extract the data of the last know position from the JSON object
 
 	unixtime=msg["lastPointTM"] 		# the time from the epoch
 	if (unixtime < ttime):
@@ -205,16 +208,16 @@ def lt24addpos(msg, lt24pos, ttime, regis):	# extract the data of the last know 
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-	pos={"registration": regis, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":wdir, "speed": wspd, "roc":roc, "GPS":gps , "extpos":extpos}
+	pos={"registration": flarmid, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":wdir, "speed": wspd, "roc":roc, "GPS":gps , "extpos":extpos}
 	lt24pos['lt24pos'].append(pos)		# and store it on the dict
-	print "LT24POS1:", round(lat,4), round(lon,4), alt, id, round(distance,4), unixtime, dte, date, time, regis
+	print "LT24POS1:", round(lat,4), round(lon,4), alt, id, round(distance,4), unixtime, dte, date, time, regis, flarmid
 	#print "POS:", pos			# print it as a control
 	return (unixtime)			# indicate that we added an entry to the dict
 
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a userlist
+def lt24gettrackpoints(lt24pos, since, userid, flarmids): # get all the fixes/tracks of a userlist
 
 						# request that to LT24
 	replytest = lt24req("/op/getTrackPoints/userList/"+userid+"/fromTM/"+str(since))
@@ -252,6 +255,7 @@ def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a 
 
 		#print ":::", username, "UserID", userID, "\nTM",TMs, "\nlat",Lats, "\nlon", Lons, "\nAlt", Alts, "\nSOG", SOGs, "\nCOG", COGs, "\nAgl", AGLs, "\nVRO", VROs
 		for i in range(len(Lats) -1):	# handle the unpacked data of each track
+			flarmid  =flarmids[username]
 			lon      =Lons[i]
 			lat      =Lats[i]
 			alt      =Alts[i]
@@ -276,11 +280,11 @@ def lt24gettrackpoints(lt24pos, since, userid):	# get all the fixes/tracks of a 
 				print "Nothing to do... SINCE=", since, "Time fix:", TMs[i], "SYNC", sync
 			else:
 	
-				pos={"registration": username, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":userID, "dist":distance, "course": course, "speed": speed, "roc":roc, "GPS":gps , "extpos":extpos}
+				pos={"registration": flarmid, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":userID, "dist":distance, "course": course, "speed": speed, "roc":roc, "GPS":gps , "extpos":extpos}
 			#print "POS:", pos
 			if lat != 0.0 and lon != 0.0 :
         			lt24pos['lt24pos'].append(pos)          # and store it on the dict
-			print "LT24POS2:", round(lat,4), round(lon,4), alt, userID,  round(distance,4), dte, date, time, username, trackid
+			print "LT24POS2:", round(lat,4), round(lon,4), alt, userID,  round(distance,4), dte, date, time, username, flarmid, trackid
 
 	return (int(sync))		# return the SYNC for next call
 

@@ -45,12 +45,12 @@ def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON obj
 	vitlat   =config.FLOGGER_LATITUDE
 	vitlon   =config.FLOGGER_LONGITUDE
 	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-	pos={"registration": reg, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "GPS":mid, "dist":distance, "extpos":extpos}
+	pos={"registration": flarmid, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "GPS":mid, "dist":distance, "extpos":extpos}
 	spotpos['spotpos'].append(pos)		# and store it on the dict
-	print "SPOTPOS :", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, extpos
+	print "SPOTPOS :", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, flarmid, extpos
 	return (True)				# indicate that we added an entry to the dict
 
-def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary the position of all spidertracks
+def spotgetaircraftpos(data, spotpos, ttime, regis, flarmid):	# return on a dictionary the position of all spidertracks
 	response    =data['response']		# get the response entry
 	if response.get('errors'):		# if error found
 		return(False)			# return indicating errors
@@ -62,12 +62,12 @@ def spotgetaircraftpos(data, spotpos, ttime, regis):	# return on a dictionary th
 	found=False
 	#print "M:", message
 	if msgcount == 1:			# if only one message, that is the message
-		print json.dumps(message, indent=4)        # convert JSON to dictionary
-		found=spotaddpos(message, spotpos, ttime, regis)
+		print json.dumps(feed, indent=4)        # convert JSON to dictionary
+		found=spotaddpos(message, spotpos, ttime, regis, flarmid)
 	else:
 		for msg in message:		# if not iterate the set of messages
 			#print json.dumps(msg, indent=4)        # convert JSON to dictionary
-			found=spotaddpos(msg, spotpos, ttime, regis)
+			found=spotaddpos(msg, spotpos, ttime, regis, flarmid)
 	return (found)				# return if we found a message or not
 
 def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
@@ -112,13 +112,14 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
-	cursG.execute("select id, spotid, spotpasswd, active from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
+	cursG.execute("select id, spotid, spotpasswd, active, flarmid from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
         for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
         	spotID=rowg[1]		# SPOTID
         	spotpasswd=rowg[2]	# SPOTID password
         	active=rowg[3]		# if active or not
+        	flarmid=rowg[4]		# Flamd id to be linked
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the URL to call to the SPOT server
@@ -130,7 +131,7 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 		jsondata=spotgetapidata(url)		# get the JSON data from the SPOT server
 		j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
 		#print j
-		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg)	# find the gliders since TTIME
+		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid)	# find the gliders since TTIME
 		spotstoreitindb(spotpos, curs, conn)			# and store it on the DDBB
 	
 	now=datetime.utcnow()

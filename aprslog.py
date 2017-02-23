@@ -65,7 +65,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 
-print "Start APRS, SPIDER , SPOT and LT24 logging  V1.4"
+print "Start APRS, SPIDER , SPOT and LT24 logging  V1.5"
 print "================================================"
 #
 # get the SPIDER TRACK  & SPOT information
