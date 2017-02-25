@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 import urllib2
 import json
 from ctypes import *
@@ -136,6 +136,37 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 	return(True)			# indicate that we have success
 
 
+
+#-------------------------------------------------------------------------------------------------------------------#
+
+def lt24getflarmid(conn, registration):
+
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	try:
+		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
+       	except MySQLdb.Error, e:
+           	try:
+                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+              	except IndexError:
+                   	print ">>>MySQL Error: %s" % str(e)
+                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
+                    	print ">>>MySQL data :",  registration
+		return("NOREG") 
+        rowg = cursG.fetchone() 	# look for that registration on the OGN database
+	if rowg == None:
+		return("NOREG") 
+       	idglider=rowg[0]		# flarmid to report
+       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
+	if flarmtype == 'F':
+		flarmid="FLR"+idglider 	# flarm 
+	elif flarmtype == 'I':
+		flarmid="ICA"+idglider 	# ICA
+	elif flarmtype == 'O':
+		flarmid="OGN"+idglider 	# ogn tracker
+	else: 
+		flarmid="RND"+idglider 	# undefined
+	return (flarmid)
+
 #-------------------------------------------------------------------------------------------------------------------#
 
 def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
@@ -145,16 +176,18 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	userList=''
 	lt24pos={"lt24pos":[]}	# init the dicta
-	cursG.execute("select id, Registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
+	cursG.execute("select id, registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
-        	deviceID=rowg[1]	# Glider registration EC-???
+        	registration=rowg[1]	# Glider registration EC-???
         	active=rowg[2]		# if active or not
         	flarmid=rowg[3]		# flarmid
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the userlist to call to the LT24 server
+		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
+			flarmid=lt24getflarmid(conn, registration) 	# get it from the registration
 		userList += reg		# build the user list
 		userList += ","		# separated by comas
 		flarmids[reg]=flarmid   # add flarmid to the list

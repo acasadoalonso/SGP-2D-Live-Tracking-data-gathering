@@ -2,10 +2,13 @@
 # Parser functions for the OGN APRS applications
 #
 
-#import datetime
 from libfap import *
 from ctypes import *
-from datetime import datetime
+import urllib2
+import json
+
+from datetime import datetime, timedelta
+
 #
 # low lever parser functions
 #
@@ -273,5 +276,29 @@ def parseraprs(packet_str, msg):
 #
 ########################################################################
 
+def SRSSgetapidata(url):                        # get the data from the API server
+
+        req = urllib2.Request(url)              # buil the request
+        req.add_header("Content-Type","application/json")
+        req.add_header("Content-type", "application/x-www-form-urlencoded")
+        r = urllib2.urlopen(req)                # open the url resource
+        j_obj = json.load(r)                    # convert to JSON
+        return j_obj                            # return the JSON object
+def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
+
+        ts=0                                    # init the return time since epoch
+        url="http://api.sunrise-sunset.org/json?lat="+lat+"&lng="+lon+"&formatted=0"
+        jsondata=SRSSgetapidata(url)            # get the data from the web
+        #print jsondata
+        if prt:                                 # if print requested
+                print json.dumps(jsondata, indent=4)
+        if jsondata['status'] == "OK":          # only if results are OK
+                results=jsondata["results"]     # get the reults part
+                timeref=results[object]         # get the object that we need
+                #print timeref
+                ttt=datetime.strptime(timeref,"%Y-%m-%dT%H:%M:%S+00:00") # convert to time format
+                td=ttt-datetime(1970,1,1)       # number of second until beginning of the day
+                ts=int(td.total_seconds())      # Unix time - seconds from the epoch
+        return (ts)                             # return it
 
 #import datetime

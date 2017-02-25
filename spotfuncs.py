@@ -25,7 +25,7 @@ def spotgetapidata(url):                      	# get the data from the API serve
         return j_obj                            # return the JSON object
 
 
-def spotaddpos(msg, spotpos, ttime, regis):	# extract the data from the JSON object
+def spotaddpos(msg, spotpos, ttime, regis, flarmid):	# extract the data from the JSON object
 
 	unixtime=msg["unixTime"] 		# the time from the epoch
 	if (unixtime < ttime):
@@ -66,7 +66,7 @@ def spotgetaircraftpos(data, spotpos, ttime, regis, flarmid):	# return on a dict
 		found=spotaddpos(message, spotpos, ttime, regis, flarmid)
 	else:
 		for msg in message:		# if not iterate the set of messages
-			#print json.dumps(msg, indent=4)        # convert JSON to dictionary
+			#print json.dumps(msg, indent=4, flarmid)        # convert JSON to dictionary
 			found=spotaddpos(msg, spotpos, ttime, regis, flarmid)
 	return (found)				# return if we found a message or not
 
