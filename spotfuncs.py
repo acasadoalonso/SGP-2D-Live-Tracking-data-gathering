@@ -13,6 +13,7 @@ import signal
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
+import kglid
 
 
 def spotgetapidata(url):                      	# get the data from the API server
@@ -112,7 +113,7 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
-	cursG.execute("select id, spotid, spotpasswd, active, flarmid from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
+	cursG.execute("select id, spotid, spotpasswd, active, flarmid, registration from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
         for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
@@ -120,8 +121,15 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
         	spotpasswd=rowg[2]	# SPOTID password
         	active=rowg[3]		# if active or not
         	flarmid=rowg[4]		# Flamd id to be linked
+        	registration=rowg[5]	# registration id to be linked
 		if active == 0:
 			continue	# if not active, just ignore it
+		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
+			flarmid=spotgetflarmid(conn, registration)	# get it from the registration
+		else:
+			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
+                		print "Warning: flarmid=", flarmid, "not on kglid table"
+
 					# build the URL to call to the SPOT server
 		if spotpasswd == '' or spotpasswd == None:
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
@@ -139,4 +147,36 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 	ts=int(td.total_seconds())	# as an integer
 	return (ts)			# return TTIME for next call
 
+#-------------------------------------------------------------------------------------------------------------------#
+
+def spotgetflarmid(conn, registration):
+
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	try:
+		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
+       	except MySQLdb.Error, e:
+           	try:
+                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+              	except IndexError:
+                   	print ">>>MySQL Error: %s" % str(e)
+                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
+                    	print ">>>MySQL data :",  registration
+		return("NOREG") 
+        rowg = cursG.fetchone() 	# look for that registration on the OGN database
+	if rowg == None:
+		return("NOREG") 
+       	idglider=rowg[0]		# flarmid to report
+       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
+	if idglider not in kglid.kglid:	# check that the registration is on the table - sanity check
+		print "Warning: flarmid=", idglider, "not on kglid table"
+	if flarmtype == 'F':
+		flarmid="FLR"+idglider 	# flarm 
+	elif flarmtype == 'I':
+		flarmid="ICA"+idglider 	# ICA
+	elif flarmtype == 'O':
+		flarmid="OGN"+idglider 	# ogn tracker
+	else: 
+		flarmid="RND"+idglider 	# undefined
+	#print "GGG:", registration, rowg, flarmid
+	return (flarmid)
 

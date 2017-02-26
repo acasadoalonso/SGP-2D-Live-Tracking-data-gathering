@@ -18,6 +18,7 @@ import hmac
 import urllib
 import random
 import config
+import kglid
 
 
 def lt24login(LT24path, username, password): 	# login into livetrack24.com 
@@ -157,6 +158,8 @@ def lt24getflarmid(conn, registration):
 		return("NOREG") 
        	idglider=rowg[0]		# flarmid to report
        	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
+	if idglider not in kglid.kglid:
+		print "Warning: flarmid=", idglider, "not of kglid table"
 	if flarmtype == 'F':
 		flarmid="FLR"+idglider 	# flarm 
 	elif flarmtype == 'I':
@@ -188,6 +191,10 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 					# build the userlist to call to the LT24 server
 		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
 			flarmid=lt24getflarmid(conn, registration) 	# get it from the registration
+                else:
+                        if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
+                                print "Warning: flarmid=", flarmid, "not on kglid table"
+
 		userList += reg		# build the user list
 		userList += ","		# separated by comas
 		flarmids[reg]=flarmid   # add flarmid to the list
