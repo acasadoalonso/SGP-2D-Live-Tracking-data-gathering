@@ -121,7 +121,7 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 	return(True)			# report success
 
 
-def spifindspiderpos(ttime, conn, username, password):	# find all the fixes since last time
+def spifindspiderpos(ttime, conn, username, password, prt=False):	# find all the fixes since last time
 
 	curs=conn.cursor()		# gen the cursor
 	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
@@ -129,6 +129,8 @@ def spifindspiderpos(ttime, conn, username, password):	# find all the fixes sinc
 	data=spigetdataXML(ttime)	# get the data for the POST request passing the TTIME
 	html=spigetapidata(url,data, username, password) # get the data on HTML format
 	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
+	if prt:
+		print spipos		# print the raw data
 	spistoreitindb(spipos, curs, conn)	# store the fixes on the DDBB
 	return (ttime)			# return the TTIME for the next request
 

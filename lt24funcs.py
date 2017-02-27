@@ -86,13 +86,15 @@ def lt24req(cmd):				# get the rsponse from the LT24 server
         LT24qwe=response[qwepos+6:qwepos+22]	# build the seed for next request
         return (response)
 #-------------------------------------------------------------------------------------------------------------------#
-def lt24getapidata(url, auth):                  # get the data from the API server
+def lt24getapidata(url, auth, prt=False):       # get the data from the API server
 	req = urllib2.Request(url)                      
 	req.add_header('Authorization', auth)   # build the authorization header
 	req.add_header("Accept","application/json")
 	req.add_header("Content-Type","application/hal+json")
 	r = urllib2.urlopen(req)                # open the url resource
 	j_obj = json.load(r)                    # convert to JSON
+	if prt:
+		print json.dumps(j_obj, indent=4) # convert JSON to dictionary
 	return j_obj                            # return the JSON object
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -172,7 +174,7 @@ def lt24getflarmid(conn, registration):
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
+def lt24findpos(ttime, conn, once, prt=False):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
 
 	flarmids={}			# list of flarm ids
 	curs=conn.cursor()              # set the cursor for storing the fixes
@@ -204,7 +206,8 @@ def lt24findpos(ttime, conn, once):	# find all the fixes since TTIME . Scan all 
 	req="op/2//detailLevel/-1/userList/"+userList	# the URL request to LT24
 	jsondata=lt24req(req)		# get the JSON data from the lt24 server
 	pos=json.loads(jsondata)	# convert JSON to dictionary
-	#print json.dumps(pos, indent=4) # convert JSON to dictionary
+	if prt:
+		print json.dumps(pos, indent=4) # convert JSON to dictionary
 	if 'result' in pos:
 		result=pos["result"]	# get the result part
 	else:

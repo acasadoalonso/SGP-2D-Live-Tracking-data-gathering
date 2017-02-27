@@ -16,13 +16,15 @@ import config
 import kglid
 
 
-def spotgetapidata(url):                      	# get the data from the API server
+def spotgetapidata(url, prt=False):                      	# get the data from the API server
 
         req = urllib2.Request(url)		# buil the request
 	req.add_header("Content-Type","application/json")
 	req.add_header("Content-type", "application/x-www-form-urlencoded")
         r = urllib2.urlopen(req)                # open the url resource
 	j_obj = json.load(r)                    # convert to JSON
+	if prt:
+		print json.dumps(j_obj, indent=4) 
         return j_obj                            # return the JSON object
 
 
@@ -51,7 +53,7 @@ def spotaddpos(msg, spotpos, ttime, regis, flarmid):	# extract the data from the
 	print "SPOTPOS :", lat, lon, alt, id, distance, unixtime, dte, date, time, reg, flarmid, extpos
 	return (True)				# indicate that we added an entry to the dict
 
-def spotgetaircraftpos(data, spotpos, ttime, regis, flarmid):	# return on a dictionary the position of all spidertracks
+def spotgetaircraftpos(data, spotpos, ttime, regis, flarmid, prt=False):	# return on a dictionary the position of all spidertracks
 	response    =data['response']		# get the response entry
 	if response.get('errors'):		# if error found
 		return(False)			# return indicating errors
@@ -63,11 +65,13 @@ def spotgetaircraftpos(data, spotpos, ttime, regis, flarmid):	# return on a dict
 	found=False
 	#print "M:", message
 	if msgcount == 1:			# if only one message, that is the message
-		print json.dumps(feed, indent=4)        # convert JSON to dictionary
+		if prt:
+			print json.dumps(feed, indent=4)        # convert JSON to dictionary
 		found=spotaddpos(message, spotpos, ttime, regis, flarmid)
 	else:
 		for msg in message:		# if not iterate the set of messages
-			#print json.dumps(msg, indent=4, flarmid)        # convert JSON to dictionary
+			if prt:
+				print json.dumps(msg, indent=4)        # convert JSON to dictionary
 			found=spotaddpos(msg, spotpos, ttime, regis, flarmid)
 	return (found)				# return if we found a message or not
 
@@ -109,12 +113,12 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 	return(True)			# indicate that we have success
 
 
-def spotfindpos(ttime, conn):		# find all the fixes since TTIME
+def spotfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	cursG.execute("select id, spotid, spotpasswd, active, flarmid, registration from TRKDEVICES where devicetype = 'SPOT'; " ) 	# get all the devices with SPOT
-        for rowg in cursG.fetchall(): 					# look for that registration on the OGN database
+        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
                                 
         	reg=rowg[0]		# registration to report
         	spotID=rowg[1]		# SPOTID
@@ -135,11 +139,12 @@ def spotfindpos(ttime, conn):		# find all the fixes since TTIME
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
 		else:
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+str(spotpasswd)
-		spotpos={"spotpos":[]}			# init the dict
-		jsondata=spotgetapidata(url)		# get the JSON data from the SPOT server
-		j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
-		#print j
-		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid)	# find the gliders since TTIME
+		spotpos={"spotpos":[]}				# init the dict
+		jsondata=spotgetapidata(url)			# get the JSON data from the SPOT server
+		if prt:						# if we require printing the raw data
+			j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
+			print j
+		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid, prt=False)	# find the gliders since TTIME
 		spotstoreitindb(spotpos, curs, conn)			# and store it on the DDBB
 	
 	now=datetime.utcnow()

@@ -115,27 +115,30 @@ print count, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().i
 while True:				# until 22:00 h
 	now=datetime.utcnow()	# get the UTC time
 	if SPIDER:			# if we have SPIDER according with the config
-
-		ttime=spifindspiderpos(ttime, conn, spiusername, spipassword)
+		print ">>>>>>>>>>>>>>>>>>>> SPIDER <<<<<<<<<<<<<<<<<"
+		ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, prt=True)
 	else: 
 		ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
 	if SPOT:			# if we have the SPOT according with the configuration
-		ts   =spotfindpos(ts, conn)
+		print ">>>>>>>>>>>>>>>>>>>> SPOT <<<<<<<<<<<<<<<<<"
+		ts   =spotfindpos(ts, conn, prt=True)
 	else:
 		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 		ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 	if LT24:			# if we have the LT24 according with the configuration
 		
-		lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime)
+		print ">>>>>>>>>>>>>>>>>>>> LT24 <<<<<<<<<<<<<<<<<"
+		lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime, prt=True)
 		LT24firsttime=False	# only once the addpos
 	else:
 		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 		lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 	if SKYLINE:			# if we have the SPOT according with the configuration
-		ts   =skylfindpos(skylts, conn)
+		print ">>>>>>>>>>>>>>>>>>>> SKYLINES <<<<<<<<<<<<<<<<<"
+		ts   =skylfindpos(skylts, conn, prt=True)
 	else:
 		td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 		skylts=int(td.total_seconds())	# Unix time - seconds from the epoch

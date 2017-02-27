@@ -70,14 +70,15 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def skylfindpos(ttime, conn):		# find all the fixes since TTIME . Scan all the SKYL devices for new data
+def skylfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME . Scan all the SKYL devices for new data
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	url="https://skylines.aero/api/live" 
 	skylpos={"skylpos":[]}		# init the dicta
 	pos=skylgetapidata(url)	# get the JSON data from the Skylines server
-	#print json.dumps(pos, indent=4) # convert JSON to dictionary
+	if prt:
+		print json.dumps(pos, indent=4) # convert JSON to dictionary
 	tracks=pos['tracks']
 	cursG.execute("select id, Registration, active from TRKDEVICES where devicetype = 'SKYL' ; " ) 	# get all the devices with SKYL
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
