@@ -17,6 +17,7 @@ import os
 import signal
 from   parserfuncs import *                 # the ogn/ham parser functions
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
+from   time import sleep                    # use the sleep function
 #from   geopy.geocoders import GeoNames      # use the Nominatim as the geolocator^M
 import MySQLdb                              # the SQL data base routines^M
 
@@ -38,17 +39,6 @@ def shutdown(sock, datafile):               # shutdown routine, close files and 
 
 #########################################################################
 
-#########################################################################
-def alive(first='no'):
-
-        if (first == 'yes'):
-                alivefile = open (config.DBpath+"APRS.alive", 'w') # create a file just to mark that we are alive
-        else:
-                alivefile = open (config.DBpath+"APRS.alive", 'a') # append a file just to mark that we are alive
-        local_time = datetime.now()
-        alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
-        alivefile.write(alivetime+"\n") # write the time as control
-        alivefile.close()               # close the alive file
 #########################################################################
 #########################################################################
 
@@ -72,11 +62,11 @@ print "================================================"
 #
 # --------------------------------------#
 import config
-
+APP="APRSLOG"				# the application name
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
-err   = 0
+err   = 0				# number of read errors
 
 fsllo={'NONE  ' : 0.0}                  # station location longitude
 fslla={'NONE  ' : 0.0}                  # station location latitude
@@ -96,6 +86,7 @@ DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
 LT24     =config.LT24  
+# --------------------------------------#
 
 
 if SPIDER:
@@ -122,11 +113,11 @@ if LT24:
 # --------------------------------------#
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
-date=datetime.utcnow()         # get the date
+date=datetime.utcnow()         		# get the date
 dte=date.strftime("%y%m%d")             # today's date
 
-#----------------------ogn_SilentWingsInterface.py start-----------------------
-print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
+#----------------------ogn_aprslog.py start-----------------------
+#print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
 
 print "Date: ", date, "UTC on:", socket.gethostname()
 date = datetime.now()
@@ -172,7 +163,7 @@ print "APRS data file is: ", OGN_DATA
 datafile = open (OGN_DATA, 'a')
 keepalive_count = 1
 keepalive_time = time.time()
-alive("yes")
+alive(config.APP, first='yes')
 #
 #-----------------------------------------------------------------
 # Initialise API for SPIDER & SPOT & LT24
@@ -209,7 +200,7 @@ try:
                         # Make sure keepalive gets sent. If not flushed then buffered
                         sock_file.flush()
                         datafile.flush()
-                        alive()                          # indicate that we are alive
+                        alive(config.APP )               # indicate that we are alive
                         run_time = time.time() - start_time
                         if prt:
                                 print "Send keepalive no: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
@@ -222,7 +213,7 @@ try:
                 try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 			if SPIDER:				# if we have SPIDER according with the config
 
-				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword)
+				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, prt)
 
 			else: 
 				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
@@ -266,12 +257,13 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
                 err +=1
-                if err > 9:
+                if err > 25:
                         print "Read returns zero length string. Failure.  Orderly closeout"
                         date = datetime.now()
                         print "UTC now is: ", date
                         break
                 else:
+			sleep(5) 		# wait 5 seconds
                         continue
 
         ix=packet_str.find('>')
@@ -292,7 +284,7 @@ try:
                 data=packet_str
                 if prt:
                         print 'Packet returned is: ', packet_str
-                        print 'Callsign is: ', callsign, 'DST CallSign:', dst_callsign, 'Dest: ', destination, 'header: ', header, "OTime:", otime
+                        print 'Callsign is: ', id, path, otime, type
                 cin += 1                                # one more file to create
                 if path == 'TCPIP*':                    # handle the TCPIP
                         status=msg['status']
@@ -387,6 +379,6 @@ except KeyboardInterrupt:
     pass
 
 shutdown(sock, datafile)
-print "Exit now ..."
+print "Exit now ...", err
 exit(1)
 

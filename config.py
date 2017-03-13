@@ -43,7 +43,7 @@ try:
 	SPIuser         = cfg.get('location', 'SPIuser').strip("'").strip('"')
 	SPIpassword     = cfg.get('location', 'SPIpassword').strip("'").strip('"')
 except:
-	SPItext='False'
+	SPIDERtext='False'
 try:
 	SKYLINEtext     = cfg.get('location', 'SKYLINE').strip("'").strip('"')
 except:
@@ -84,9 +84,10 @@ else:
 # --------------------------------------#
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
  
-LogData=False                                                                               # report the configuration paramenters
-print "Config server values:",                  MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
+LogData=False                                   # report the configuration paramenters
+APP="APRSLOG"					# the application name
+print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, SPIDER, SPOT, LT24, SKYLINE
+print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "LT24=", LT24, "SKYLINE=", SKYLINE
 # --------------------------------------#
-
+APP='APRS'

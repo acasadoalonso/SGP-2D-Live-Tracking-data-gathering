@@ -301,4 +301,18 @@ def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
                 ts=int(td.total_seconds())      # Unix time - seconds from the epoch
         return (ts)                             # return it
 
+#########################################################################
+def alive(app, first='no'):
+
+        alivename=app+".alive"
+        if (first == 'yes'):
+                alivefile = open (alivename, 'w') # create a file just to mark that we are alive
+        else:
+                alivefile = open (alivename, 'a') # append a file just to mark that we are alive
+        local_time = datetime.now()
+        alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
+        alivefile.write(alivetime+"\n") # write the time as control
+        alivefile.close()               # close the alive file
+	return()
+#########################################################################
 #import datetime

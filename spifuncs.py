@@ -10,6 +10,7 @@ import string
 import sys
 import os
 import signal
+import kglid
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
@@ -57,8 +58,8 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			pos["extpos"]      = fix	# store 3D/2D on the extended position
 			pos["date"]        = dte
 			pos["time"]        = tme
-			reg="CC-UFO"		# by defualt
-			for chh in ch:		# third level down
+			reg="CC-UFO"			# by defualt
+			for chh in ch:			# third level down
 				#print "TTTT:", chh.tag, "AAAA:", chh.attrib, "X:",chh.text
 				name=chh.tag
 				p=name.find('}')
@@ -82,11 +83,16 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			spipos['spiderpos'].append(pos) 			# append the position infomatio to the dict
 	return (ttime)								# return the ttime as a reference for next request
 
-def spistoreitindb(data, curs, conn):		# store the spider position into the database
+def spistoreitindb(data, curs, conn, prt=False):# store the spider position into the database
+	
+	spidtable=[]
+	spibuildtable(conn, spidtable, prt)	# build the table of registration and flarmid
 	for fix in data['spiderpos']:		# for each position that we have on the dict
 		id=fix['registration'] 		# extract the information to store on the DDBB
 		if len(id) > 9:
 			id=id[0:9] 
+		if id == "HBEAT":		# if it is the heartbeat just ignore it
+			continue
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station=config.location_name
@@ -102,9 +108,11 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
 		uniqueid=fix["UnitID"]
 		dist=fix['dist']
 		extpos=fix['extpos']
-		if id == "HBEAT":		# if it is the heartbeat just ignore it
-			continue
-		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		if id in spidtable:
+			reg=spidtable[id]
+		else:
+			reg="CC-"+id
+		addcmd="insert into OGNDATA values ('" +reg+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
         	try:
@@ -120,6 +128,58 @@ def spistoreitindb(data, curs, conn):		# store the spider position into the data
         conn.commit()                   # commit the DB updates
 	return(True)			# report success
 
+def spibuildtable(conn, spidtable, prt=False):	# function to build the spider table of relation between flramid and registrations
+
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	cursG.execute("select id, flarmid, registration from TRKDEVICES where devicetype = 'SPID' and active = 1; " ) 	# get all the devices with SPIDER
+        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
+                                
+        	id=rowg[0]		# registration to report
+        	flarmid=rowg[1]		# Flamd id to be linked
+        	registration=rowg[2]	# registration id to be linked
+		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
+			flarmid=spigetflarmid(conn, registration, prt)	# get it from the registration
+		else:
+			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
+                		print "Warning: flarmid=", flarmid, "not on kglid table"
+
+		tab={id:flarmid}
+		spidtable.append(tab)
+	if prt:
+		print "SPIDtable:", spidtable
+	return()
+
+def spigetflarmid(conn, registration, prt=False):
+
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	try:
+		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
+       	except MySQLdb.Error, e:
+           	try:
+                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+              	except IndexError:
+                   	print ">>>MySQL Error: %s" % str(e)
+                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
+                    	print ">>>MySQL data :",  registration
+		return("NOREG") 
+        rowg = cursG.fetchone() 	# look for that registration on the OGN database
+	if rowg == None:
+		return("NOREG") 
+       	idglider=rowg[0]		# flarmid to report
+       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
+	if idglider not in kglid.kglid:	# check that the registration is on the table - sanity check
+		print "Warning: flarmid=", idglider, "not on kglid table"
+	if flarmtype == 'F':
+		flarmid="FLR"+idglider 	# flarm 
+	elif flarmtype == 'I':
+		flarmid="ICA"+idglider 	# ICA
+	elif flarmtype == 'O':
+		flarmid="OGN"+idglider 	# ogn tracker
+	else: 
+		flarmid="RND"+idglider 	# undefined
+	if prt:
+		print "GGG:", registration, rowg, flarmid
+	return (flarmid)
 
 def spifindspiderpos(ttime, conn, username, password, prt=False):	# find all the fixes since last time
 
@@ -131,7 +191,6 @@ def spifindspiderpos(ttime, conn, username, password, prt=False):	# find all the
 	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
 	if prt:
 		print spipos		# print the raw data
-	spistoreitindb(spipos, curs, conn)	# store the fixes on the DDBB
+	spistoreitindb(spipos, curs, conn, prt)	# store the fixes on the DDBB
 	return (ttime)			# return the TTIME for the next request
-
 
