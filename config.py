@@ -49,6 +49,12 @@ try:
 except:
 	SKYLINEtext='False'
 
+try:
+	OGNTtext     = cfg.get('location', 'OGNT').strip("'").strip('"')
+except:
+	OGNTtext='False'
+
+
 DBpath                  = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')
 DBhost                  = cfg.get('server', 'DBhost').strip("'").strip('"')
@@ -81,6 +87,11 @@ if (SKYLINEtext == 'True'):
         SKYLINE = True
 else:
         SKYLINE = False
+if (OGNTtext == 'True'):
+        OGNT = True
+else:
+        OGNT = False
+
 # --------------------------------------#
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
  
@@ -88,6 +99,6 @@ LogData=False                                   # report the configuration param
 APP="APRSLOG"					# the application name
 print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "LT24=", LT24, "SKYLINE=", SKYLINE
+print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
 # --------------------------------------#
 APP='APRS'

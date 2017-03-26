@@ -15,6 +15,7 @@ import pytz
 import sys
 import os
 import signal
+import kglid
 from   parserfuncs import *                 # the ogn/ham parser functions
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 from   time import sleep                    # use the sleep function
@@ -86,6 +87,7 @@ DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
 LT24     =config.LT24  
+OGNT     =config.OGNT  
 # --------------------------------------#
 
 
@@ -107,6 +109,9 @@ if LT24:
 	LT24path=DBpath+"LT24/" 
 	LT24login=False
 	LT24firsttime=True
+if OGNT:
+	from ogntfuncs import *
+
 # --------------------------------------#
 
 
@@ -182,7 +187,12 @@ if LT24:
 	lt24ts=ts
 	LT24firsttime=True
 
-print spispotcount, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
+if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
+        ognttable=[]            	# init the instance of the table
+        ogntbuildtable(conn, ognttable, prt) # build the table from the TRKDEVICES DB table
+
+if SPIDER or SPOT or LT24:
+	print spispotcount, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 
 date = datetime.now()
 
@@ -234,7 +244,9 @@ try:
 				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 			spispotcount += 1			# we report a counter of calls to the interfaces 
-			print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+			if SPIDER or SPOT or LT24:
+
+				print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
 
                 except Exception, e:
@@ -356,10 +368,14 @@ try:
                         # write the DB record
 
                 if (DATA):
-                        date=datetime.utcnow()         # get the date
-                        dte=date.strftime("%y%m%d")             # today's date
+			if OGNT and id[0:3] == 'OGN':			# if we have OGN tracker aggregation and is an OGN tracker
+				if id in ognttable:			# if the device is on the list
+					id=ognttable[id]		# substitude the OGN tracker ID for the related FLARMID
+
+                        date=datetime.utcnow()         			# get the date from the system as the APRS packet does not contain the date
+                        dte=date.strftime("%y%m%d")             	# today's date
                         addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
-                        str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
+                        		str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                                         ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'OGN' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
                         try:
                                 curs.execute(addcmd)
