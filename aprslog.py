@@ -188,7 +188,7 @@ if LT24:
 	LT24firsttime=True
 
 if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
-        ognttable=[]            	# init the instance of the table
+        ognttable={}            	# init the instance of the table
         ogntbuildtable(conn, ognttable, prt) # build the table from the TRKDEVICES DB table
 
 if SPIDER or SPOT or LT24:
@@ -369,6 +369,7 @@ try:
 
                 if (DATA):
 			if OGNT and id[0:3] == 'OGN':			# if we have OGN tracker aggregation and is an OGN tracker
+
 				if id in ognttable:			# if the device is on the list
 					id=ognttable[id]		# substitude the OGN tracker ID for the related FLARMID
 

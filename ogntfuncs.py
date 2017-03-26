@@ -20,7 +20,7 @@ def ogntbuildtable(conn, ognttable, prt=False):	# function to build the OGN trac
                 		print "Warning: flarmid=", flarmid, "not on kglid table"
 
 		tab={ogntid:flarmid}
-		ognttable.append(tab)
+		ognttable[ogntid]=flarmid
 	print "OGNTtable:", ognttable
 	return(ognttable)
 
