@@ -19,7 +19,6 @@ def ogntbuildtable(conn, ognttable, prt=False):	# function to build the OGN trac
 			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
                 		print "Warning: flarmid=", flarmid, "not on kglid table"
 
-		tab={ogntid:flarmid}
 		ognttable[ogntid]=flarmid
 	print "OGNTtable:", ognttable
 	return(ognttable)

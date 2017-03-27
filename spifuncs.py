@@ -85,7 +85,7 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 
 def spistoreitindb(data, curs, conn, prt=False):# store the spider position into the database
 	
-	spidtable=[]
+	spidtable={}
 	spibuildtable(conn, spidtable, prt)	# build the table of registration and flarmid
 	for fix in data['spiderpos']:		# for each position that we have on the dict
 		id=fix['registration'] 		# extract the information to store on the DDBB
@@ -108,10 +108,10 @@ def spistoreitindb(data, curs, conn, prt=False):# store the spider position into
 		uniqueid=fix["UnitID"]
 		dist=fix['dist']
 		extpos=fix['extpos']
-		if id in spidtable:
+		if id in spidtable:		# if ID is on the table substitude the spiderid by the flramid 
 			reg=spidtable[id]
 		else:
-			reg="CC-"+id
+			reg="XX-"+id		# if not ... just add the registration prefix
 		addcmd="insert into OGNDATA values ('" +reg+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
@@ -143,11 +143,10 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
 			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
                 		print "Warning: flarmid=", flarmid, "not on kglid table"
 
-		tab={id:flarmid}
-		spidtable.append(tab)
+		spidtable[id]=flarmid	# substitute the id by the Flarmid
 	if prt:
 		print "SPIDtable:", spidtable
-	return()
+	return(spidtable)
 
 def spigetflarmid(conn, registration, prt=False):
 
