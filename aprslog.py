@@ -56,7 +56,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 
-print "Start APRS, SPIDER , SPOT and LT24 logging  V1.5"
+print "Start APRS, SPIDER , SPOT and LT24 logging  V1.6"
 print "================================================"
 #
 # get the SPIDER TRACK  & SPOT information
@@ -244,6 +244,9 @@ try:
 				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 			spispotcount += 1			# we report a counter of calls to the interfaces 
+
+			if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
+        			ogntbuildtable(conn, ognttable, prt) # rebuild the table from the TRKDEVICES DB table
 			if SPIDER or SPOT or LT24:
 
 				print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
