@@ -21,7 +21,7 @@ from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 from   time import sleep                    # use the sleep function
 #from   geopy.geocoders import GeoNames      # use the Nominatim as the geolocator^M
 import MySQLdb                              # the SQL data base routines^M
-
+from flarmfuncs import *		    # import the functions delaing with the Flarm ID
 #########################################################################
 def shutdown(sock, datafile):               # shutdown routine, close files and report on activity
                                                                                 # shutdown before exit
@@ -86,6 +86,7 @@ DBpasswd =config.DBpasswd
 DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT  
+SKYLINE  =config.SKYLINE  
 LT24     =config.LT24  
 OGNT     =config.OGNT  
 # --------------------------------------#
@@ -98,6 +99,9 @@ if SPIDER:
 
 if SPOT:
 	from spotfuncs import *
+
+if SKYLINE:
+	from skylfuncs import *
 
 if LT24:
 	from lt24funcs import *
@@ -235,6 +239,13 @@ try:
 
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if SKYLINE:				# if we have the SPOT according with the configuration
+
+				ts   =skylfindpos(ts, conn)
+			else:
+
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 			if LT24:				# if we have the LT24 according with the configuration
 		
 				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime) # find the position and add it to the DDBB
@@ -254,6 +265,7 @@ try:
 
                 except Exception, e:
                         print ('something\'s wrong with interface functions Exception type is %s' % (`e`))
+			print SKYLINE, ts
 
         if prt:
                 print "In main loop. Count= ", i

@@ -102,3 +102,4 @@ print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PO
 print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
 # --------------------------------------#
 APP='APRS'
+RegWarning=True

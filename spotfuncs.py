@@ -14,6 +14,7 @@ from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
 import kglid
+from flarmfuncs import *
 
 
 def spotgetapidata(url, prt=False):                      	# get the data from the API server
@@ -98,7 +99,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 		extpos=fix['extpos']
 		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SPOT' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SPOT' ) "
         	try:				# store it on the DDBB
               		curs.execute(addcmd)
         	except MySQLdb.Error, e:
@@ -129,10 +130,9 @@ def spotfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME
 		if active == 0:
 			continue	# if not active, just ignore it
 		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
-			flarmid=spotgetflarmid(conn, registration)	# get it from the registration
+			flarmid=getflarmid(conn, registration)	# get it from the registration
 		else:
-			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
-                		print "Warning: flarmid=", flarmid, "not on kglid table"
+			chkflarmid(flarmid)
 
 					# build the URL to call to the SPOT server
 		if spotpasswd == '' or spotpasswd == None:
@@ -154,34 +154,4 @@ def spotfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def spotgetflarmid(conn, registration):
-
-	cursG=conn.cursor()             # set the cursor for searching the devices
-	try:
-		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
-       	except MySQLdb.Error, e:
-           	try:
-                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-              	except IndexError:
-                   	print ">>>MySQL Error: %s" % str(e)
-                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
-                    	print ">>>MySQL data :",  registration
-		return("NOREG") 
-        rowg = cursG.fetchone() 	# look for that registration on the OGN database
-	if rowg == None:
-		return("NOREG") 
-       	idglider=rowg[0]		# flarmid to report
-       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
-	if idglider not in kglid.kglid:	# check that the registration is on the table - sanity check
-		print "Warning: flarmid=", idglider, "not on kglid table"
-	if flarmtype == 'F':
-		flarmid="FLR"+idglider 	# flarm 
-	elif flarmtype == 'I':
-		flarmid="ICA"+idglider 	# ICA
-	elif flarmtype == 'O':
-		flarmid="OGN"+idglider 	# ogn tracker
-	else: 
-		flarmid="RND"+idglider 	# undefined
-	#print "GGG:", registration, rowg, flarmid
-	return (flarmid)
 

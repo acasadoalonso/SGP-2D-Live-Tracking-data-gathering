@@ -18,6 +18,8 @@ import hmac
 import urllib
 import random
 import config
+import kglid
+from flarmfuncs import *
 
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -34,7 +36,7 @@ def skylgetapidata(url): 	                 # get the data from the API server
 
 def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 	for fix in datafix['skylpos']:		# for each fix on the dict
-		id=fix['registration'][0:9]	# extract the information
+		id=fix['pilotname']		# extract the information
 		dte=fix['date'] 
 		hora=fix['time'] 
 		station=config.location_name
@@ -50,9 +52,11 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 		uniqueid=str(fix["UnitID"])
 		dist=fix['dist']
 		extpos=fix['extpos']
-		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		gliderreg=fix['gliderreg']
+		flarmid=getflarmid(conn, gliderreg)
+		addcmd="insert into OGNDATA values ('" +flarmid+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SKYL' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SKYL' ) "
         	try:				# store it on the DDBB
 			#print addcmd
               		curs.execute(addcmd)
@@ -83,13 +87,13 @@ def skylfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME . Scan
 	cursG.execute("select id, Registration, active from TRKDEVICES where devicetype = 'SKYL' ; " ) 	# get all the devices with SKYL
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
                                 
-        	reg=rowg[0]		# registration to report
-        	deviceID=rowg[1]	# Glider registration EC-???
+        	pilotname=rowg[0]	# pilotname to report
+        	gliderreg=rowg[1]	# Glider registration EC-???
         	active=rowg[2]		# if active or not
 		if active == 0:
 			continue	# if not active, just ignore it
 					# build the userlist to call to the SKYL server
-		skyladdpos(tracks, skylpos, ttime, reg)	# find the gliders since TTIME
+		skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)	# find the gliders since TTIME
 
 	skylstoreitindb(skylpos, curs, conn)			# and store it on the DDBB
 	now=datetime.utcnow()
@@ -98,20 +102,19 @@ def skylfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME . Scan
 	return (sync+1)			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
-def skyladdpos(tracks, skylpos, ttime, regis):	# extract the data of the last know position from the JSON object
+def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data of the last know position from the JSON object
 
 	for msg in tracks:
 		pilot=msg['pilot']		# get the pilot infor id/name
 		name=pilot['name']		# pilot name
 		id=pilot['id']			# pilot ID
-		if regis != name:		# if is not this pilot nothing to do
+		if pilotname.strip(' ') != name.strip(' '):		# if is not this pilot nothing to do
 			continue
 		dte=msg['time']			# get the time on ISO format
-		ttt=datetime.strptime(dte,"%Y-%m-%dT%H:%M:%S+00:00") # parser the time
+		dte=dte[0:19]			# get the important part			
+		ttt=datetime.strptime(dte,"%Y-%m-%dT%H:%M:%S") # parser the time
 		td=ttt-datetime(1970,1,1)      	# number of second until beginning of the day
 		ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-		if ts < ttime:			# check if the data is from before
-			continue		# in that case nothing to do
 		location=msg['location']
 		lon=location[0] 
 		lat=location[1] 		# extract the longitude and latitude
@@ -127,13 +130,19 @@ def skyladdpos(tracks, skylpos, ttime, regis):	# extract the data of the last kn
 		vitlat   =config.FLOGGER_LATITUDE
 		vitlon   =config.FLOGGER_LONGITUDE
 		distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
-		pos={"registration": regis, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":dir, "speed": spd, "roc":roc, "GPS":gps , "extpos":extpos}
-		skylpos['skylpos'].append(pos)		# and store it on the dict
-		print "SKYLPOS :", round(lat,4), round(lon,4), alt, id, round(distance,4), ts, dte, date, time, regis
-		#print "POS:", pos			# print it as a control
+		pos={"pilotname": pilotname, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":dir, "speed": spd, "roc":roc, "GPS":gps , "extpos":extpos, "gliderreg":gliderreg}
+		print "SSS:", ts, ttime, pos
+		#if ts < ttime+30:		# check if the data is from before
+			#continue		# in that case nothing to do
+		skylpos['skylpos'].append(pos)	# and store it on the dict
+		print "SKYLPOS :", round(lat,4), round(lon,4), alt, id, round(distance,4), ts, dte, date, time, pilotname
 
 
 	return 					# indicate that we added an entry to the dict
 
 
 #-------------------------------------------------------------------------------------------------------------------#
+
+#-------------------------------------------------------------------------------------------------------------------#
+
+

@@ -10,10 +10,11 @@ import string
 import sys
 import os
 import signal
-import kglid
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
+import kglid
+from flarmfuncs import *
 
 
 # simple wrapper function to encode the username & pass
@@ -114,7 +115,7 @@ def spistoreitindb(data, curs, conn, prt=False):# store the spider position into
 			reg="XX-"+id		# if not ... just add the registration prefix
 		addcmd="insert into OGNDATA values ('" +reg+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') "
         	try:
               		curs.execute(addcmd)	# store it on the DDBB
         	except MySQLdb.Error, e:
@@ -138,47 +139,15 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
         	flarmid=rowg[1]		# Flamd id to be linked
         	registration=rowg[2]	# registration id to be linked
 		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
-			flarmid=spigetflarmid(conn, registration, prt)	# get it from the registration
+			flarmid=getflarmid(conn, registration, prt)	# get it from the registration
 		else:
-			if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
-                		print "Warning: flarmid=", flarmid, "not on kglid table"
+			chkflarmid(flarmid)
 
 		spidtable[id]=flarmid	# substitute the id by the Flarmid
 	if prt:
 		print "SPIDtable:", spidtable
 	return(spidtable)
 
-def spigetflarmid(conn, registration, prt=False):
-
-	cursG=conn.cursor()             # set the cursor for searching the devices
-	try:
-		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
-       	except MySQLdb.Error, e:
-           	try:
-                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-              	except IndexError:
-                   	print ">>>MySQL Error: %s" % str(e)
-                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
-                    	print ">>>MySQL data :",  registration
-		return("NOREG") 
-        rowg = cursG.fetchone() 	# look for that registration on the OGN database
-	if rowg == None:
-		return("NOREG") 
-       	idglider=rowg[0]		# flarmid to report
-       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
-	if idglider not in kglid.kglid:	# check that the registration is on the table - sanity check
-		print "Warning: flarmid=", idglider, "not on kglid table"
-	if flarmtype == 'F':
-		flarmid="FLR"+idglider 	# flarm 
-	elif flarmtype == 'I':
-		flarmid="ICA"+idglider 	# ICA
-	elif flarmtype == 'O':
-		flarmid="OGN"+idglider 	# ogn tracker
-	else: 
-		flarmid="RND"+idglider 	# undefined
-	if prt:
-		print "GGG:", registration, rowg, flarmid
-	return (flarmid)
 
 def spifindspiderpos(ttime, conn, username, password, prt=False):	# find all the fixes since last time
 

@@ -19,7 +19,7 @@ import urllib
 import random
 import config
 import kglid
-
+from flarmfuncs import *
 
 def lt24login(LT24path, username, password): 	# login into livetrack24.com 
 
@@ -123,7 +123,7 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 		extpos=fix['extpos']
 		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'LT24' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'LT24' ) "
         	try:				# store it on the DDBB
 			#print addcmd
               		curs.execute(addcmd)
@@ -141,36 +141,6 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 
 
 #-------------------------------------------------------------------------------------------------------------------#
-
-def lt24getflarmid(conn, registration):
-
-	cursG=conn.cursor()             # set the cursor for searching the devices
-	try:
-		cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
-       	except MySQLdb.Error, e:
-           	try:
-                   	print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-              	except IndexError:
-                   	print ">>>MySQL Error: %s" % str(e)
-                     	print ">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;"
-                    	print ">>>MySQL data :",  registration
-		return("NOREG") 
-        rowg = cursG.fetchone() 	# look for that registration on the OGN database
-	if rowg == None:
-		return("NOREG") 
-       	idglider=rowg[0]		# flarmid to report
-       	flarmtype=rowg[1]		# flarmtype flarm/ica/ogn
-	if idglider not in kglid.kglid:
-		print "Warning: flarmid=", idglider, "not of kglid table"
-	if flarmtype == 'F':
-		flarmid="FLR"+idglider 	# flarm 
-	elif flarmtype == 'I':
-		flarmid="ICA"+idglider 	# ICA
-	elif flarmtype == 'O':
-		flarmid="OGN"+idglider 	# ogn tracker
-	else: 
-		flarmid="RND"+idglider 	# undefined
-	return (flarmid)
 
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -192,10 +162,9 @@ def lt24findpos(ttime, conn, once, prt=False):	# find all the fixes since TTIME 
 			continue	# if not active, just ignore it
 					# build the userlist to call to the LT24 server
 		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
-			flarmid=lt24getflarmid(conn, registration) 	# get it from the registration
+			flarmid=getflarmid(conn, registration) 	# get it from the registration
                 else:
-                        if flarmid[3:9] not in kglid.kglid: # check that the registration is on the table - sanity check
-                                print "Warning: flarmid=", flarmid, "not on kglid table"
+                        chkflarmid(flarmid)
 
 		userList += reg		# build the user list
 		userList += ","		# separated by comas
