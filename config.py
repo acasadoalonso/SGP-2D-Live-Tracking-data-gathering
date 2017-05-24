@@ -7,8 +7,13 @@
 #-------------------------------------
 #
 import socket
+import os
 from configparser import ConfigParser
-configfile="/etc/local/APRSconfig.ini"
+#configfile="/etc/local/APRSconfig.ini"
+configdir=os.getenv('CONFIGDIR')
+if configdir == None:
+	configdir='/etc/local/'
+configfile=configdir+'APRSconfig.ini'
 hostname=socket.gethostname()
 print "Hostname:", hostname
 cfg=ConfigParser()                                                              # get the configuration parameters

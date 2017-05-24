@@ -5,7 +5,8 @@
 import kglid
 from flarmfuncs import *
 def ogntbuildtable(conn, ognttable, prt=False):	# function to build the OGN tracker table of relation between flarmid and registrations
-	auxtable={}
+	oldtable=ognttable.copy()	# have a copy of it
+	auxtable={}			# the aux table to know the registrations
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	cursG.execute("select id, flarmid, registration from TRKDEVICES where devicetype = 'OGNT' and active = 1; " ) 	# get all the devices with SPIDER
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
@@ -28,8 +29,11 @@ def ogntbuildtable(conn, ognttable, prt=False):	# function to build the OGN trac
 		else:
 			f=kglid.kglid[flarmid[3:]]
 		auxtable[o]=f
-	print "OGNTtable:", ognttable
-	print "OGNTtable:", auxtable
+	
+	unmatched_item = set(oldtable.items()) ^ set(ognttable.items())
+	if len(unmatched_item) != 0:
+		print "OGNTtable:", ognttable
+		print "OGNTtable:", auxtable
 	return(ognttable)
 
 # -------------------------------------------------------------------------------------------------------------------------------- #
