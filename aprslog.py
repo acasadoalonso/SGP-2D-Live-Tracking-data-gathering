@@ -55,8 +55,8 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-
-print "Start APRS, SPIDER , SPOT and LT24 logging  V1.6"
+programver='V1.6'
+print "Start APRS, SPIDER , SPOT and LT24 logging"+programver
 print "================================================"
 #
 # get the SPIDER TRACK  & SPOT information
@@ -155,7 +155,7 @@ print "Socket sock connected"
 
 # logon to OGN APRS network
 
-login = 'user %s pass %s vers APRS_LOG V1.0 %s'  % (config.APRS_USER, config.APRS_PASSCODE , config.APRS_FILTER_DETAILS)
+login = 'user %s pass %s vers APRS_LOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
 sock.send(login)
 
 # Make the connection to the server

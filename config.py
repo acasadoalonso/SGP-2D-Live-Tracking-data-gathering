@@ -9,7 +9,6 @@
 import socket
 import os
 from configparser import ConfigParser
-#configfile="/etc/local/APRSconfig.ini"
 configdir=os.getenv('CONFIGDIR')
 if configdir == None:
 	configdir='/etc/local/'
@@ -18,6 +17,7 @@ hostname=socket.gethostname()
 print "Hostname:", hostname
 cfg=ConfigParser()                                                              # get the configuration parameters
 cfg.read(configfile)                                                            # reading it for the configuration file
+print "Config file used : ",  configfile
 print "Config.ini sections:", cfg.sections()                                    # report the different sections
 
 APRS_SERVER_HOST        = cfg.get    ('APRS', 'APRS_SERVER_HOST').strip("'").strip('"')
