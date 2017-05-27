@@ -139,7 +139,7 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
         	flarmid=rowg[1]		# Flamd id to be linked
         	registration=rowg[2]	# registration id to be linked
 		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
-			flarmid=getflarmid(conn, registration, prt)	# get it from the registration
+			flarmid=getflarmid(conn, registration)		# get it from the registration
 		else:
 			chkflarmid(flarmid)
 
