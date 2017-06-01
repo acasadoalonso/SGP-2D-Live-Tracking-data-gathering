@@ -237,6 +237,8 @@ def parseraprs(packet_str, msg):
                         uniqueid     = data[p2+7:p2+17] # get the unique id
                         extpos=' '
                 roclimb      = gdatal(data,"fpm ")      # get the rate of climb
+                if roclimb == ' ':			# if no rot provided
+                        roclimb=0
                 rot          = gdatal(data,"rot")       # get the rate of turn
                 if rot == ' ':				# if no rot provided
                         rot=0

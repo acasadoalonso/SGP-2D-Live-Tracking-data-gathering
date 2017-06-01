@@ -208,22 +208,23 @@ try:
         if local_time.hour == 22:
                 break
         elapsed_time = current_time - keepalive_time
-        if (current_time - keepalive_time) > 180:        # keepalives every 3 mins
+        if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
                 try:
                         rtn = sock_file.write("#Python ognES App\n\n")
                         # Make sure keepalive gets sent. If not flushed then buffered
                         sock_file.flush()
                         datafile.flush()
-                        alive(config.APP )               # indicate that we are alive
+                        alive(config.APP )               	# indicate that we are alive
                         run_time = time.time() - start_time
                         if prt:
-                                print "Send keepalive no: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
+                                print "Send keepalive number: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
                         keepalive_time = current_time
                         keepalive_count = keepalive_count + 1
-			now=datetime.utcnow()	# get the UTC time
+			now=datetime.utcnow()			# get the UTC time
                 except Exception, e:
                         print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
-
+			now=datetime.utcnow()			# get the UTC time
+			print "UTC time is now: ", now
                 try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 			if SPIDER:				# if we have SPIDER according with the config
 
@@ -231,7 +232,7 @@ try:
 
 			else: 
 				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
-
+			
 			if SPOT:				# if we have the SPOT according with the configuration
 
 				ts   =spotfindpos(ts, conn)
@@ -258,15 +259,17 @@ try:
 
 			if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
         			ogntbuildtable(conn, ognttable, prt) # rebuild the table from the TRKDEVICES DB table
-			if SPIDER or SPOT or LT24:
+			if SPIDER or SPOT or LT24 or SKYLINE:
 
 				print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
 
                 except Exception, e:
-                        print ('something\'s wrong with interface functions Exception type is %s' % (`e`))
-			print SKYLINE, ts
+                        print ('Something\'s wrong with interface functions Exception type is %s' % (`e`))
+			if SPIDER or SPOT or LT24 or SKYLINE:
 
+				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+			
         if prt:
                 print "In main loop. Count= ", i
                 i += 1
@@ -353,11 +356,16 @@ try:
                 if path == 'qAC':
                         print "qAC>>>:", data
                         continue                        # the case of the TCP IP as well
+                if path == 'CAPTURS':
+                        print "CAPTURS>>>:", data
+                        continue                        # the case of the TCP IP as well
                 if path == 'qAS' or path == 'RELAY*':                       # if std records
                         station=msg['station']
                 else:
                         continue                        # nothing else to do
                 #
+		if station == "CAPTURS":		# ignore the capturs messages
+			continue
                 speed     = msg['speed']
                 course    = msg['course']
                 uniqueid  = msg['uniqueid']
