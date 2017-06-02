@@ -358,14 +358,11 @@ try:
                         continue                        # the case of the TCP IP as well
                 if path == 'CAPTURS':
                         print "CAPTURS>>>:", data
-                        continue                        # the case of the TCP IP as well
                 if path == 'qAS' or path == 'RELAY*':                       # if std records
                         station=msg['station']
                 else:
                         continue                        # nothing else to do
                 #
-		if station == "CAPTURS":		# ignore the capturs messages
-			continue
                 speed     = msg['speed']
                 course    = msg['course']
                 uniqueid  = msg['uniqueid']
