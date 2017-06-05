@@ -56,8 +56,10 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 programver='V1.6'
-print "Start APRS, SPIDER , SPOT and LT24 logging"+programver
+print "Start APRS, SPIDER , SPOT and LT24 logging "+programver
 print "================================================"
+
+print "Program Version:", time.ctime(os.path.getmtime(__file__))
 #
 # get the SPIDER TRACK  & SPOT information
 #
