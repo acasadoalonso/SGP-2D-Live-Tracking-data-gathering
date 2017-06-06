@@ -65,6 +65,8 @@ MySQLtext               = cfg.get('server', 'MySQL').strip("'").strip('"')
 DBhost                  = cfg.get('server', 'DBhost').strip("'").strip('"')
 DBuser                  = cfg.get('server', 'DBuser').strip("'").strip('"')
 DBpasswd                = cfg.get('server', 'DBpasswd').strip("'").strip('"')
+DBuserread              = cfg.get('server', 'DBuserread').strip("'").strip('"')
+DBpasswdread            = cfg.get('server', 'DBpasswdread').strip("'").strip('"')
 DBname                  = cfg.get('server', 'DBname').strip("'").strip('"')
 LogDatas                = cfg.get('server', 'LogData').strip("'").strip('"')
 # --------------------------------------#
