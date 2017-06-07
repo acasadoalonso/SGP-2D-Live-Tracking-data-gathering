@@ -26,7 +26,7 @@ sudo apt-get install -y python-dev python-pip python-mysqldb    #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt	nodejs		# 
 sudo apt-get install -y apache2 php php-mcrypt php-mysql php-cli #
-sudo apt-get install -y php-mbstring php-gettext		#
+sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo a2enmod rewrite						#
 sudo phpendmod mcrypt						#
 sudo phpendmod mbstring						#
@@ -40,7 +40,7 @@ echo								#
 #sudo apt-get install -y phpmyadmin 				#
 #sudo service apache2 restart					#
 sudo pip install ephem pytz geopy configparser			#
-sudo npm install websocket socket.io request parsejson		#
+sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
 if [ ! -d /etc/local ]						#
 then								#
