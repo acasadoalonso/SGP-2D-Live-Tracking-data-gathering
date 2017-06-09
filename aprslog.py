@@ -56,10 +56,15 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 #
 ########################################################################
 programver='V1.6'
-print "Start APRS, SPIDER , SPOT and LT24 logging "+programver
+print "\n\nStart APRS, SPIDER , SPOT and LT24 logging "+programver
 print "================================================"
 
 print "Program Version:", time.ctime(os.path.getmtime(__file__))
+date=datetime.utcnow()         		# get the date
+dte=date.strftime("%y%m%d")             # today's date
+print "Date: ", date, "UTC on:", socket.gethostname()
+date = datetime.now()
+print "Time now is: ", date, " Local time"
 #
 # get the SPIDER TRACK  & SPOT information
 #
@@ -124,15 +129,10 @@ if OGNT:
 # --------------------------------------#
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
-date=datetime.utcnow()         		# get the date
-dte=date.strftime("%y%m%d")             # today's date
+
+print "MySQL: Database:", DBname, " at Host:", DBhost
 
 #----------------------ogn_aprslog.py start-----------------------
-#print "MySQL: Database:", DBname, " at Host:", DBhost, "SPIDER:", SPIDER, "SPOT:", SPOT, "LT24", LT24
-
-print "Date: ", date, "UTC on:", socket.gethostname()
-date = datetime.now()
-print "Time now is: ", date, " Local time"
 
 prtreq =  sys.argv[1:]
 if prtreq and prtreq[0] == 'prt':

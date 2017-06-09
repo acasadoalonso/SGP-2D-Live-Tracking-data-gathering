@@ -14,10 +14,9 @@ if configdir == None:
 	configdir='/etc/local/'
 configfile=configdir+'APRSconfig.ini'
 hostname=socket.gethostname()
-print "Hostname:", hostname
+print "Hostname:", hostname, " and config file: ", configfile
 cfg=ConfigParser()                                                              # get the configuration parameters
 cfg.read(configfile)                                                            # reading it for the configuration file
-print "Config file used : ",  configfile
 print "Config.ini sections:", cfg.sections()                                    # report the different sections
 
 APRS_SERVER_HOST        = cfg.get    ('APRS', 'APRS_SERVER_HOST').strip("'").strip('"')
