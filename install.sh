@@ -40,6 +40,7 @@ echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo pip install ephem pytz geopy configparser			#
+cd /var/www/html/node/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
 if [ ! -d /etc/local ]						#
