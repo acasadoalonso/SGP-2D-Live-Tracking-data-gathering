@@ -15,12 +15,12 @@ export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 echo "export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8 " >>~/.profile #
 echo "export LD_LIBRARY_PATH=/usr/local/lib" >>~/.profile 	#
 sudo apt-get -y upgrade						#
-cd /var/www/public/node/main/libfap-1.5/deb			#
+cd /var/www/html/node/main/libfap-1.5/deb			#
 sudo dpkg -i lib*amd64.deb					#
 echo								#
 echo "Installing the packages required . (LAMP stack)..."	#
 echo								#
-cd /var/www/public/node/main					#
+cd /var/www/html/node/main					#
 sudo apt-get install -y mysql-server mysql-client sqlite3	#
 sudo apt-get install -y python-dev python-pip python-mysqldb    #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
@@ -49,9 +49,9 @@ fi								#
 echo								#
 echo "Installing the templates needed  ...." 			#
 echo								#
-cd /var/www/public/node/main					#
+cd /var/www/html/node/main					#
 sudo cp config.template /etc/local/APRSconfig.ini		#
-cd /var/www/public/node/					#
+cd /var/www/html/node/					#
 python genconfig.py						#
 echo "CREATE DATABASE APRSLOG" | mysql 				#
 mysql --database APRSLOG < main/APRSLOG.template.sql		#
@@ -80,7 +80,7 @@ then								#
 	sudo mkdir /nfs/OGN/SWdata				#
 	sudo chown vagrant:vagrant /nfs/OGN/SWdata		#
 	sudo chmod 777 /nfs/OGN/SWdata				#
-	cd /var/www/public/node/				#
+	cd /var/www/html/node/				#
 	sudo chown vagrant:vagrant *				# 
 	sudo chmod 777 *					#
 	sudo chown vagrant:vagrant */*				# 
@@ -97,7 +97,7 @@ echo "==========================================================================
 echo "Installation done ..."					#
 echo "Review the configuration file on /etc/local ..."								#
 echo "Review the configuration of the crontab and the shell scripts on ~/src " 					#
-echo "In order to execute the APRSLOG data crawler execute:  bash ~/src/APSRlive.sh " 			#
+echo "In order to execute the APRSLOG data crawler execute:  bash ~/src/APSRlive.sh " 				#
 echo "Check the placement of the RootDocument on APACHE2 ... needs to be /var/www/html				#
 echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html & ./main & ~/src			#
 echo "Install phpmyadmin if needed !!!                                                                          #
