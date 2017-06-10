@@ -28,8 +28,8 @@ sudo apt-get install -y pkg-config git	mutt npm nodejs		#
 sudo apt-get install -y apache2 php php-mcrypt php-mysql php-cli #
 sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo a2enmod rewrite						#
-sudo phpendmod mcrypt						#
-sudo phpendmod mbstring						#
+sudo phpenmod mcrypt						#
+sudo phpenmod mbstring						#
 sudo cat /etc/apache2/apache2.conf html.dir 	>>temp.conf	#
 sudo echo "ServerName APRSLOG " >>temp.conf			#
 sudo mv temp.conf /etc/apache2/apache2.conf			#
@@ -49,11 +49,12 @@ fi								#
 echo								#
 echo "Installing the templates needed  ...." 			#
 echo								#
+cd /var/www/public/node/main					#
 sudo cp config.template /etc/local/APRSconfig.ini		#
 cd /var/www/public/node/					#
 python genconfig.py						#
 echo "CREATE DATABASE APRSLOG" | mysql 				#
-mysql --database APRSLOG < main/DBschema.sql			#
+mysql --database APRSLOG < main/APRSLOG.template.sql		#
 echo								#
 echo "Optional steps ... "					#
 echo								#
