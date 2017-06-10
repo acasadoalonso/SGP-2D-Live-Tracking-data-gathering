@@ -52,10 +52,11 @@ echo "Installing the templates needed  ...." 			#
 echo								#
 cd /var/www/html/node/main					#
 sudo cp config.template /etc/local/APRSconfig.ini		#
-cd /var/www/html/node/					#
+cd /var/www/html/node/						#
 python genconfig.py						#
-echo "CREATE DATABASE APRSLOG" | mysql 				#
-mysql --database APRSLOG < main/APRSLOG.template.sql		#
+mysqladmin -u root password ogn					#
+echo "CREATE DATABASE APRSLOG" | mysql -u root -pogn		#
+mysql --database APRSLOG -u root -pogn < main/APRSLOG.template.sql	#
 echo								#
 echo "Optional steps ... "					#
 echo								#
@@ -90,7 +91,6 @@ fi								#
 cd								#
 sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y dist-upgrade					#
-mysqladmin -u root password ogn					#
 sudo apt-get -y autoremove					#
 touch APRSinstallation.done					#
 echo								#
