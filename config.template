@@ -11,8 +11,25 @@ MySQL    =False
 DBhost   =localhost
 DBuser   =ogn
 DBpasswd =ogn
-; Name of the MySQL database
+DBuserread   =ognread
+DBpasswdread =ognread
 DBname   =APRSLOG
+OGNDB    =OGNDB
+LogData  =True
+APPuser  =ognread
+APPpasswd=ognread
+AppUrl   ="glidertracking.fai.org"
+AppPort  ="81"
+AppArea  ="&ne_lat=+43.5&ne_lon=+4.0&sw_lat=+40.0&sw_lon=-5.0&activeFlarm="
+AppNeLat =43.5
+AppNeLon =4.0
+AppSwLat =40.0
+AppSwLon =-4.0
+AppZoom  =12
+AppLat   =42.5
+AppLon   =-0.5
+AppBase  ="LECI1"
+
 ; name of the SQLITE3 database
 SQLite3  =SWiface.db
 ; initial for the generated files TEST or DATA or CNVV ???
