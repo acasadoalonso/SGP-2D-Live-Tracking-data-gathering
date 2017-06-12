@@ -25,7 +25,8 @@ sudo apt-get install -y mysql-server mysql-client sqlite3	#
 sudo apt-get install -y python-dev python-pip python-mysqldb    #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt npm nodejs		# 
-sudo apt-get install -y apache2 php php-mcrypt php-mysql php-cli #
+sudo apt-get install -y apache2 php 				#
+sudo apt-get install -y php-sqlite php-mcrypt php-mysql php-cli #
 sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo a2enmod rewrite						#
 sudo phpenmod mcrypt						#
@@ -67,13 +68,14 @@ cd /var/www/html/node/main					#
 sudo cp config.template /etc/local/APRSconfig.ini		#
 cd /var/www/html/node/						#
 python genconfig.py						#
+cd /var/www/html/node/main					#
 mysqladmin -u root password ogn					#
+mysql -u root -pogn <adduser.sql				#
 echo "CREATE DATABASE APRSLOG" | mysql -u root -pogn		#
-mysql --database APRSLOG -u root -pogn < main/APRSLOG.template.sql	#
+mysql --database APRSLOG -u root -pogn < APRSLOG.template.sql	#
 echo								#
 echo "Optional steps ... "					#
 echo								#
-cd main								#
 mailcatcher --http-ip=0.0.0.0					#
 cd sh	 							#
 crontab <crontab.data						#
