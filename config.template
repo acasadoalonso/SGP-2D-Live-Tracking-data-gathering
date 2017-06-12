@@ -20,7 +20,6 @@ APPuser  =ognread
 APPpasswd=ognread
 AppUrl   ="glidertracking.fai.org"
 AppPort  ="81"
-AppArea  ="&ne_lat=+43.5&ne_lon=+4.0&sw_lat=+40.0&sw_lon=-5.0&activeFlarm="
 AppNeLat =43.5
 AppNeLon =4.0
 AppSwLat =40.0
@@ -53,7 +52,7 @@ APRS_FILTER_DETAILS = 'filter r/44.11/+5.56/100  '
 location_latitude  = 44.11
 location_longitud  = 5.56
 location_name      = "Sisteron"
-; SWiface collects data from the OGN, SPIDER, SPOT, LT24, SKYLINES annd aggregates data fro the OGN trackers
+; APRSLOG collects data from the OGN, SPIDER, SPOT, LT24, SKYLINES annd aggregates data fro the OGN trackers
 ; the behaviour of how to aggregate that data is defined thry the TRKDEVICES tabale of the database
 
 ; if SPIDER data is used ???

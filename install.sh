@@ -40,6 +40,7 @@ echo "Installing phpmyadmin  ... "				#
 echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
+sudo pip install --upgrade pip					#
 sudo pip install ephem pytz geopy configparser			#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
@@ -47,15 +48,18 @@ sudo npm install forever -g 					#
 if [ ! -d /etc/local ]						#
 then								#
     sudo mkdir /etc/local					#
+    sudo chmod 777 /etc/local					#
 fi								#
 echo								#
 if [ ! -d /var/www/data ]					#
 then								#
     sudo mkdir /var/www/data					#
+    sudo chmod 777 /var/www/data				#
 fi								#
 if [ ! -d /var/www/html/cuc ]					#
 then								#
     sudo mkdir /var/www/html/cuc				#
+    sudo chmod 777 /var/www/html/cuc				#
 fi								#
 echo								#
 if [ ! -f /var/www/html/index.php ]				#
@@ -107,6 +111,7 @@ cd								#
 sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y dist-upgrade					#
 sudo apt-get -y autoremove					#
+cp /var/www/html/node/main/aliases .bash_aliases		#
 touch APRSinstallation.done					#
 echo								#
 echo "========================================================================================================"	#
