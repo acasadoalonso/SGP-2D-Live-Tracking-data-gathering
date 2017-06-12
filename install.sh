@@ -40,7 +40,7 @@ echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo pip install ephem pytz geopy configparser			#
-cd /var/www/html/node/						#
+cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
 if [ ! -d /etc/local ]						#
@@ -48,6 +48,19 @@ then								#
     sudo mkdir /etc/local					#
 fi								#
 echo								#
+if [ ! -d /var/www/data ]					#
+then								#
+    sudo mkdir /var/www/data					#
+fi								#
+if [ ! -d /var/www/html/cuc ]					#
+then								#
+    sudo mkdir /var/www/html/cuc				#
+fi								#
+echo								#
+if [ ! -f /var/www/html/index.php ]				#
+then								#
+    sudo ln /var/www/html/node/index.php /var/www/html/index.php #
+fi								#
 echo "Installing the templates needed  ...." 			#
 echo								#
 cd /var/www/html/node/main					#
@@ -79,9 +92,9 @@ if [ ! -d /nfs  ]						#
 then								#
 	sudo mkdir /nfs						#
 	sudo mkdir /nfs/OGN					#
-	sudo mkdir /nfs/OGN/SWdata				#
-	sudo chown vagrant:vagrant /nfs/OGN/SWdata		#
-	sudo chmod 777 /nfs/OGN/SWdata				#
+	sudo mkdir /nfs/OGN/APRSdata				#
+	sudo chown vagrant:vagrant /nfs/OGN/APRSdata		#
+	sudo chmod 777 /nfs/OGN/APRSdata			#
 	cd /var/www/html/node/				#
 	sudo chown vagrant:vagrant *				# 
 	sudo chmod 777 *					#
