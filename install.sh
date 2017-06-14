@@ -3,7 +3,9 @@ echo								#
 echo "Installing the SGP 2D live tracking interface ...." 	#
 echo								#
 export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
-sudo apt-get install -y software-properties-common python-software-properties #
+sudo apt-get install -y software-properties-common 		#
+sudo apt-get install -y python-software-properties 		#
+sudo apt-get install -y build-essential 			#
 #sudo rm /etc/apt/sources.list.d/ondre*				#
 #sudo add-apt-repository ppa:ondrej/php				#
 echo								#
@@ -41,7 +43,7 @@ echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo pip install --upgrade pip					#
-sudo pip install ephem pytz geopy configparser			#
+sudo pip install ephem pytz geopy configparser pycountry	#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
@@ -80,6 +82,9 @@ mysql --database APRSLOG -u root -pogn < APRSLOG.template.sql	#
 echo								#
 echo "Optional steps ... "					#
 echo								#
+sudo apt-get install -y libsqlite3-dev ruby-dev			#
+echo "Install MailCatcher."					#
+sudo gem install mailcatcher					#
 mailcatcher --http-ip=0.0.0.0					#
 cd sh	 							#
 crontab <crontab.data						#

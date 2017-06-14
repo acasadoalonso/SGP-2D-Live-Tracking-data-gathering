@@ -13,6 +13,12 @@
    cd    APRS
    vagrant init ubuntu/xenial64
    vagrant up
+
+   or
+
+   > docker build -t glidertracking .
+		and then run it using the following command
+   > docker run -d --link mysql_container:mysql -p8080:80 -p8081:81 -v my_web_dir:/var/www glidertracking
    ```
 
 3. Clone APRS repository into the webroot of the Scotch Box
@@ -39,4 +45,9 @@
    vagrant@scotchbox:~$ mailcatcher --http-ip=0.0.0.0
    composer update
    ```
+6. The DOCKER image does include a SSH server and most of the entrypoint script is related to that.
+   If you don't need ssh, you can get rid of all these parts.
+   In case you need to start other processes in the image, you can add them near the end of the entrypoint.sh file.
 
+   Use (Dockerfile and entrypoint.sh) in your system, add the /var/www content directly in the image (in Dockerfile), 
+   add a few database initialization scripts in the entry point script and your image would be complete for immediate deployment.
