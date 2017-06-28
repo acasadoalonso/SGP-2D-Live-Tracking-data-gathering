@@ -14,6 +14,7 @@ import string
 import pytz
 import sys
 import os
+import os.path
 import signal
 import kglid
 from   parserfuncs import *                 # the ogn/ham parser functions
@@ -152,12 +153,29 @@ else:
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
 print "Socket sock connected"
 
 # logon to OGN APRS network
 
-login = 'user %s pass %s vers APRS_LOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+compfile=config.cucFileLocation + "/competitiongliders.lst"
+
+if os.path.isfile(compfile):
+	fd=open(compfile, 'r')
+	j=fd.read()
+	clist=json.loads(j)
+	fd.close()
+	filter="filter b/"
+	for f in clist:
+		filter += f
+		filter += "/"	
+	filter += " p/LF/LE/ \n"
+	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+else:
+	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+print login
+
 sock.send(login)
 
 # Make the connection to the server

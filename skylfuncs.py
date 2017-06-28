@@ -108,8 +108,12 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data
 		pilot=msg['pilot']		# get the pilot infor id/name
 		name=pilot['name']		# pilot name
 		id=pilot['id']			# pilot ID
-		if pilotname.strip(' ') != name.strip(' '):		# if is not this pilot nothing to do
-			continue
+		if pilotname.isnumeric():	# id numeric is pilot id
+			if pilotname.strip(' ') != id.strip(' '):	# if is not this pilot id nothing to do
+				continue
+		else:
+			if pilotname.strip(' ') != name.strip(' '):	# if is not this pilot name nothing to do
+				continue
 		dte=msg['time']			# get the time on ISO format
 		dte=dte[0:19]			# get the important part			
 		ttt=datetime.strptime(dte,"%Y-%m-%dT%H:%M:%S") # parser the time

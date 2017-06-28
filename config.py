@@ -26,8 +26,18 @@ APRS_PASSCODE           = int(cfg.get('APRS', 'APRS_PASSCODE'))                 
 APRS_FILTER_DETAILS     = cfg.get    ('APRS', 'APRS_FILTER_DETAILS').strip("'").strip('"')
 APRS_FILTER_DETAILS     = APRS_FILTER_DETAILS + '\n '
 
+
+location_latitude       = cfg.get('location', 'location_latitude').strip("'").strip('"')
+location_longitude      = cfg.get('location', 'location_longitud').strip("'").strip('"')
+
 FLOGGER_LATITUDE        = cfg.get('location', 'location_latitude').strip("'").strip('"')
 FLOGGER_LONGITUDE       = cfg.get('location', 'location_longitud').strip("'").strip('"')
+
+try:
+        cucFileLocation = cfg.get('server', 'cucFileLocation').strip("'").strip('"')
+except:
+        cucFileLocation = "/var/www/html/cuc/"
+
 try:
 	location_name   = cfg.get('location', 'location_name').strip("'").strip('"')
 except:
