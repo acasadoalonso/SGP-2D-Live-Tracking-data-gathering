@@ -63,7 +63,7 @@ print "================================================"
 print "Program Version:", time.ctime(os.path.getmtime(__file__))
 date=datetime.utcnow()         		# get the date
 dte=date.strftime("%y%m%d")             # today's date
-print "Date: ", date, "UTC on:", socket.gethostname()
+print "Date: ", date, "UTC on:", socket.gethostname(), "Process ID:", os.getpid()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
 #
@@ -171,10 +171,10 @@ if os.path.isfile(compfile):
 		filter += f
 		filter += "/"	
 	filter += " p/LF/LE/ \n"
-	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+	login = 'user %s pass %s vers APRSLOG-%s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
-print login
+	login = 'user %s pass %s vers APRSLOG-%s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+print "APRS login:", login
 
 sock.send(login)
 
