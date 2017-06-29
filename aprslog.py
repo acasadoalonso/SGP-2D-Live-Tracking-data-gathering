@@ -171,9 +171,9 @@ if os.path.isfile(compfile):
 		filter += f
 		filter += "/"	
 	filter += " p/LF/LE/ \n"
-	login = 'user %s pass %s vers APRSLOG-%s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG-%s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
 print "APRS login:", login
 
 sock.send(login)
@@ -303,6 +303,8 @@ try:
         except socket.error:
                 print "Socket error on readline"
                 continue
+        if prt:
+                print packet_str
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
