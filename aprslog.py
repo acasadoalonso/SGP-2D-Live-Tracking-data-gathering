@@ -16,6 +16,7 @@ import sys
 import os
 import os.path
 import signal
+import atexit
 import kglid
 from   parserfuncs import *                 # the ogn/ham parser functions
 from   geopy.distance import vincenty       # use the Vincenty algorithm^M
@@ -66,11 +67,16 @@ dte=date.strftime("%y%m%d")             # today's date
 print "Date: ", date, "UTC on:", socket.gethostname(), "Process ID:", os.getpid()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
+
 #
 # get the SPIDER TRACK  & SPOT information
 #
 # --------------------------------------#
 import config
+if os.path.exists(config.PIDfile):
+	raise RuntimeError("APRSlog already running !!!")
+	exit(-1)
+#
 APP="APRSLOG"				# the application name
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
@@ -150,6 +156,11 @@ elif prtreq and prtreq[0] == 'RECV':
 else:
     RECV = True
     DATA = True
+
+with open(config.PIDfile,"w") as f:
+	f.write (str(os.getpid()))
+	f.close()
+atexit.register(lambda: os.remove(config.PIDfile))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -380,8 +391,10 @@ try:
                         continue                        # the case of the TCP IP as well
                 if path == 'CAPTURS':
                         print "CAPTURS>>>:", data
-                if path == 'qAS' or path == 'RELAY*':                       # if std records
+                if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN": # if std records
                         station=msg['station']
+			if path[0:3] == "OGN":
+				print "RELAY:", path, station
                 else:
                         continue                        # nothing else to do
                 #
