@@ -78,6 +78,10 @@ DBuserread              = cfg.get('server', 'DBuserread').strip("'").strip('"')
 DBpasswdread            = cfg.get('server', 'DBpasswdread').strip("'").strip('"')
 DBname                  = cfg.get('server', 'DBname').strip("'").strip('"')
 LogDatas                = cfg.get('server', 'LogData').strip("'").strip('"')
+try:
+	PIDfile         = cfg.get('server', 'pid').strip("'").strip('"')
+except:
+	PIDfile='/tmp/APRS.pid'
 # --------------------------------------#
 if (MySQLtext == 'True'):
         MySQL = True
