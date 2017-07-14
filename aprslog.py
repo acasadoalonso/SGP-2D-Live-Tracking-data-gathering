@@ -343,9 +343,6 @@ try:
 		if longitude == -1 or latitude == -1:
 			continue				# that is the case of the ogn trackers status reports
                 altitude  = msg['altitude']
-		if latitude == -1 or longitude == -1:
-			print "TTT", packet_str
-			continue
                 path      = msg['path']
                 otime     = msg['otime']
                 type      = msg['type']
