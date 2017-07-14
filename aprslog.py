@@ -340,6 +340,8 @@ try:
                 id        = msg['id']                         # id
                 longitude = msg['longitude']
                 latitude  = msg['latitude']
+		if longitude == -1 or latitude == -1:
+			continue				# that is the case of the ogn trackers status reports
                 altitude  = msg['altitude']
                 path      = msg['path']
                 otime     = msg['otime']

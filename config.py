@@ -81,7 +81,7 @@ LogDatas                = cfg.get('server', 'LogData').strip("'").strip('"')
 try:
 	PIDfile         = cfg.get('server', 'pid').strip("'").strip('"')
 except:
-	PIDfile='/dev/null'
+	PIDfile='/tmp/APRS.pid'
 # --------------------------------------#
 if (MySQLtext == 'True'):
         MySQL = True
