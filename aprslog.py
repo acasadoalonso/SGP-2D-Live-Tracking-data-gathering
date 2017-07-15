@@ -236,7 +236,7 @@ try:
     while True:
         current_time = time.time()
         local_time = datetime.now()
-        if local_time.hour == 22:
+        if local_time.hour == 23:
                 break
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
