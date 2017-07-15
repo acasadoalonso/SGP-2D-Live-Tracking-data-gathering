@@ -337,11 +337,10 @@ try:
         if  len(packet_str) > 0 and packet_str[0] <> "#":
 
         	msg=parseraprs(packet_str, msg)
-                id        = msg['id']                         # id
+                id        = msg['id']                         	# id
+                type      = msg['type']				# APRS msg type
                 longitude = msg['longitude']
                 latitude  = msg['latitude']
-		if longitude == -1 or latitude == -1:
-			continue				# that is the case of the ogn trackers status reports
                 altitude  = msg['altitude']
                 path      = msg['path']
                 otime     = msg['otime']
@@ -388,6 +387,13 @@ try:
                         cout +=1
                         conn.commit()
                         continue
+		if type == 8:				# if status report
+                        status=msg['status']
+			if len(status) > 254:
+				status=status[0:254]
+			print "Status report:", id, otime, status
+		if longitude == -1 or latitude == -1:	# if no position like in the status report
+			continue			# that is the case of the ogn trackers status reports
                 if path == 'qAC':
                         print "qAC>>>:", data
                         continue                        # the case of the TCP IP as well
@@ -398,6 +404,7 @@ try:
 			if path[0:3] == "OGN":
 				print "RELAY:", path, station
                 else:
+			station="Unkown"
                         continue                        # nothing else to do
                 #
                 speed     = msg['speed']
