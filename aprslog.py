@@ -387,17 +387,18 @@ try:
                         conn.commit()
                         continue
 		if type == 8:				# if status report
-                        status=msg['status']
+                        status=msg['status']		# get the status message
+                        station=msg['station']		# and the station receiving that status report
 			if len(status) > 254:
 				status=status[0:254]
-			print "Status report:", id, otime, status
-		if longitude == -1 or latitude == -1:	# if no position like in the status report
-			continue			# that is the case of the ogn trackers status reports
+			print "Status report:", id, otime, station, status
                 if path == 'qAC':
                         print "qAC>>>:", data
                         continue                        # the case of the TCP IP as well
                 if path == 'CAPTURS':
                         print "CAPTURS>>>:", data
+		if longitude == -1 or latitude == -1:	# if no position like in the status report
+			continue			# that is the case of the ogn trackers status reports
                 if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN": # if std records
                         station=msg['station']
 			if path[0:3] == "OGN":
