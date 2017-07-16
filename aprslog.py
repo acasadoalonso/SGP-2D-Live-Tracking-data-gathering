@@ -344,7 +344,6 @@ try:
                 altitude  = msg['altitude']
                 path      = msg['path']
                 otime     = msg['otime']
-                type      = msg['type']
                 data=packet_str
                 if prt:
                         print 'Packet returned is: ', packet_str

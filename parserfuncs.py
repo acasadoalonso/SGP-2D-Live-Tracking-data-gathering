@@ -228,8 +228,10 @@ def parseraprs(packet_str, msg):
 			#print "Path:", path, packet_str
 			if path == -1:
 				return -1
-                if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN" or path[0:3] == "FLR":   # if std records
+                if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN" or path[0:3] == "FLR" or path[0:3] == "RND":   # if std records
                         station=get_station(packet_str) # get the station ID
+		else:
+			station = "unkown"		# always one station
                 p1=data.find(':/')+2                    # scan for the body of the APRS message
                 hora=data[p1:p1+6]                      # get the GPS time in UTC
                 p2=data.find('/A=')+3                   # scan for the altitude on the body of the message
