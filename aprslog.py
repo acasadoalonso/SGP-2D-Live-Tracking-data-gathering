@@ -18,19 +18,19 @@ import os.path
 import signal
 import atexit
 import kglid
-from   parserfuncs import *                 # the ogn/ham parser functions
-from   geopy.distance import vincenty       # use the Vincenty algorithm^M
-from   time import sleep                    # use the sleep function
-#from   geopy.geocoders import GeoNames      # use the Nominatim as the geolocator^M
-import MySQLdb                              # the SQL data base routines^M
-from flarmfuncs import *		    # import the functions delaing with the Flarm ID
+from   parserfuncs import *             # the ogn/ham parser functions
+from   geopy.distance import vincenty   # use the Vincenty algorithm^M
+from   time import sleep                # use the sleep function
+#from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
+import MySQLdb                          # the SQL data base routines^M
+from flarmfuncs import *		# import the functions delaing with the Flarm ID
 #########################################################################
-def shutdown(sock, datafile):               # shutdown routine, close files and report on activity
-                                                                                # shutdown before exit
-        libfap.fap_cleanup()                # close lifap in order to avoid memory leaks
-        sock.shutdown(0)                    # shutdown the connection
-        sock.close()                        # close the connection file
-        datafile.close()                    # close the data file
+def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
+                                        # shutdown before exit
+        libfap.fap_cleanup()            # close lifap in order to avoid memory leaks
+        sock.shutdown(0)                # shutdown the connection
+        sock.close()                    # close the connection file
+        datafile.close()                # close the data file
         print 'Records read:',cin, ' DB records created: ',cout    # report number of records read and IDs discovered
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
@@ -357,12 +357,12 @@ try:
                         version=msg['version']
                         cpu=msg['cpu']
                         rf=msg['rf']
-                        if longitude == -1 and latitude == -1:
-                                latitude =fslla[id]
+                        if longitude == -1 and latitude == -1:	# if the status report
+                                latitude =fslla[id]		# we get tle lon/lat/alt from the table
                                 longitude=fsllo[id]
                                 altitude =fslal[id]
 				otime=datetime.utcnow()
-                                #print "TTT:",         id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
+                                #print "TTT:", id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
                         if not id in fslod :
                            fslla[id]=latitude           # save the location of the station
                            fsllo[id]=longitude          # save the location of the station
@@ -370,8 +370,8 @@ try:
                            fslod[id]=(latitude, longitude) # save the location of the station
                            fsmax[id]=0.0                # initial coverage zero
                            fsalt[id]=0                  # initial coverage zero
-			if data.find(":/") != -1:
-				continue		# we do not want that message 
+			if data.find(":/") != -1:	# it is the position report ??
+				continue		# we do not want that message ... we want the status report ...
                         inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
                                          (id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
                         try:
@@ -389,9 +389,21 @@ try:
 		if type == 8:				# if status report
                         status=msg['status']		# get the status message
                         station=msg['station']		# and the station receiving that status report
+			otime=datetime.utcnow()		# get the time from the system
 			if len(status) > 254:
 				status=status[0:254]
-			print "Status report:", id, otime, station, status
+			print "Status report:", id, station, otime, status
+                        inscmd="insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
+                                         (id, station, otime, status)
+                        try:
+                                        curs.execute(inscmd)
+                        except MySQLdb.Error, e:
+                                        try:
+                                                print ">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1])
+                                        except IndexError:
+                                                print ">>>MySQL2 Error: %s" % str(e)
+                                        print ">>>MySQL3 error:",  cout, inscmd
+                                        print ">>>MySQL4 data :",  data
                 if path == 'qAC':
                         print "qAC>>>:", data
                         continue                        # the case of the TCP IP as well
