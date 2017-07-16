@@ -275,6 +275,10 @@ def parseraprs(packet_str, msg):
                 msg['extpos']=extpos
                 msg['type']=type
                 msg['otime']=otime
+		if type == 8:
+                        p=data.find(':>')             # scan for the body of the APRS message
+                        status=data[p+2:p+254].rstrip() # status information
+                        msg['status']=status
                 return(msg)
         else:
                 return -1				# if length ZERO or just the keep alive
