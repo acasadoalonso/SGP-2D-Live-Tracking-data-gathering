@@ -392,7 +392,7 @@ try:
 			otime=datetime.utcnow()		# get the time from the system
 			if len(status) > 254:
 				status=status[0:254]
-			print "Status report:", id, station, otime, status
+			#print "Status report:", id, station, otime, status
                         inscmd="insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
                                          (id, station, otime, status)
                         try:
