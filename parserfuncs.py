@@ -89,6 +89,7 @@ def get_otime(packet):
     except ValueError:
         otime = 0
     return otime
+
 def get_station(data):
         scolon=data.find(':')                   # find the colon
         station=data[data.find("qAS")+4:scolon] # get the station identifier
@@ -170,8 +171,9 @@ def parseraprs(packet_str, msg):
         # Parse packet using libfap.py into fields to process
         packet = libfap.fap_parseaprs(packet_str, len(packet_str), 0)
         if  len(packet_str) > 0 and packet_str[0] <> "#": # ignore if do data or just the keep alive message
-                callsign=packet[0].src_callsign     # get the call sign FLARM ID
-                id=callsign                         # id
+                date=datetime.utcnow() 			# get the date
+                callsign=packet[0].src_callsign     	# get the call sign FLARM ID
+                id=callsign                         	# id
                 longitude    = get_longitude(packet)
                 latitude     = get_latitude(packet)
                 altitude     = get_altitude(packet)
@@ -224,17 +226,29 @@ def parseraprs(packet_str, msg):
                         msg['rf']=rf
                         msg['status']=status
                         return (msg)
-		if path != 'qAS':
+		if path != 'qAS':			# we dealt already with the other paths !!!
 			#print "Path:", path, packet_str
 			if path == -1:
 				return -1
                 if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN" or path[0:3] == "FLR" or path[0:3] == "RND":   # if std records
                         station=get_station(packet_str) # get the station ID
 		else:
-			station = "unkown"		# always one station
-                p1=data.find(':/')+2                    # scan for the body of the APRS message
-                hora=data[p1:p1+6]                      # get the GPS time in UTC
-                p2=data.find('/A=')+3                   # scan for the altitude on the body of the message
+			station = "Unkown"		# always one station
+
+		if type != 8:				# if not status report
+                	p1=data.find(':/')+2            # scan for the body of the APRS message
+			if data[p1+6] == 'h':		# case of HHMMSS
+                		hora=data[p1:p1+6]      # get the GPS time in UTC
+			if data[p1+6] == 'r':		# case of DDHHMM
+                		hora=data[p1+2:p1+6]    # get the GPS time in UTC, ignore date
+                		hora[4:6]='00'		# second is zero
+		else:					# the case of aprs status report
+			if otime == 0:			# if not time from the packet
+                		hora=date.strftime("%H%M%S")	# the aprs msgs has not time in this case
+			else:
+                		hora=otime.strftime("%H%M%S")	# the aprs msgs has the time in this case
+
+               	p2=data.find('/A=')+3                   # scan for the altitude on the body of the message
                 if  data[p2+7] == '!':                  # get the unique id
                         uniqueid     = data[p2+13:p2+23] # get the unique id
                         extpos       = data[p2+7:p2+12] # get extended position indicator
@@ -255,7 +269,6 @@ def parseraprs(packet_str, msg):
                         gps      = gdatar(data, "gps")  # get the gpsdata 
                 else:
                         gps      = "NO"			# no GPS data
-                date=datetime.utcnow()         		# get the date
                 dte=date.strftime("%y%m%d")		# the aprs msgs has not date
 
                 msg['path']=path			# return the data parsed in the dict
