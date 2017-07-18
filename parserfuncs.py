@@ -236,13 +236,16 @@ def parseraprs(packet_str, msg):
 			station = "Unkown"		# always one station
 
 		if type != 8:				# if not status report
-                	p1=data.find(':/')+2            # scan for the body of the APRS message
-			if data[p1+6] == 'h':		# case of HHMMSS
-                		hora=data[p1:p1+6]      # get the GPS time in UTC
-			if data[p1+6] == 'z':		# case of DDHHMM
-                		hora=data[p1+2:p1+6]+'00'  # get the GPS time in UTC, ignore date
-			else:
-                		hora=date.strftime("%H%M%S")	# the aprs msgs has not time in this case
+			if otime != 0:			# if time is provided ???
+                		hora=otime.strftime("%H%M%S")	# the aprs msgs has the time in this case
+			else:	
+                		p1=data.find(':/')+2    # scan for the body of the APRS message
+				if data[p1+6] == 'h':	# case of HHMMSS
+                			hora=data[p1:p1+6]      # get the GPS time in UTC
+				elif data[p1+6] == 'z':	# case of DDHHMM
+                			hora=data[p1+2:p1+6]+'00'  # get the GPS time in UTC, ignore date
+				else:
+                			hora=date.strftime("%H%M%S")	# the aprs msgs has not time in this case
 		else:					# the case of aprs status report
 			if otime == 0:			# if not time from the packet
                 		hora=date.strftime("%H%M%S")	# the aprs msgs has not time in this case
