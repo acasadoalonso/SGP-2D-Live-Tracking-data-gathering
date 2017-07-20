@@ -1,2 +1,6 @@
 *.pyc
 utils/
+config/
+lib/
+log/
+Capfile
