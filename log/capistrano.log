@@ -1,0 +1,299 @@
+# Logfile created on 2017-07-20 17:11:27 +0200 by logger.rb/56815
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 17:11:27 +0200 cap production deploy
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 17:15:03 +0200 cap production tt
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:38:32 +0200 cap production deploy
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:41:27 +0200 cap production deploy
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:47:20 +0200 cap production deploy
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:50:07 +0200 cap production deploy:check
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:52:33 +0200 cap production check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:53:32 +0200 cap production check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:54:53 +0200 cap production deploy check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:55:49 +0200 cap production check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:56:54 +0200 cap production doctor check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:58:44 +0200 cap production doctor check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:59:09 +0200 cap production doctor check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:59:23 +0200 cap production deploy check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 18:59:45 +0200 cap production deploy check.cap
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:05:21 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:14:29 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:23:09 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:24:17 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:28:41 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:29:16 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:31:42 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:37:06 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [33938251] Running [ -w /var/www/html/node ] as pi@ogn
+ DEBUG [33938251] Command: [ -w /var/www/html/node ]
+ DEBUG [33938251] Finished in 0.278 seconds with exit status 1 (failed).
+ ERROR /var/www/html/node is not writable on ogn
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:38:30 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [ea4a0416] Running [ -w /var/www/html/node ] as pi@ogn
+ DEBUG [ea4a0416] Command: [ -w /var/www/html/node ]
+ DEBUG [c4cf1e02] Running [ -w /var/www/html/node ] as ogn@ogn.planeadores.cl
+ DEBUG [c4cf1e02] Command: [ -w /var/www/html/node ]
+ DEBUG [ea4a0416] Finished in 0.287 seconds with exit status 1 (failed).
+ ERROR /var/www/html/node is not writable on ogn
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:41:57 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [336d75db] Running [ -w /var/www/html/node ] as pi@ogn
+ DEBUG [a8a711dc] Running [ -w /var/www/html/node ] as ogn@ogn.planeadores.cl
+ DEBUG [336d75db] Command: [ -w /var/www/html/node ]
+ DEBUG [a8a711dc] Command: [ -w /var/www/html/node ]
+ DEBUG [336d75db] Finished in 0.195 seconds with exit status 1 (failed).
+ ERROR /var/www/html/node is not writable on ogn
+ DEBUG [a8a711dc] Finished in 3.208 seconds with exit status 0 (successful).
+  INFO /var/www/html/node is writable on ogn.planeadores.cl
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:45:40 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [833c7dd2] Running [ -w ~/src/APRSsrc ] as ogn@ogn.planeadores.cl
+ DEBUG [833c7dd2] Command: [ -w ~/src/APRSsrc ]
+ DEBUG [833c7dd2] Finished in 3.102 seconds with exit status 0 (successful).
+  INFO ~/src/APRSsrc is writable on ogn.planeadores.cl
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 19:55:31 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [36e73bd5] Running [ -w ~/src/APRSsrc ] as ogn@ogn.planeadores.cl
+ DEBUG [36e73bd5] Command: [ -w ~/src/APRSsrc ]
+ DEBUG [bede1e46] Running [ -w ~/src/APRSsrc ] as root@glidertracking.fai.org
+ DEBUG [bede1e46] Command: [ -w ~/src/APRSsrc ]
+ DEBUG [bede1e46] Finished in 0.786 seconds with exit status 1 (failed).
+ ERROR ~/src/APRSsrc is not writable on glidertracking.fai.org
+ DEBUG [36e73bd5] Finished in 3.636 seconds with exit status 0 (successful).
+  INFO ~/src/APRSsrc is writable on ogn.planeadores.cl
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 20:01:55 +0200 cap production check_write_permissions
+  INFO ---------------------------------------------------------------------------
+ DEBUG [95385186] Running [ -w ~/src/APRSsrc ] as root@glidertracking.fai.org
+ DEBUG [4a2fc627] Running [ -w ~/src/APRSsrc ] as ogn@ogn.planeadores.cl
+ DEBUG [95385186] Command: [ -w ~/src/APRSsrc ]
+ DEBUG [4a2fc627] Command: [ -w ~/src/APRSsrc ]
+ DEBUG [95385186] Finished in 1.061 seconds with exit status 0 (successful).
+  INFO ~/src/APRSsrc is writable on glidertracking.fai.org
+ DEBUG [4a2fc627] Finished in 3.313 seconds with exit status 0 (successful).
+  INFO ~/src/APRSsrc is writable on ogn.planeadores.cl
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 20:02:47 +0200 cap production deploy
+  INFO ---------------------------------------------------------------------------
+  INFO [e675eddf] Running /usr/bin/env mkdir -p /tmp as ogn@ogn.planeadores.cl
+ DEBUG [e675eddf] Command: /usr/bin/env mkdir -p /tmp
+  INFO [a0e28025] Running /usr/bin/env mkdir -p /tmp as root@glidertracking.fai.org
+ DEBUG [a0e28025] Command: /usr/bin/env mkdir -p /tmp
+  INFO [a0e28025] Finished in 0.722 seconds with exit status 0 (successful).
+ DEBUG Uploading /tmp/git-ssh-2DSGPtracking-production-angel.sh 0.0%
+  INFO Uploading /tmp/git-ssh-2DSGPtracking-production-angel.sh 100.0%
+  INFO [0a581161] Running /usr/bin/env chmod 700 /tmp/git-ssh-2DSGPtracking-production-angel.sh as root@glidertracking.fai.org
+ DEBUG [0a581161] Command: /usr/bin/env chmod 700 /tmp/git-ssh-2DSGPtracking-production-angel.sh
+  INFO [0a581161] Finished in 0.096 seconds with exit status 0 (successful).
+  INFO [e675eddf] Finished in 3.277 seconds with exit status 0 (successful).
+ DEBUG Uploading /tmp/git-ssh-2DSGPtracking-production-angel.sh 0.0%
+  INFO Uploading /tmp/git-ssh-2DSGPtracking-production-angel.sh 100.0%
+  INFO [8155004c] Running /usr/bin/env chmod 700 /tmp/git-ssh-2DSGPtracking-production-angel.sh as ogn@ogn.planeadores.cl
+ DEBUG [8155004c] Command: /usr/bin/env chmod 700 /tmp/git-ssh-2DSGPtracking-production-angel.sh
+  INFO [8155004c] Finished in 0.524 seconds with exit status 0 (successful).
+  INFO [343bd8f2] Running /usr/bin/env git ls-remote https://github.com/acasadoalonso/RepoOGN-DataGatheringPart HEAD as root@glidertracking.fai.org
+  INFO [5708ec94] Running /usr/bin/env git ls-remote https://github.com/acasadoalonso/RepoOGN-DataGatheringPart HEAD as ogn@ogn.planeadores.cl
+ DEBUG [343bd8f2] Command: ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git ls-remote https://github.com/acasadoalonso/RepoOGN-DataGatheringPart HEAD )
+ DEBUG [5708ec94] Command: ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git ls-remote https://github.com/acasadoalonso/RepoOGN-DataGatheringPart HEAD )
+ DEBUG [343bd8f2] 	bb642f82d15c9517aa885e7cceadaf7922041249	HEAD
+  INFO [343bd8f2] Finished in 0.902 seconds with exit status 0 (successful).
+ DEBUG [5708ec94] 	bb642f82d15c9517aa885e7cceadaf7922041249	HEAD
+  INFO [5708ec94] Finished in 1.398 seconds with exit status 0 (successful).
+  INFO [3594a2ad] Running /usr/bin/env mkdir -p ~/src/APRSsrc/shared ~/src/APRSsrc/releases as root@glidertracking.fai.org
+  INFO [ef0a84d2] Running /usr/bin/env mkdir -p ~/src/APRSsrc/shared ~/src/APRSsrc/releases as ogn@ogn.planeadores.cl
+ DEBUG [3594a2ad] Command: /usr/bin/env mkdir -p ~/src/APRSsrc/shared ~/src/APRSsrc/releases
+ DEBUG [ef0a84d2] Command: /usr/bin/env mkdir -p ~/src/APRSsrc/shared ~/src/APRSsrc/releases
+  INFO [3594a2ad] Finished in 0.084 seconds with exit status 0 (successful).
+  INFO [ef0a84d2] Finished in 0.522 seconds with exit status 0 (successful).
+ DEBUG [913c3bec] Running [ -f ~/src/APRSsrc/current/REVISION ] as root@glidertracking.fai.org
+ DEBUG [913c3bec] Command: [ -f ~/src/APRSsrc/current/REVISION ]
+ DEBUG [2450d81f] Running [ -f ~/src/APRSsrc/current/REVISION ] as ogn@ogn.planeadores.cl
+ DEBUG [2450d81f] Command: [ -f ~/src/APRSsrc/current/REVISION ]
+ DEBUG [913c3bec] Finished in 0.083 seconds with exit status 1 (failed).
+ DEBUG [2450d81f] Finished in 0.520 seconds with exit status 1 (failed).
+ DEBUG [fdab4977] Running [ -f ~/src/APRSsrc/repo/HEAD ] as root@glidertracking.fai.org
+ DEBUG [b303c6b4] Running [ -f ~/src/APRSsrc/repo/HEAD ] as ogn@ogn.planeadores.cl
+ DEBUG [fdab4977] Command: [ -f ~/src/APRSsrc/repo/HEAD ]
+ DEBUG [b303c6b4] Command: [ -f ~/src/APRSsrc/repo/HEAD ]
+ DEBUG [fdab4977] Finished in 0.082 seconds with exit status 1 (failed).
+ DEBUG [79ea2835] Running if test ! -d ~/src/APRSsrc; then echo "Directory does not exist '~/src/APRSsrc'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [79ea2835] Command: if test ! -d ~/src/APRSsrc; then echo "Directory does not exist '~/src/APRSsrc'" 1>&2; false; fi
+ DEBUG [79ea2835] Finished in 0.082 seconds with exit status 0 (successful).
+  INFO [3690f1e7] Running /usr/bin/env git clone --mirror https://github.com/acasadoalonso/RepoOGN-DataGatheringPart ~/src/APRSsrc/repo as root@glidertracking.fai.org
+ DEBUG [3690f1e7] Command: cd ~/src/APRSsrc && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git clone --mirror https://github.com/acasadoalonso/RepoOGN-DataGatheringPart ~/src/APRSsrc/repo )
+ DEBUG [3690f1e7] 	Cloning into bare repository '/root/src/APRSsrc/repo'...
+ DEBUG [b303c6b4] Finished in 0.518 seconds with exit status 1 (failed).
+ DEBUG [a70f74e5] Running if test ! -d ~/src/APRSsrc; then echo "Directory does not exist '~/src/APRSsrc'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [a70f74e5] Command: if test ! -d ~/src/APRSsrc; then echo "Directory does not exist '~/src/APRSsrc'" 1>&2; false; fi
+ DEBUG [a70f74e5] Finished in 0.519 seconds with exit status 0 (successful).
+  INFO [4e1c7ccf] Running /usr/bin/env git clone --mirror https://github.com/acasadoalonso/RepoOGN-DataGatheringPart ~/src/APRSsrc/repo as ogn@ogn.planeadores.cl
+ DEBUG [4e1c7ccf] Command: cd ~/src/APRSsrc && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git clone --mirror https://github.com/acasadoalonso/RepoOGN-DataGatheringPart ~/src/APRSsrc/repo )
+ DEBUG [4e1c7ccf] 	Cloning into bare repository '/home/ogn/src/APRSsrc/repo'...
+  INFO [3690f1e7] Finished in 2.508 seconds with exit status 0 (successful).
+  INFO [4e1c7ccf] Finished in 13.763 seconds with exit status 0 (successful).
+ DEBUG [3307c104] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [3307c104] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [d896493c] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [d896493c] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [d896493c] Finished in 0.083 seconds with exit status 0 (successful).
+  INFO [59ef15dc] Running /usr/bin/env git remote set-url origin https://github.com/acasadoalonso/RepoOGN-DataGatheringPart as root@glidertracking.fai.org
+ DEBUG [59ef15dc] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git remote set-url origin https://github.com/acasadoalonso/RepoOGN-DataGatheringPart )
+  INFO [59ef15dc] Finished in 0.084 seconds with exit status 0 (successful).
+  INFO [c6773652] Running /usr/bin/env git remote update --prune as root@glidertracking.fai.org
+ DEBUG [c6773652] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git remote update --prune )
+ DEBUG [c6773652] 	Fetching origin
+ DEBUG [3307c104] Finished in 0.520 seconds with exit status 0 (successful).
+  INFO [60313296] Running /usr/bin/env git remote set-url origin https://github.com/acasadoalonso/RepoOGN-DataGatheringPart as ogn@ogn.planeadores.cl
+ DEBUG [60313296] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git remote set-url origin https://github.com/acasadoalonso/RepoOGN-DataGatheringPart )
+  INFO [c6773652] Finished in 0.546 seconds with exit status 0 (successful).
+  INFO [60313296] Finished in 0.521 seconds with exit status 0 (successful).
+  INFO [6c196cf1] Running /usr/bin/env git remote update --prune as ogn@ogn.planeadores.cl
+ DEBUG [6c196cf1] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git remote update --prune )
+ DEBUG [6c196cf1] 	Fetching origin
+  INFO [6c196cf1] Finished in 1.440 seconds with exit status 0 (successful).
+ DEBUG [4d00b571] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [202f7808] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [4d00b571] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [202f7808] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [202f7808] Finished in 0.085 seconds with exit status 0 (successful).
+  INFO [b63e9036] Running /usr/bin/env mkdir -p ~/src/APRSsrc/releases/20170720180255 as root@glidertracking.fai.org
+ DEBUG [b63e9036] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env mkdir -p ~/src/APRSsrc/releases/20170720180255 )
+  INFO [b63e9036] Finished in 0.083 seconds with exit status 0 (successful).
+  INFO [f1120cd3] Running /usr/bin/env git archive master | /usr/bin/env tar -x -f - -C ~/src/APRSsrc/releases/20170720180255 as root@glidertracking.fai.org
+ DEBUG [f1120cd3] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git archive master | /usr/bin/env tar -x -f - -C ~/src/APRSsrc/releases/20170720180255 )
+  INFO [f1120cd3] Finished in 0.131 seconds with exit status 0 (successful).
+ DEBUG [4d00b571] Finished in 0.522 seconds with exit status 0 (successful).
+  INFO [9769391e] Running /usr/bin/env mkdir -p ~/src/APRSsrc/releases/20170720180255 as ogn@ogn.planeadores.cl
+ DEBUG [9769391e] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env mkdir -p ~/src/APRSsrc/releases/20170720180255 )
+  INFO [9769391e] Finished in 0.527 seconds with exit status 0 (successful).
+  INFO [828cc175] Running /usr/bin/env git archive master | /usr/bin/env tar -x -f - -C ~/src/APRSsrc/releases/20170720180255 as ogn@ogn.planeadores.cl
+ DEBUG [828cc175] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git archive master | /usr/bin/env tar -x -f - -C ~/src/APRSsrc/releases/20170720180255 )
+  INFO [828cc175] Finished in 0.545 seconds with exit status 0 (successful).
+ DEBUG [daef3b55] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [daef3b55] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [8ea94a82] Running if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [8ea94a82] Command: if test ! -d ~/src/APRSsrc/repo; then echo "Directory does not exist '~/src/APRSsrc/repo'" 1>&2; false; fi
+ DEBUG [8ea94a82] Finished in 0.085 seconds with exit status 0 (successful).
+ DEBUG [a4957ea3] Running /usr/bin/env git rev-list --max-count=1 master as root@glidertracking.fai.org
+ DEBUG [a4957ea3] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git rev-list --max-count=1 master )
+ DEBUG [a4957ea3] 	bb642f82d15c9517aa885e7cceadaf7922041249
+ DEBUG [a4957ea3] Finished in 0.088 seconds with exit status 0 (successful).
+ DEBUG [daef3b55] Finished in 0.522 seconds with exit status 0 (successful).
+ DEBUG [cd553ab4] Running /usr/bin/env git rev-list --max-count=1 master as ogn@ogn.planeadores.cl
+ DEBUG [cd553ab4] Command: cd ~/src/APRSsrc/repo && ( export GIT_ASKPASS="/bin/echo" GIT_SSH="/tmp/git-ssh-2DSGPtracking-production-angel.sh" ; /usr/bin/env git rev-list --max-count=1 master )
+ DEBUG [cd553ab4] 	bb642f82d15c9517aa885e7cceadaf7922041249
+ DEBUG [cd553ab4] Finished in 0.522 seconds with exit status 0 (successful).
+ DEBUG [90398e28] Running if test ! -d ~/src/APRSsrc/releases/20170720180255; then echo "Directory does not exist '~/src/APRSsrc/releases/20170720180255'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [90398e28] Command: if test ! -d ~/src/APRSsrc/releases/20170720180255; then echo "Directory does not exist '~/src/APRSsrc/releases/20170720180255'" 1>&2; false; fi
+ DEBUG [4783b08d] Running if test ! -d ~/src/APRSsrc/releases/20170720180255; then echo "Directory does not exist '~/src/APRSsrc/releases/20170720180255'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [4783b08d] Command: if test ! -d ~/src/APRSsrc/releases/20170720180255; then echo "Directory does not exist '~/src/APRSsrc/releases/20170720180255'" 1>&2; false; fi
+ DEBUG [4783b08d] Finished in 0.082 seconds with exit status 0 (successful).
+  INFO [46120a98] Running /usr/bin/env echo "bb642f82d15c9517aa885e7cceadaf7922041249" >> REVISION as root@glidertracking.fai.org
+ DEBUG [46120a98] Command: cd ~/src/APRSsrc/releases/20170720180255 && /usr/bin/env echo "bb642f82d15c9517aa885e7cceadaf7922041249" >> REVISION
+  INFO [46120a98] Finished in 0.109 seconds with exit status 0 (successful).
+ DEBUG [90398e28] Finished in 0.521 seconds with exit status 0 (successful).
+  INFO [fd03517e] Running /usr/bin/env echo "bb642f82d15c9517aa885e7cceadaf7922041249" >> REVISION as ogn@ogn.planeadores.cl
+ DEBUG [fd03517e] Command: cd ~/src/APRSsrc/releases/20170720180255 && /usr/bin/env echo "bb642f82d15c9517aa885e7cceadaf7922041249" >> REVISION
+  INFO [fd03517e] Finished in 0.521 seconds with exit status 0 (successful).
+  INFO [22c796fb] Running /usr/bin/env ln -s ~/src/APRSsrc/releases/20170720180255 ~/src/APRSsrc/releases/current as ogn@ogn.planeadores.cl
+ DEBUG [22c796fb] Command: /usr/bin/env ln -s ~/src/APRSsrc/releases/20170720180255 ~/src/APRSsrc/releases/current
+  INFO [1c6c7b95] Running /usr/bin/env ln -s ~/src/APRSsrc/releases/20170720180255 ~/src/APRSsrc/releases/current as root@glidertracking.fai.org
+ DEBUG [1c6c7b95] Command: /usr/bin/env ln -s ~/src/APRSsrc/releases/20170720180255 ~/src/APRSsrc/releases/current
+  INFO [1c6c7b95] Finished in 0.085 seconds with exit status 0 (successful).
+  INFO [6eff0545] Running /usr/bin/env mv ~/src/APRSsrc/releases/current ~/src/APRSsrc as root@glidertracking.fai.org
+ DEBUG [6eff0545] Command: /usr/bin/env mv ~/src/APRSsrc/releases/current ~/src/APRSsrc
+  INFO [6eff0545] Finished in 0.088 seconds with exit status 0 (successful).
+  INFO [22c796fb] Finished in 0.525 seconds with exit status 0 (successful).
+  INFO [222800c2] Running /usr/bin/env mv ~/src/APRSsrc/releases/current ~/src/APRSsrc as ogn@ogn.planeadores.cl
+ DEBUG [222800c2] Command: /usr/bin/env mv ~/src/APRSsrc/releases/current ~/src/APRSsrc
+  INFO [222800c2] Finished in 0.522 seconds with exit status 0 (successful).
+ DEBUG [43692c99] Running /usr/bin/env ls -x ~/src/APRSsrc/releases as ogn@ogn.planeadores.cl
+ DEBUG [b1e03135] Running /usr/bin/env ls -x ~/src/APRSsrc/releases as root@glidertracking.fai.org
+ DEBUG [43692c99] Command: /usr/bin/env ls -x ~/src/APRSsrc/releases
+ DEBUG [b1e03135] Command: /usr/bin/env ls -x ~/src/APRSsrc/releases
+ DEBUG [b1e03135] 	20170720180255
+ DEBUG [b1e03135] Finished in 0.082 seconds with exit status 0 (successful).
+ DEBUG [43692c99] 	20170720180255
+ DEBUG [43692c99] Finished in 0.521 seconds with exit status 0 (successful).
+ DEBUG [fc86857a] Running if test ! -d ~/src/APRSsrc/releases; then echo "Directory does not exist '~/src/APRSsrc/releases'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [34585fde] Running if test ! -d ~/src/APRSsrc/releases; then echo "Directory does not exist '~/src/APRSsrc/releases'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [fc86857a] Command: if test ! -d ~/src/APRSsrc/releases; then echo "Directory does not exist '~/src/APRSsrc/releases'" 1>&2; false; fi
+ DEBUG [34585fde] Command: if test ! -d ~/src/APRSsrc/releases; then echo "Directory does not exist '~/src/APRSsrc/releases'" 1>&2; false; fi
+ DEBUG [34585fde] Finished in 0.083 seconds with exit status 0 (successful).
+  INFO [24aabc03] Running /usr/bin/env echo "Branch master (at bb642f82d15c9517aa885e7cceadaf7922041249) deployed as release 20170720180255 by angel" >> ~/src/APRSsrc/revisions.log as root@glidertracking.fai.org
+ DEBUG [24aabc03] Command: cd ~/src/APRSsrc/releases && /usr/bin/env echo "Branch master (at bb642f82d15c9517aa885e7cceadaf7922041249) deployed as release 20170720180255 by angel" >> ~/src/APRSsrc/revisions.log
+  INFO [24aabc03] Finished in 0.084 seconds with exit status 0 (successful).
+ DEBUG [fc86857a] Finished in 0.521 seconds with exit status 0 (successful).
+  INFO [b5a10488] Running /usr/bin/env echo "Branch master (at bb642f82d15c9517aa885e7cceadaf7922041249) deployed as release 20170720180255 by angel" >> ~/src/APRSsrc/revisions.log as ogn@ogn.planeadores.cl
+ DEBUG [b5a10488] Command: cd ~/src/APRSsrc/releases && /usr/bin/env echo "Branch master (at bb642f82d15c9517aa885e7cceadaf7922041249) deployed as release 20170720180255 by angel" >> ~/src/APRSsrc/revisions.log
+  INFO [b5a10488] Finished in 0.526 seconds with exit status 0 (successful).
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 21:49:46 +0200 cap production bundler:install
+  INFO ---------------------------------------------------------------------------
+  INFO ---------------------------------------------------------------------------
+  INFO START 2017-07-20 21:53:35 +0200 cap production bundler:install
+  INFO ---------------------------------------------------------------------------
+ DEBUG [6eff0439] Running if test ! -d ~/src/APRSsrc/current; then echo "Directory does not exist '~/src/APRSsrc/current'" 1>&2; false; fi as ogn@ogn.planeadores.cl
+ DEBUG [6f1b50ca] Running if test ! -d ~/src/APRSsrc/current; then echo "Directory does not exist '~/src/APRSsrc/current'" 1>&2; false; fi as root@glidertracking.fai.org
+ DEBUG [6eff0439] Command: if test ! -d ~/src/APRSsrc/current; then echo "Directory does not exist '~/src/APRSsrc/current'" 1>&2; false; fi
+ DEBUG [6f1b50ca] Command: if test ! -d ~/src/APRSsrc/current; then echo "Directory does not exist '~/src/APRSsrc/current'" 1>&2; false; fi
+ DEBUG [6f1b50ca] 	Directory does not exist '~/src/APRSsrc/current'
+ DEBUG [6eff0439] Finished in 4.013 seconds with exit status 0 (successful).
+ DEBUG [a9ca930d] Running /usr/bin/env bundle check --path ~/src/APRSsrc/shared/bundle as ogn@ogn.planeadores.cl
+ DEBUG [a9ca930d] Command: cd ~/src/APRSsrc/current && /usr/bin/env bundle check --path ~/src/APRSsrc/shared/bundle
+ DEBUG [a9ca930d] 	/usr/bin/env: ‘bundle’
+ DEBUG [a9ca930d] 	: No such file or directory
+ DEBUG [a9ca930d] Finished in 0.584 seconds with exit status 127 (failed).
+  INFO [fc7535ef] Running /usr/bin/env bundle install --path ~/src/APRSsrc/shared/bundle --without development test --deployment --quiet as ogn@ogn.planeadores.cl
+ DEBUG [fc7535ef] Command: cd ~/src/APRSsrc/current && /usr/bin/env bundle install --path ~/src/APRSsrc/shared/bundle --without development test --deployment --quiet
+ DEBUG [fc7535ef] 	/usr/bin/env: ‘bundle’
+ DEBUG [fc7535ef] 	: No such file or directory
