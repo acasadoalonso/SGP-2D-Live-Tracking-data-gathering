@@ -413,8 +413,6 @@ try:
 			continue			# that is the case of the ogn trackers status reports
                 if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN": # if std records
                         station=msg['station']
-			if path[0:3] == "OGN":
-				#print "RELAY:", path, station
                 else:
 			station="Unkown"
                         continue                        # nothing else to do
