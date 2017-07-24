@@ -32,10 +32,10 @@ def spigetapidata(url, data, username, password): 	# get the data from the API s
 	html=r.read()				# read the data received
         return(html)				# return the data received
 
-def  spigetdataXML(ttime): 			# prepare the data POST request
+def  spigetdataXML(ttime,SYSid): 		# prepare the data POST request
 
-	data='<?xml version="1.0" encoding="utf-8"?> <data xmlns="https://aff.gov/affSchema" sysId="Club de Planeadores de Vitacura" rptTime="'+ttime+'" version="2.23"> <msgRequest to="Spidertracks" from="Club de Planeadores de Vitacura" msgType="Data Request" subject="Async" dateTime="'+ttime+'"> <body>'+ttime+'</body> </msgRequest> </data>'
-	return (data)
+	data='<?xml version="1.0" encoding="utf-8"?> <data xmlns="https://aff.gov/affSchema" sysId="'+SYSid+'" rptTime="'+ttime+'" version="2.23"> <msgRequest to="Spidertracks" from="'+SYSid+'" msgType="Data Request" subject="Async" dateTime="'+ttime+'"> <body>'+ttime+'</body> </msgRequest> </data>'
+	return (data)				# return data on XML format
 
 
 def spigetaircraftpos(html, spipos):		# return on a dictionary the position of all spidertracks
@@ -149,12 +149,12 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
 	return(spidtable)
 
 
-def spifindspiderpos(ttime, conn, username, password, prt=False):	# find all the fixes since last time
+def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False):	# find all the fixes since last time
 
 	curs=conn.cursor()		# gen the cursor
 	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
 	spipos={"spiderpos":[]}		# init the dict
-	data=spigetdataXML(ttime)	# get the data for the POST request passing the TTIME
+	data=spigetdataXML(ttime,SYSid)	# get the data for the POST request passing the TTIME
 	html=spigetapidata(url,data, username, password) # get the data on HTML format
 	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
 	if prt:

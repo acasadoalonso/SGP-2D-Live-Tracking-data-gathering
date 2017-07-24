@@ -56,6 +56,7 @@ try:
 	SPIDERtext      = cfg.get('location', 'SPIDER').strip("'").strip('"')
 	SPIuser         = cfg.get('location', 'SPIuser').strip("'").strip('"')
 	SPIpassword     = cfg.get('location', 'SPIpassword').strip("'").strip('"')
+	SPISYSid        = cfg.get('location', 'SPISYSid').strip("'").strip('"')
 except:
 	SPIDERtext='False'
 try:

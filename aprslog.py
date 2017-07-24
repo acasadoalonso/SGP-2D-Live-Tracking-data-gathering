@@ -110,6 +110,7 @@ if SPIDER:
 	from spifuncs import *
 	spiusername =config.SPIuser  
 	spipassword =config.SPIpassword  
+	spisysid =config.SPISYSid
 
 if SPOT:
 	from spotfuncs import *
@@ -259,7 +260,7 @@ try:
                 try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 			if SPIDER:				# if we have SPIDER according with the config
 
-				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, prt)
+				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt)
 
 			else: 
 				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
