@@ -99,17 +99,17 @@ DBuser   =config.DBuser
 DBpasswd =config.DBpasswd
 DBname   =config.DBname
 SPIDER   =config.SPIDER
-SPOT     =config.SPOT  
-SKYLINE  =config.SKYLINE  
-LT24     =config.LT24  
-OGNT     =config.OGNT  
+SPOT     =config.SPOT
+SKYLINE  =config.SKYLINE
+LT24     =config.LT24
+OGNT     =config.OGNT
 # --------------------------------------#
 
 
 if SPIDER:
 	from spifuncs import *
-	spiusername =config.SPIuser  
-	spipassword =config.SPIpassword  
+	spiusername =config.SPIuser
+	spipassword =config.SPIpassword
 	spisysid =config.SPISYSid
 
 if SPOT:
@@ -120,12 +120,12 @@ if SKYLINE:
 
 if LT24:
 	from lt24funcs import *
-	lt24username =config.LT24username  
-	lt24password =config.LT24password  
+	lt24username =config.LT24username
+	lt24password =config.LT24password
 	LT24qwe=" "
 	LT24_appSecret= " "
 	LT24_appKey= " "
-	LT24path=DBpath+"LT24/" 
+	LT24path=DBpath+"LT24/"
 	LT24login=False
 	LT24firsttime=True
 if OGNT:
@@ -181,7 +181,7 @@ if os.path.isfile(compfile):
 	filter="filter b/"
 	for f in clist:
 		filter += f
-		filter += "/"	
+		filter += "/"
 	filter += " p/LF/LE/ \n"
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
@@ -228,7 +228,7 @@ if OGNT:                        	# if we need aggregation of FLARM and OGN track
         ogntbuildtable(conn, ognttable, prt) # build the table from the TRKDEVICES DB table
 
 if SPIDER or SPOT or LT24:
-	print spispotcount, "---> TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
+	print spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 
 date = datetime.now()
 
@@ -262,9 +262,9 @@ try:
 
 				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt)
 
-			else: 
+			else:
 				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
-			
+
 			if SPOT:				# if we have the SPOT according with the configuration
 
 				ts   =spotfindpos(ts, conn)
@@ -280,20 +280,20 @@ try:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 			if LT24:				# if we have the LT24 according with the configuration
-		
+
 				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime) # find the position and add it to the DDBB
 				LT24firsttime=False		# only once the addpos
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
-			spispotcount += 1			# we report a counter of calls to the interfaces 
+			spispotcount += 1			# we report a counter of calls to the interfaces
 
 			if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
         			ogntbuildtable(conn, ognttable, prt) # rebuild the table from the TRKDEVICES DB table
 			if SPIDER or SPOT or LT24 or SKYLINE:
 
-				print spispotcount, "---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+				print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
 
                 except Exception, e:
@@ -301,7 +301,7 @@ try:
 			if SPIDER or SPOT or LT24 or SKYLINE:
 
 				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
-			
+
         if prt:
                 print "In main loop. Count= ", i
                 i += 1
@@ -473,4 +473,3 @@ except KeyboardInterrupt:
 shutdown(sock, datafile)
 print "Exit now ...", err
 exit(1)
-
