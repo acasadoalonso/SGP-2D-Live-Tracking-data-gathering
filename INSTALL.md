@@ -21,7 +21,7 @@
    > docker run -d --link mysql_container:mysql -p8080:80 -p8081:81 -v my_web_dir:/var/www glidertracking
    ```
 
-3. Clone APRS repository into the webroot of the Scotch Box
+3. Clone APRS repository into the webroot of the Scotch Box/Xenial VM Box
    ```
    rm ./public/index.php
    mkdir public
@@ -30,12 +30,14 @@
    git clone https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering     	node/main
    ln -s public html
    vagrant ssh
-   # The following commands get executed in the vm
+
+   # The following commands get executed in the VM
+   -----------------------------------------------
    do-release-upgrade
-   cd /var/www/public/node/main
-   bash install.sh
-   cd ~/src
-   bash APRSlive
+   cd /var/www/public/node/main         # go into the main directory
+   bash install.sh                      # install the software
+   cd ~/src                             # go into the source directory
+   bash APRSlive                        # run the daemon
    ```
 
 4. Access your local APRSLOG instance at [192.168.33.10](http://192.168.33.10)
@@ -49,5 +51,5 @@
    If you don't need ssh, you can get rid of all these parts.
    In case you need to start other processes in the image, you can add them near the end of the entrypoint.sh file.
 
-   Use (Dockerfile and entrypoint.sh) in your system, add the /var/www content directly in the image (in Dockerfile), 
+   Use (Dockerfile and entrypoint.sh) in your system, add the /var/www content directly in the image (in Dockerfile),
    add a few database initialization scripts in the entry point script and your image would be complete for immediate deployment.

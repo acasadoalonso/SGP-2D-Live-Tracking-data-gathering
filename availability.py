@@ -30,7 +30,7 @@ else:
 
 try:
 
-        inscmd="select * from RECEIVERS where idrec = '"+station+"' order by `otime` desc ;" 
+        inscmd="select * from RECEIVERS where idrec = '"+station+"' order by `otime` desc ;"
 	#print inscmd
         try:
                curs.execute(inscmd)
@@ -63,4 +63,3 @@ except KeyboardInterrupt:
 
 print "Exit now ..."
 exit(1)
-
