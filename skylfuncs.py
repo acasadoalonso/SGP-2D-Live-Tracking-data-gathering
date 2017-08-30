@@ -74,7 +74,7 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def skylfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME . Scan all the SKYL devices for new data
+def skylfindpos(ttime, conn, prt=False, store=True):	# find all the fixes since TTIME . Scan all the SKYL devices for new data
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
@@ -94,8 +94,10 @@ def skylfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME . Scan
 			continue	# if not active, just ignore it
 					# build the userlist to call to the SKYL server
 		skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)	# find the gliders since TTIME
-
-	skylstoreitindb(skylpos, curs, conn)			# and store it on the DDBB
+	if prt:
+		print skylpos
+	if store:
+		skylstoreitindb(skylpos, curs, conn)				# and store it on the DDBB
 	now=datetime.utcnow()
 	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
 	sync=int(td.total_seconds())	# as an integer

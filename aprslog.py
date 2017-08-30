@@ -57,14 +57,14 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.6'
-print "\n\nStart APRS, SPIDER , SPOT and LT24 logging "+programver
-print "================================================"
+programver='V1.7'
+print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
+print "===================================================================="
 
 print "Program Version:", time.ctime(os.path.getmtime(__file__))
 date=datetime.utcnow()         		# get the date
 dte=date.strftime("%y%m%d")             # today's date
-print "Date: ", date, "UTC on:", socket.gethostname(), "Process ID:", os.getpid()
+print "\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
 
@@ -100,6 +100,7 @@ DBpasswd =config.DBpasswd
 DBname   =config.DBname
 SPIDER   =config.SPIDER
 SPOT     =config.SPOT
+CAPTURS  =config.CAPTURS
 SKYLINE  =config.SKYLINE
 LT24     =config.LT24
 OGNT     =config.OGNT
@@ -114,6 +115,9 @@ if SPIDER:
 
 if SPOT:
 	from spotfuncs import *
+
+if CAPTURS:
+	from captfuncs import *
 
 if SKYLINE:
 	from skylfuncs import *
@@ -215,6 +219,9 @@ min5=timedelta(seconds=300)		# 5 minutes ago
 now=now-min5				# now less 5 minutes
 td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
+tc=ts					# init the variables
+ty=ts
+lt24ts=ts
 spispotcount=1				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
@@ -227,7 +234,7 @@ if OGNT:                        	# if we need aggregation of FLARM and OGN track
         ognttable={}            	# init the instance of the table
         ogntbuildtable(conn, ognttable, prt) # build the table from the TRKDEVICES DB table
 
-if SPIDER or SPOT or LT24:
+if SPIDER or SPOT or CAPTURS or LT24:
 	print spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 
 date = datetime.now()
@@ -241,12 +248,12 @@ try:
                 break
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
+		alive(config.APP)               		# and mark that we are still alive
                 try:
                         rtn = sock_file.write("#Python ognES App\n\n")
                         # Make sure keepalive gets sent. If not flushed then buffered
                         sock_file.flush()
                         datafile.flush()
-                        alive(config.APP )               	# indicate that we are alive
                         run_time = time.time() - start_time
                         if prt:
                                 print "Send keepalive number: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
@@ -259,28 +266,28 @@ try:
 			print "UTC time is now: ", now
                 try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 			if SPIDER:				# if we have SPIDER according with the config
-
 				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt)
-
 			else:
 				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
 			if SPOT:				# if we have the SPOT according with the configuration
-
 				ts   =spotfindpos(ts, conn)
 			else:
-
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-			if SKYLINE:				# if we have the SPOT according with the configuration
 
-				ts   =skylfindpos(ts, conn)
+			if CAPTURS:				# if we have the CAPTURS according with the configuration
+				tc   =captfindpos(tc, conn)
 			else:
-
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-			if LT24:				# if we have the LT24 according with the configuration
+				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
 
+			if SKYLINE:				# if we have the SPOT according with the configuration
+				ty   =skylfindpos(ty, conn)
+			else:
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				ty=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if LT24:				# if we have the LT24 according with the configuration
 				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime) # find the position and add it to the DDBB
 				LT24firsttime=False		# only once the addpos
 			else:
@@ -291,9 +298,9 @@ try:
 
 			if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
         			ogntbuildtable(conn, ognttable, prt) # rebuild the table from the TRKDEVICES DB table
-			if SPIDER or SPOT or LT24 or SKYLINE:
+			if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
 
-				print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+				print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, tc, ty, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
 
                 except Exception, e:

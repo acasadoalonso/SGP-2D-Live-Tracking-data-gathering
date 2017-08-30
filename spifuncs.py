@@ -149,7 +149,7 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
 	return(spidtable)
 
 
-def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False):	# find all the fixes since last time
+def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=True):	# find all the fixes since last time
 
 	curs=conn.cursor()		# gen the cursor
 	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
@@ -159,6 +159,7 @@ def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False):	# find 
 	ttime=spigetaircraftpos(html, spipos)	# extract the aircraft position from the XML data
 	if prt:
 		print spipos		# print the raw data
-	spistoreitindb(spipos, curs, conn, prt)	# store the fixes on the DDBB
+	if store:
+		spistoreitindb(spipos, curs, conn, prt)	# store the fixes on the DDBB
 	return (ttime)			# return the TTIME for the next request
 

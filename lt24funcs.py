@@ -144,7 +144,7 @@ def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def lt24findpos(ttime, conn, once, prt=False):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
+def lt24findpos(ttime, conn, once, prt=False, store=True):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
 
 	flarmids={}			# list of flarm ids
 	curs=conn.cursor()              # set the cursor for storing the fixes
@@ -189,7 +189,10 @@ def lt24findpos(ttime, conn, once, prt=False):	# find all the fixes since TTIME 
 	if once:			# only the very first time
 		ts=lt24addpos(jsondata, lt24pos, ttime, userList, flarmid)	# find the gliders since TTIME
 	sync=lt24gettrackpoints(lt24pos, ttime, userList, flarmids)		# get now all the fixes/tracks
-	lt24storeitindb(lt24pos, curs, conn)		# and store it on the DDBB
+	if prt:
+		print llt24pos
+	if store:
+		lt24storeitindb(lt24pos, curs, conn)				# and store it on the DDBB
 	
 	if sync == 0:			# just in case of not tracks at all, built the current time
 		now=datetime.utcnow()

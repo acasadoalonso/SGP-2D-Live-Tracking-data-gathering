@@ -47,6 +47,12 @@ try:
 except:
 	SPOTtext='False'
 try:
+	CAPTURStext     = cfg.get('location', 'CAPTURS').strip("'").strip('"')
+	CAPTURSlogin    = cfg.get('location', 'CAPTURSlogin').strip("'").strip('"')
+	CAPTURSpasswd   = cfg.get('location', 'CAPTURSpasswd').strip("'").strip('"')
+except:
+	CAPTURStext='False'
+try:
 	LT24text        = cfg.get('location', 'LT24').strip("'").strip('"')
 	LT24username    = cfg.get('location', 'LT24username').strip("'").strip('"')
 	LT24password    = cfg.get('location', 'LT24password').strip("'").strip('"')
@@ -100,6 +106,10 @@ if (SPOTtext == 'True'):
         SPOT = True
 else:
         SPOT = False
+if (CAPTURStext == 'True'):
+        CAPTURS = True
+else:
+        CAPTURS = False
 if (LT24text == 'True'):
         LT24 = True
 else:
@@ -120,7 +130,9 @@ LogData=False                                   # report the configuration param
 APP="APRSLOG"					# the application name
 print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
+print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
 # --------------------------------------#
-APP='APRS'
+APP='APRS'					# alternate APRSPUSH
+SOCK=0
+SOCK_FILE=0
 RegWarning=True

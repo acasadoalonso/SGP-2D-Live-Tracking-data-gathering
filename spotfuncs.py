@@ -114,7 +114,7 @@ def spotstoreitindb(datafix, curs, conn):	# store the fix into the database
 	return(True)			# indicate that we have success
 
 
-def spotfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME
+def spotfindpos(ttime, conn, prt=False, store=True):	# find all the fixes since TTIME
 
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
@@ -139,13 +139,18 @@ def spotfindpos(ttime, conn, prt=False):	# find all the fixes since TTIME
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json"
 		else:
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+str(spotpasswd)
+		if prt:
+			print url
 		spotpos={"spotpos":[]}				# init the dict
 		jsondata=spotgetapidata(url)			# get the JSON data from the SPOT server
 		if prt:						# if we require printing the raw data
 			j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
 			print j
 		found=spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid, prt=False)	# find the gliders since TTIME
-		spotstoreitindb(spotpos, curs, conn)			# and store it on the DDBB
+		if prt:
+			print spotpos
+		if store:
+			spotstoreitindb(spotpos, curs, conn)					# and store it on the DDBB
 	
 	now=datetime.utcnow()
 	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
