@@ -132,7 +132,6 @@ def spotaprspush(datafix, prt=False):	# push the data into the OGN APRS
 		rot=0
 		sensitivity=0
 		gps=fix['GPS']
-		gps=gps[0:6]			# spot model
 		uniqueid=str(fix["UnitID"])	# identifier of the owner
 		dist=fix['dist']
 		extpos=fix['extpos']		# battery state
@@ -153,7 +152,7 @@ def spotaprspush(datafix, prt=False):	# push the data into the OGN APRS
 		aprsmsg=id+">OGSPOT,qAS,SPOT:/"+hora+'h'+lat+"/"+lon+"'000/000/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += " "+gps+" id"+uniqueid+" "+extpos+"\n"
+		aprsmsg += " "+gps+" "+extpos+" id"+uniqueid+"\n"
 		rtn = config.SOCK_FILE.write(aprsmsg) 
 		print "APRSMSG : ", aprsmsg
 	return(True)

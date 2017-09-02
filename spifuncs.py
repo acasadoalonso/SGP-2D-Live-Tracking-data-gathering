@@ -203,7 +203,7 @@ def spiaprspush(data, conn, prt=False):
 
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += " "+gps+" id"+uniqueid+" FIX"+extpos+" +"+sensitivity+"dB \n"
+		aprsmsg += " "+gps+" fix"+extpos+" id"+uniqueid+" +"+sensitivity+"dB \n"
 		rtn = config.SOCK_FILE.write(aprsmsg) 
 		print "APRSMSG : ", aprsmsg
 
