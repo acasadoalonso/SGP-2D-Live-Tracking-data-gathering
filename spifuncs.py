@@ -10,12 +10,15 @@ import string
 import sys
 import os
 import signal
-from   geopy.distance import vincenty       # use the Vincenty algorithm^M
-import MySQLdb                              # the SQL data base routines^M
+from   geopy.distance import vincenty       # use the Vincenty algorithm
+import MySQLdb                              # the SQL data base routines
+# ---------------- #
 import config
 import kglid
 from flarmfuncs import *
+from parserfuncs import deg2dms
 
+# ---------------- #
 
 # simple wrapper function to encode the username & pass
 def encodeUserData(user, password):
@@ -84,50 +87,6 @@ def spigetaircraftpos(html, spipos):		# return on a dictionary the position of a
 			spipos['spiderpos'].append(pos) 			# append the position infomatio to the dict
 	return (ttime)								# return the ttime as a reference for next request
 
-def spistoreitindb(data, curs, conn, prt=False):# store the spider position into the database
-	
-	spidtable={}
-	spibuildtable(conn, spidtable, prt)	# build the table of registration and flarmid
-	for fix in data['spiderpos']:		# for each position that we have on the dict
-		id=fix['registration'] 		# extract the information to store on the DDBB
-		if len(id) > 9:
-			id=id[0:9] 
-		if id == "HBEAT":		# if it is the heartbeat just ignore it
-			continue
-		dte=fix['date'] 
-		hora=fix['time'] 
-		station=config.location_name
-		latitude=fix['Lat'] 
-		longitude=fix['Long'] 
-		altim=fix['altitude'] 
-		speed=fix['speed'] 
-		course=fix['heading'] 
-		roclimb=0
-		rot=0
-		sensitivity=fix['sensitivity']
-		gps=fix['GPS']
-		uniqueid=fix["UnitID"]
-		dist=fix['dist']
-		extpos=fix['extpos']
-		if id in spidtable:		# if ID is on the table substitude the spiderid by the flramid 
-			reg=spidtable[id]
-		else:
-			reg="XX-"+id		# if not ... just add the registration prefix
-		addcmd="insert into OGNDATA values ('" +reg+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
-               str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') "
-        	try:
-              		curs.execute(addcmd)	# store it on the DDBB
-        	except MySQLdb.Error, e:
-              		try:
-                     		print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-              		except IndexError:
-                     		print ">>>MySQL Error: %s" % str(e)
-                     		print ">>>MySQL error:", cout, addcmd
-                    		print ">>>MySQL data :",  data
-			return (False)	# report the error
-        conn.commit()                   # commit the DB updates
-	return(True)			# report success
 
 def spibuildtable(conn, spidtable, prt=False):	# function to build the spider table of relation between flramid and registrations
 
@@ -148,6 +107,107 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
 		print "SPIDtable:", spidtable
 	return(spidtable)
 
+def spistoreitindb(data, curs, conn, prt=False):# store the spider position into the database
+	
+	spidtable={}
+	spibuildtable(conn, spidtable, prt)	# build the table of registration and flarmid
+	for fix in data['spiderpos']:		# for each position that we have on the dict
+		id=fix['registration'] 		# extract the information to store on the DDBB
+		if len(id) > 9:
+			id=id[0:9] 
+		if id == "HBEAT":		# if it is the heartbeat just ignore it
+			continue
+		dte=fix['date'] 
+		hora=fix['time'] 
+		station=config.location_name
+		latitude=fix['Lat'] 
+		longitude=fix['Long'] 
+		altim=fix['altitude'] 
+		speed=fix['speed'] 
+		course=fix['heading'] 
+		roclimb=0
+		rot=0
+		sensitivity=fix['sensitivity']	# store the GPS accuracy on the sensitivity
+		gps=fix['GPS']
+		uniqueid=fix["UnitID"]
+		dist=fix['dist']
+		extpos=fix['extpos']		# store 3D/2D on the extended position
+		if id in spidtable:		# if ID is on the table substitude the spiderid by the flarmID
+			reg=spidtable[id]
+		else:
+			reg="XX-"+id		# if not ... just add the registration prefix
+		addcmd="insert into OGNDATA values ('" +reg+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+               str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "' , 'SPID') "
+        	try:
+              		curs.execute(addcmd)	# store it on the DDBB
+        	except MySQLdb.Error, e:
+              		try:
+                     		print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+              		except IndexError:
+                     		print ">>>MySQL Error: %s" % str(e)
+                     		print ">>>MySQL error:", cout, addcmd
+                    		print ">>>MySQL data :",  data
+			return (False)	# report the error
+        conn.commit()                   # commit the DB updates
+	return(True)			# report success
+
+def spiaprspush(data, conn, prt=False):
+
+	spidtable={}
+	spibuildtable(conn, spidtable, prt)	# build the table of registration and flarmid
+	for fix in data['spiderpos']:		# for each position that we have on the dict
+		id=fix['registration'] 		# extract the information to store on the DDBB
+		if len(id) > 9:
+			id=id[0:9] 
+		if id == "HBEAT":		# if it is the heartbeat just ignore it
+			continue
+		dte=fix['date'] 
+		hora=fix['time'] 
+		station=config.location_name
+		latitude=float(fix['Lat'] )	# convert to float
+		longitude=float(fix['Long'] ) 	
+		altitude=int(fix['altitude'] )
+		speed=int(fix['speed'] )
+		course=int(fix['heading'] )
+		roclimb=0
+		rot=0
+		sensitivity=fix['sensitivity']	# store the GPS accuracy on the sensitivity
+		gps=fix['GPS']a			# if GPS is OK or not
+		uniqueid=fix["UnitID"]		# internal ID
+		dist=fix['dist']		# dist not used
+		extpos=fix['extpos']		# store 3D/2D on the extended position
+		if id in spidtable:		# if ID is on the table substitude the spiderid by the flramid 
+			reg=spidtable[id]
+		else:
+			reg="SPI"+id		# if not ... just add the registration prefix
+						# build the APRS message
+		lat=deg2dms(abs(latitude))	# conver the latitude to the format required by APRS
+		if latitude > 0:
+			lat += 'N'
+		else:
+			lat += 'S'
+		lon=deg2dms(abs(longitude))
+		if abs(longitude) < 100.0:
+			lon = '0'+lon
+		if longitude > 0:
+			lon += 'E'
+		else:
+			lon += 'W'
+	
+		
+		ccc="%03d"%int(course)
+		sss="%03d"%int(speed)
+	
+		aprsmsg=reg+">OGSPID,qAS,SPIDER:/"+hora+'h'+lat+lon+"'"+ccc+"/"+sss+"/"
+
+		if altitude > 0:
+			aprsmsg += "A=%06d"%int(altitude*3.28084)
+		aprsmsg += " "+gps+" id"+uniqueid+" FIX"+extpos+" +"+sensitivity+"dB \n"
+		rtn = config.SOCK_FILE.write(aprsmsg) 
+		print "APRSMSG : ", aprsmsg
+
+	return(True)
 
 def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=True, aprspush=False):	# find all the fixes since last time
 
@@ -161,5 +221,7 @@ def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=Tr
 		print spipos		# print the raw data
 	if store:
 		spistoreitindb(spipos, curs, conn, prt)	# store the fixes on the DDBB
+	if aprspush:
+		spiaprspush(spipos, conn, prt)		# push the fixes to the OGN APRS
 	return (ttime)			# return the TTIME for the next request
 

@@ -38,7 +38,7 @@ def spotaddpos(msg, spotpos, ttime, regis, flarmid):	# extract the data from the
 	lat=msg["latitude"] 			# extract from the JSON object the data that we need
 	lon=msg["longitude"] 
 	alt=msg["altitude"] 
-	id =msg["messengerId"] a		# identifier for the final user
+	id =msg["messengerId"] 			# identifier for the final user
 	mid=msg["modelId"] 			# spot model number
 	dte=msg["dateTime"] 
 	extpos=msg["batteryState"] 		# battery state 
