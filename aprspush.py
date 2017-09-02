@@ -25,13 +25,15 @@ from flarmfuncs import *		# import the functions delaing with the Flarm ID
 def shutdown(sock):		        # shutdown routine, close files and report on activity
                                         # shutdown before exit
         libfap.fap_cleanup()            # close lifap in order to avoid memory leaks
-        sock.shutdown(0)                # shutdown the connection
-        sock.close()                    # close the connection file
-        print 'Records read:',cin, ' DB records created: ',cout    # report number of records read and IDs discovered
+	try:
+        	sock.shutdown(0)        # shutdown the connection
+        	sock.close()            # close the connection file
+        except Exception, e:
+		print "Socket error..."
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
-        print "Time now:", local_time, " Local time."
+        print "Shutdown now, Time now:", local_time, " Local time."
  	if os.path.exists("APRSPUSH.alive"):
 		os.remove("APRSPUSH.alive")	# delete the mark of being alive
         return                          # job done
@@ -43,13 +45,15 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
 
 def signal_term_handler(signal, frame):
     print 'got SIGTERM ... shutdown orderly'
-    libfap.fap_cleanup()                        # close libfap
-    shutdown(sock, datafile ) # shutdown orderly
+    shutdown(sock) 			# shutdown orderly
     sys.exit(0)
 
 # ......................................................................#
 signal.signal(signal.SIGTERM, signal_term_handler)
 # ......................................................................#
+def prttime(unixtime):
+	tme	=datetime.utcfromtimestamp(unixtime)	# get the time from the timestamp
+	return(tme.strftime("%H%M%S"))			# the time
 
 #
 ########################################################################
@@ -69,7 +73,7 @@ print "Time now is: ", date, " Local time"
 #
 # --------------------------------------#
 import config
-if os.path.exists(config.PIDfile):
+if os.path.exists(config.PIDfile+"PUSH"):
 	raise RuntimeError("APRSlog/push already running !!!")
 	exit(-1)
 #
@@ -127,8 +131,6 @@ if LT24:
 	LT24path=DBpath+"LT24/"
 	LT24login=False
 	LT24firsttime=True
-if OGNT:
-	from ogntfuncs import *
 
 # --------------------------------------#
 
@@ -139,7 +141,7 @@ curs=conn.cursor()                      # set the cursor
 
 print "MySQL: Database:", DBname, " at Host:", DBhost
 
-#----------------------ogn_aprspsh.py start-----------------------
+#----------------------ogn_aprspush.py start-----------------------
 
 prtreq =  sys.argv[1:]
 if prtreq and prtreq[0] == 'prt':
@@ -147,10 +149,10 @@ if prtreq and prtreq[0] == 'prt':
 else:
     prt = False
 
-with open(config.PIDfile,"w") as f:
+with open(config.PIDfile+"PUSH","w") as f:
 	f.write (str(os.getpid()))
 	f.close()
-atexit.register(lambda: os.remove(config.PIDfile))
+atexit.register(lambda: os.remove(config.PIDfile+"PUSH"))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -159,7 +161,7 @@ print "Socket sock connected"
 
 # logon to OGN APRS network
 
-login = 'user %s pass %s vers APRSPUSH %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+login = 'user %s pass %s vers APRSPUSH %s %s'  % ("APRSPUSH", "25596" , programver, "\n")
 print "APRS login:", login
 
 sock.send(login)
@@ -168,6 +170,10 @@ sock.send(login)
 sock_file = sock.makefile()
 config.SOCK=sock
 config.SOCK_FILE=sock_file
+print "APRS Version:", sock_file.readline()
+sleep (2)
+print "APRS Login reply:", sock_file.readline()
+
 
 # Initialise libfap.py for parsing returned lines
 print "libfap_init"
@@ -190,7 +196,7 @@ ts=int(td.total_seconds())		# Unix time - seconds from the epoch
 tc=ts					# init the variables
 ty=ts
 lt24ts=ts
-spispotcount=1				# loop counter
+spispotcount=0				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
 if LT24:
@@ -215,7 +221,7 @@ try:
                 run_time = time.time() - start_time
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
-		now=datetime.utcnow()			# get the UTC time
+	now=datetime.utcnow()				# get the UTC time
 	try:
                 rtn = sock_file.write("#Python ogn aprspush App\n\n")
                 # Make sure keepalive gets sent. If not flushed then buffered
@@ -225,31 +231,31 @@ try:
 		now=datetime.utcnow()			# get the UTC time
 		print "UTC time is now: ", now
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
-		if SPIDER:				# if we have SPIDER according with the config
-			ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt, False)
-		else:
-			ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+		if  (spispotcount % 30) == 0:		# every 5 minutes
+			if SPIDER:			# if we have SPIDER according with the config
+				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt=prt, store=False, aprspush=True)
+			else:
+				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
-		if SPOT:				# if we have the SPOT according with the configuration
-			ts   =spotfindpos(ts, conn, prt, False)
-			print "SSS", ts
-		else:
-			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-			ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if SPOT:			# if we have the SPOT according with the configuration
+				ts   =spotfindpos(ts, conn, prt=prt, store=False, aprspush=True)
+			else:
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 		if CAPTURS:				# if we have the CAPTURS according with the configuration
-			tc   =captfindpos(tc, conn, prt, False)
+			tc   =captfindpos(tc, conn, prt=prt, store=False)
 		else:
 			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 			tc=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 		if SKYLINE:				# if we have the SPOT according with the configuration
-			ty   =skylfindpos(ty, conn, prt, False)
+			ty   =skylfindpos(ty, conn, prt=prt, store=False)
 		else:
 			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 			ty=int(td.total_seconds())	# Unix time - seconds from the epoch
 		if LT24:				# if we have the LT24 according with the configuration
-			lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime, prt, False) # find the position and add it to the DDBB
+			lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime, prt=prt, store=False, aprspush=True) # find the position and add it to the DDBB
 			LT24firsttime=False		# only once the addpos
 		else:
 			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
@@ -259,7 +265,7 @@ try:
 
 		if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
 
-			print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, tc, ty, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+			print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "Tcapt", prttime(tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat()
 
 
 	except Exception, e:

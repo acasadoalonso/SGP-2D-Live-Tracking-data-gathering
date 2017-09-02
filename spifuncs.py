@@ -149,7 +149,7 @@ def spibuildtable(conn, spidtable, prt=False):	# function to build the spider ta
 	return(spidtable)
 
 
-def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=True):	# find all the fixes since last time
+def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=True, aprspush=False):	# find all the fixes since last time
 
 	curs=conn.cursor()		# gen the cursor
 	url="https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server

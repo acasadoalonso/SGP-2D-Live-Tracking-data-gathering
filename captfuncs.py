@@ -98,7 +98,7 @@ def captstoreitindb(datafix, curs, conn):	# store the fix into the database
 	return(True)			# indicate that we have success
 
 
-def captfindpos(ttime, conn, prt=True, store=True):	# find all the fixes since TTIME
+def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all the fixes since TTIME
 
 	captLOGIN=config.CAPTURSlogin	# login of the control capture account
 	captPASSWD=config.CAPTURSpasswd

@@ -148,7 +148,6 @@ def spanishsta(station):                # return true if is an Spanish station
         return False
 
 
-
 def frenchsta(station):                # return true if is an French station
     if (station) == None:
         return False
@@ -162,6 +161,15 @@ def frenchsta(station):                # return true if is an French station
         return False
 ######################################################################### 
 
+def deg2dms(dd):  			# convert degrees float in degrees and decimal minutes (to two decimal places)
+        dd1 = round(abs(float(dd)), 4)  
+        cdeg = int(dd1)  
+        mmss = dd1 - float(cdeg)
+        minsec = mmss*60.0
+        if dd < 0: cdeg = cdeg * -1  
+        return "%2.2d%05.2f"%(cdeg,minsec)
+
+######################################################################### 
 #
 # High level APRS parser function
 #

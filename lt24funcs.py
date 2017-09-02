@@ -17,10 +17,13 @@ import base64
 import hmac
 import urllib
 import random
+#-------------------------------------------------------------------------------------------------------------------#
 import config
 import kglid
 from flarmfuncs import *
+from parserfuncs import deg2dms
 
+#-------------------------------------------------------------------------------------------------------------------#
 def lt24login(LT24path, username, password): 	# login into livetrack24.com 
 
 	global LT24qwe
@@ -85,6 +88,7 @@ def lt24req(cmd):				# get the rsponse from the LT24 server
         qwepos= response.find("qwe")		# find where is the key for next request
         LT24qwe=response[qwepos+6:qwepos+22]	# build the seed for next request
         return (response)
+
 #-------------------------------------------------------------------------------------------------------------------#
 def lt24getapidata(url, auth, prt=False):       # get the data from the API server
 	req = urllib2.Request(url)                      
@@ -96,109 +100,6 @@ def lt24getapidata(url, auth, prt=False):       # get the data from the API serv
 	if prt:
 		print json.dumps(j_obj, indent=4) # convert JSON to dictionary
 	return j_obj                            # return the JSON object
-#-------------------------------------------------------------------------------------------------------------------#
-
-
-
-def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
-
-	for fix in datafix['lt24pos']:		# for each fix on the dict
-		id=fix['registration'][0:16]	# extract the information
-		if len(id) > 9:
-                        id=id[0:9] 
-		dte=fix['date'] 
-		hora=fix['time'] 
-		station=config.location_name
-		latitude=fix['Lat'] 
-		longitude=fix['Long'] 
-		altim=fix['altitude'] 
-		speed=fix['speed'] 
-		course=fix['course'] 
-		roclimb=fix['roc'] 
-		rot=0
-		sensitivity=0
-		gps=fix['GPS']
-		uniqueid=str(fix["UnitID"])
-		dist=fix['dist']
-		extpos=fix['extpos']
-		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
-               str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'LT24' ) "
-        	try:				# store it on the DDBB
-			#print addcmd
-              		curs.execute(addcmd)
-        	except MySQLdb.Error, e:
-              		try:
-                     		print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-              		except IndexError:
-                     		print ">>>MySQL Error: %s" % str(e)
-                     		print ">>>MySQL error:", cout, addcmd
-                    		print ">>>MySQL data :",  data
-			return (False)	# indicate that we have errors
-        conn.commit()                   # commit the DB updates
-	return(True)			# indicate that we have success
-
-
-
-#-------------------------------------------------------------------------------------------------------------------#
-
-#-------------------------------------------------------------------------------------------------------------------#
-
-def lt24findpos(ttime, conn, once, prt=False, store=True):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
-
-	flarmids={}			# list of flarm ids
-	curs=conn.cursor()              # set the cursor for storing the fixes
-	cursG=conn.cursor()             # set the cursor for searching the devices
-	userList=''
-	lt24pos={"lt24pos":[]}	# init the dicta
-	cursG.execute("select id, registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
-        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
-                                
-        	reg=rowg[0]		# registration to report
-        	registration=rowg[1]	# Glider registration EC-???
-        	active=rowg[2]		# if active or not
-        	flarmid=rowg[3]		# flarmid
-		if active == 0:
-			continue	# if not active, just ignore it
-					# build the userlist to call to the LT24 server
-		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
-			flarmid=getflarmid(conn, registration) 	# get it from the registration
-                else:
-                        chkflarmid(flarmid)
-
-		userList += reg		# build the user list
-		userList += ","		# separated by comas
-		flarmids[reg]=flarmid   # add flarmid to the list
-
-	userList=userList.rstrip(',')	# clear the last comma
-					# request for the time being, just the last position of the glider
-	req="op/2//detailLevel/-1/userList/"+userList	# the URL request to LT24
-	jsondata=lt24req(req)		# get the JSON data from the lt24 server
-	pos=json.loads(jsondata)	# convert JSON to dictionary
-	if prt:
-		print json.dumps(pos, indent=4) # convert JSON to dictionary
-	if 'result' in pos:
-		result=pos["result"]	# get the result part
-	else:
-		now=datetime.utcnow()
-		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
-		return (int(td.total_seconds() ))
-
-	k= result.keys()		# get the key or track id
-	jsondata = result[str(k[0])] 	# only the first track
-	if once:			# only the very first time
-		ts=lt24addpos(jsondata, lt24pos, ttime, userList, flarmid)	# find the gliders since TTIME
-	sync=lt24gettrackpoints(lt24pos, ttime, userList, flarmids)		# get now all the fixes/tracks
-	if prt:
-		print llt24pos
-	if store:
-		lt24storeitindb(lt24pos, curs, conn)				# and store it on the DDBB
-	
-	if sync == 0:			# just in case of not tracks at all, built the current time
-		now=datetime.utcnow()
-		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
-		sync=int(td.total_seconds())	# as an integer
-	return (sync+1)			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
 def lt24addpos(msg, lt24pos, ttime, regis, flarmid):	# extract the data of the last know position from the JSON object
@@ -301,6 +202,155 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids): # get all the fixes/tr
         			lt24pos['lt24pos'].append(pos)          # and store it on the dict
 			print "LT24POS2:", round(lat,4), round(lon,4), alt, userID,  round(distance,4), dte, date, time, username, flarmid, trackid
 
-	return (int(sync))		# return the SYNC for next call
+	return (int(sync))			# return the SYNC for next call
 
 
+#-------------------------------------------------------------------------------------------------------------------#
+
+def lt24storeitindb(datafix, curs, conn):	# store the fix into the database
+
+	for fix in datafix['lt24pos']:		# for each fix on the dict
+		id=fix['registration'][0:16]	# extract the information
+		if len(id) > 9:
+                        id=id[0:9] 
+		dte=fix['date'] 
+		hora=fix['time'] 
+		station=config.location_name
+		latitude=fix['Lat'] 
+		longitude=fix['Long'] 
+		altim=fix['altitude'] 
+		speed=fix['speed'] 
+		course=fix['course'] 
+		roclimb=fix['roc'] 
+		rot=0
+		sensitivity=0
+		gps=fix['GPS']
+		uniqueid=str(fix["UnitID"])
+		dist=fix['dist']
+		extpos=fix['extpos']
+		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+               str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
+               ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'LT24' ) "
+        	try:				# store it on the DDBB
+			#print addcmd
+              		curs.execute(addcmd)
+        	except MySQLdb.Error, e:
+              		try:
+                     		print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+              		except IndexError:
+                     		print ">>>MySQL Error: %s" % str(e)
+                     		print ">>>MySQL error:", cout, addcmd
+                    		print ">>>MySQL data :",  data
+			return (False)	# indicate that we have errors
+        conn.commit()                   # commit the DB updates
+	return(True)			# indicate that we have success
+
+
+
+#-------------------------------------------------------------------------------------------------------------------#
+def lt24aprspush(datafix, prt=False):		# push the data to the OGN APRS
+	for fix in datafix['lt24pos']:		# for each fix on the dict
+		id=fix['registration'][0:16]	# extract the information
+		if len(id) > 9:
+                        id=id[0:9] 
+		dte=fix['date'] 
+		hora=fix['time'] 
+		station=config.location_name
+		latitude=fix['Lat'] 
+		longitude=fix['Long'] 
+		altitude=fix['altitude'] 
+		speed=fix['speed'] 
+		course=fix['course'] 
+		roc=fix['roc'] 
+		rot=0
+		sensitivity=0
+		gps=fix['GPS']
+		uniqueid=str(fix["UnitID"])
+		dist=fix['dist']
+		extpos=fix['extpos']
+						# build the APRS message
+		lat=deg2dms(abs(latitude))
+		if latitude > 0:
+			lat += 'N'
+		else:
+			lat += 'S'
+		lon=deg2dms(abs(longitude))
+		if abs(longitude) < 100.0:
+			lon = '0'+lon
+		if longitude > 0:
+			lon += 'E'
+		else:
+			lon += 'W'
+		
+		ccc="%03d"%int(course)
+		sss="%03d"%int(speed)
+		aprsmsg=id+">OGLT24,qAS,LT24:/"+hora+'h'+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
+		if altitude > 0:
+			aprsmsg += "A=%06d"%int(altitude*3.28084)
+		aprsmsg += " %+04dfpm "%(int(roc))+gps+" id"+uniqueid+" "+extpos+"AGL\n" 
+		if prt:
+			print "APRSMSG: ", aprsmsg
+		rtn = config.SOCK_FILE.write(aprsmsg)
+
+	return True
+#-------------------------------------------------------------------------------------------------------------------#
+
+def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):	# find all the fixes since TTIME . Scan all the LT24 devices for new data
+
+	flarmids={}			# list of flarm ids
+	curs=conn.cursor()              # set the cursor for storing the fixes
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	userList=''
+	lt24pos={"lt24pos":[]}	# init the dicta
+	cursG.execute("select id, registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; " ) 	# get all the devices with LT24
+        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
+                                
+        	reg=rowg[0]		# registration to report
+        	registration=rowg[1]	# Glider registration EC-???
+        	active=rowg[2]		# if active or not
+        	flarmid=rowg[3]		# flarmid
+		if active == 0:
+			continue	# if not active, just ignore it
+					# build the userlist to call to the LT24 server
+		if flarmid == None or flarmid == '': 			# if flarmid is not provided 
+			flarmid=getflarmid(conn, registration) 	# get it from the registration
+                else:
+                        chkflarmid(flarmid)
+
+		userList += reg		# build the user list
+		userList += ","		# separated by comas
+		flarmids[reg]=flarmid   # add flarmid to the list
+
+	userList=userList.rstrip(',')	# clear the last comma
+					# request for the time being, just the last position of the glider
+	req="op/2//detailLevel/-1/userList/"+userList	# the URL request to LT24
+	jsondata=lt24req(req)		# get the JSON data from the lt24 server
+	pos=json.loads(jsondata)	# convert JSON to dictionary
+	if prt:
+		print json.dumps(pos, indent=4) # convert JSON to dictionary
+	if 'result' in pos:
+		result=pos["result"]	# get the result part
+	else:
+		now=datetime.utcnow()
+		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
+		return (int(td.total_seconds() ))
+
+	k= result.keys()		# get the key or track id
+	jsondata = result[str(k[0])] 	# only the first track
+	if once:			# only the very first time
+		ts=lt24addpos(jsondata, lt24pos, ttime, userList, flarmid)	# find the gliders since TTIME
+	sync=lt24gettrackpoints(lt24pos, ttime, userList, flarmids)		# get now all the fixes/tracks
+	if prt:
+		print lt24pos
+	if store:
+		lt24storeitindb(lt24pos, curs, conn)				# and store it on the DDBB
+	if aprspush:
+		lt24aprspush(lt24pos, prt)					# and push the data to the OGN APRS
+	
+	if sync == 0:			# just in case of not tracks at all, built the current time
+		now=datetime.utcnow()
+		td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
+		sync=int(td.total_seconds())	# as an integer
+	return (sync+1)			# return TTIME for next call
+
+#-------------------------------------------------------------------------------------------------------------------#

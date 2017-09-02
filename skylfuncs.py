@@ -73,37 +73,6 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 
 
 #-------------------------------------------------------------------------------------------------------------------#
-
-def skylfindpos(ttime, conn, prt=False, store=True):	# find all the fixes since TTIME . Scan all the SKYL devices for new data
-
-	curs=conn.cursor()              # set the cursor for storing the fixes
-	cursG=conn.cursor()             # set the cursor for searching the devices
-	url="https://skylines.aero/api/live" 
-	skylpos={"skylpos":[]}		# init the dicta
-	pos=skylgetapidata(url)	# get the JSON data from the Skylines server
-	if prt:
-		print json.dumps(pos, indent=4) # convert JSON to dictionary
-	tracks=pos['tracks']
-	cursG.execute("select id, Registration, active from TRKDEVICES where devicetype = 'SKYL' ; " ) 	# get all the devices with SKYL
-        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
-                                
-        	pilotname=rowg[0]	# pilotname to report
-        	gliderreg=rowg[1]	# Glider registration EC-???
-        	active=rowg[2]		# if active or not
-		if active == 0:
-			continue	# if not active, just ignore it
-					# build the userlist to call to the SKYL server
-		skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)	# find the gliders since TTIME
-	if prt:
-		print skylpos
-	if store:
-		skylstoreitindb(skylpos, curs, conn)				# and store it on the DDBB
-	now=datetime.utcnow()
-	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
-	sync=int(td.total_seconds())	# as an integer
-	return (sync+1)			# return TTIME for next call
-
-#-------------------------------------------------------------------------------------------------------------------#
 def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data of the last know position from the JSON object
 
 	for msg in tracks:
@@ -148,6 +117,36 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data
 
 
 #-------------------------------------------------------------------------------------------------------------------#
+
+
+def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):	# find all the fixes since TTIME . Scan all the SKYL devices for new data
+
+	curs=conn.cursor()              # set the cursor for storing the fixes
+	cursG=conn.cursor()             # set the cursor for searching the devices
+	url="https://skylines.aero/api/live" 
+	skylpos={"skylpos":[]}		# init the dicta
+	pos=skylgetapidata(url)	# get the JSON data from the Skylines server
+	if prt:
+		print json.dumps(pos, indent=4) # convert JSON to dictionary
+	tracks=pos['tracks']
+	cursG.execute("select id, Registration, active from TRKDEVICES where devicetype = 'SKYL' ; " ) 	# get all the devices with SKYL
+        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
+                                
+        	pilotname=rowg[0]	# pilotname to report
+        	gliderreg=rowg[1]	# Glider registration EC-???
+        	active=rowg[2]		# if active or not
+		if active == 0:
+			continue	# if not active, just ignore it
+					# build the userlist to call to the SKYL server
+		skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)	# find the gliders since TTIME
+	if prt:
+		print skylpos
+	if store:
+		skylstoreitindb(skylpos, curs, conn)				# and store it on the DDBB
+	now=datetime.utcnow()
+	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
+	sync=int(td.total_seconds())	# as an integer
+	return (sync+1)			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
 
