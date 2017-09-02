@@ -34,8 +34,8 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
         print "Shutdown now, Time now:", local_time, " Local time."
- 	if os.path.exists("APRSPUSH.alive"):
-		os.remove("APRSPUSH.alive")	# delete the mark of being alive
+ 	if os.path.exists(config.DBpath+"APRSPUSH.alive"):
+		os.remove(config.DBpath+"APRSPUSH.alive")	# delete the mark of being alive
         return                          # job done
 
 #########################################################################
@@ -182,7 +182,7 @@ start_time = time.time()
 local_time = datetime.now()
 keepalive_count = 1
 keepalive_time = time.time()
-alive(APP, first='yes')
+alive(config.DBpath+APP, first='yes')
 #
 #-----------------------------------------------------------------
 # Initialise API for SPIDER & SPOT & LT24
@@ -215,12 +215,12 @@ try:
     while True:
         current_time = time.time()
         local_time = datetime.now()
-        elapsed_time = current_time - keepalive_time
+        elapsed_time = current_time - keepalive_time	# time since last keep_alive
         if (current_time - keepalive_time) > 180:      	# keepalives every 3 mins
-		alive(APP)		               	# and mark that we are still alive
+		alive(config.DBpath+APP)               	# and mark that we are still alive
                 run_time = time.time() - start_time
                 keepalive_time = current_time
-                keepalive_count = keepalive_count + 1
+                keepalive_count = keepalive_count + 1	# just a control
 	now=datetime.utcnow()				# get the UTC time
 	try:
                 rtn = sock_file.write("#Python ogn aprspush App\n\n")
