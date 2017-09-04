@@ -107,7 +107,7 @@ def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all t
 	cursG.execute("select id, active, flarmid, registration from TRKDEVICES where devicetype = 'CAPT'; " ) 	# get all the devices with CAPT
         for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
 
-        	captID=rowg[0]		# registration to report
+        	captID=rowg[0].lstrip()	# registration to report
         	active=rowg[1]		# if active or not
         	flarmid=rowg[2]		# Flamd id to be linked
         	registration=rowg[3]	# registration id to be linked
@@ -120,7 +120,9 @@ def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all t
 
 					# build the URL to call to the CAPTURS server
 # http://api.capturs.com/device/1AC32E/position/from/1484053861/to/1484917861/limit/1?login=myLogin&password=myPassword
-		url="https://api.capturs.com/device/"+captID+"/position/from/"+str(ttime)+"?login="+captLOGIN+"password="+str(captPASSWD)
+		url="http://api.capturs.com/device/"+captID+"/position/from/"+str(ttime)+"?login="+captLOGIN+"&password="+str(captPASSWD)
+		if prt:						# if we require printing the raw data
+			print "URL:", url
 		captpos={"captpos":[]}				# init the dict
 		jsondata=captgetapidata(url)			# get the JSON data from the CAPT server
 		if prt:						# if we require printing the raw data

@@ -156,7 +156,7 @@ atexit.register(lambda: os.remove(config.PIDfile+"PUSH"))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
+sock.connect((config.APRS_SERVER_ALT, config.APRS_SERVER_PORT))
 print "Socket sock connected"
 
 # logon to OGN APRS network
@@ -243,14 +243,14 @@ try:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
-		if CAPTURS:				# if we have the CAPTURS according with the configuration
-			tc   =captfindpos(tc, conn, prt=prt, store=False)
-		else:
-			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-			tc=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if CAPTURS:				# if we have the CAPTURS according with the configuration
+				tc   =captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
+			else:
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
 
 		if SKYLINE:				# if we have the SPOT according with the configuration
-			ty   =skylfindpos(ty, conn, prt=prt, store=False)
+			ty   =skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
 		else:
 			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 			ty=int(td.total_seconds())	# Unix time - seconds from the epoch
