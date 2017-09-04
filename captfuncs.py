@@ -31,8 +31,9 @@ def captgetapidata(url, prt=False):                      	# get the data from th
 def captaddpos(msg, captpos, ttime, captID, flarmid):	# extract the data from the JSON object
 
 	unixtime=msg["timestamp"] 		# the time from the epoch
-	if (unixtime < ttime):
+	if (unixtime < ttime):			# it should not be needed as we request from/ttime on the URL 
 		return (False)			# if is lower than the last time just ignore it
+		print "CAPTURS TTT", ttime, unixtime
 	lat	=msg["latitude"] 		# extract from the JSON object the data that we need
 	lon	=msg["longitude"]
 	alt	=msg["altitude"]		# low accuracy altitude
@@ -52,6 +53,8 @@ def captaddpos(msg, captpos, ttime, captID, flarmid):	# extract the data from th
 
 def captgetaircraftpos(data, captpos, ttime, captID, flarmid, prt=False):	# return on a dictionary the position of all spidertracks
 	msgcount    =data['result']		# get the count of messages
+	if msgcount == 0:
+		return (False)
 	messages    =data['position']		# get the messages
 	found=False
 	#print "M:", message
@@ -98,6 +101,41 @@ def captstoreitindb(datafix, curs, conn):	# store the fix into the database
 	return(True)			# indicate that we have success
 
 
+def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
+	for fix in datafix['captpos']:		# for each fix on the dict
+		id=fix['registration'] 		# extract the information
+		if len(id) > 9:
+			id=id[0:9]
+		dte=fix['date']
+		hora=fix['time']
+		station=config.location_name
+		latitude=fix['Lat']
+		longitude=fix['Long']
+		altitude=fix['altitude']
+		speed=fix['speed']
+						# build the APRS message
+		lat=deg2dms(abs(latitude))	# conver the latitude to the format required by APRS
+		if latitude > 0:
+			lat += 'N'
+		else:
+			lat += 'S'
+		lon=deg2dms(abs(longitude))
+		if abs(longitude) < 100.0:
+			lon = '0'+lon
+		if longitude > 0:
+			lon += 'E'
+		else:
+			lon += 'W'
+		
+		aprsmsg=id+">OGCAPT,qAS,CAPTURS:/"+hora+'h'+lat+"/"+lon+"'000/000/"
+		if altitude > 0:
+			aprsmsg += "A=%06d"%int(altitude*3.28084)
+		aprsmsg += "\n"
+		rtn = config.SOCK_FILE.write(aprsmsg) 
+		print "APRSMSG : ", aprsmsg
+	return(True)
+
+
 def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all the fixes since TTIME
 
 	captLOGIN=config.CAPTURSlogin	# login of the control capture account
@@ -105,7 +143,8 @@ def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all t
 	curs=conn.cursor()              # set the cursor for storing the fixes
 	cursG=conn.cursor()             # set the cursor for searching the devices
 	cursG.execute("select id, active, flarmid, registration from TRKDEVICES where devicetype = 'CAPT'; " ) 	# get all the devices with CAPT
-        for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
+        rowgall = cursG.fetchall() 	# look for that registration on the OGN databasea
+        for rowg in rowgall:
 
         	captID=rowg[0].lstrip()	# registration to report
         	active=rowg[1]		# if active or not
@@ -133,6 +172,8 @@ def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all t
 			print captpos
 		if store:
 			captstoreitindb(captpos, curs, conn)	# and store it on the DDBB
+		if aprspush:
+			captaprspush(captpos, prt=prt)	# and store it on the DDBB
 
 	now=datetime.utcnow()
 	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970

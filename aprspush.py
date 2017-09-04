@@ -243,8 +243,9 @@ try:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
 
+		if  (spispotcount % 10) == 0:		# every 2 minutes
 			if CAPTURS:				# if we have the CAPTURS according with the configuration
-				tc   =captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
+				tc   =captfindpos(tc, conn, prt=True, store=False, aprspush=True)
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
@@ -265,7 +266,7 @@ try:
 
 		if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
 
-			print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "Tcapt", prttime(tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat()
+			print spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "Tcapt", prttime(tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat()
 
 
 	except Exception, e:
