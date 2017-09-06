@@ -32,12 +32,12 @@ def spotgetapidata(url, prt=False):                      	# get the data from th
 def spotaddpos(msg, spotpos, ttime, regis, flarmid):	# extract the data from the JSON object
 
 	unixtime=msg["unixTime"] 		# the time from the epoch
-	if (unixtime < ttime):
+	alt=msg["altitude"] 
+	if (unixtime < ttime or altitude == 0):
 		return (False)			# if is lower than the last time just ignore it
 	reg=regis
 	lat=msg["latitude"] 			# extract from the JSON object the data that we need
 	lon=msg["longitude"] 
-	alt=msg["altitude"] 
 	id =msg["messengerId"] 			# identifier for the final user
 	mid=msg["modelId"] 			# spot model number
 	dte=msg["dateTime"] 

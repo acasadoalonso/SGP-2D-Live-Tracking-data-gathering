@@ -14,6 +14,7 @@ import MySQLdb                              # the SQL data base routines^M
 import config
 import kglid
 from flarmfuncs import *
+from parserfuncs import deg2dms
 
 
 def captgetapidata(url, prt=False):                      	# get the data from the API server
@@ -31,9 +32,10 @@ def captgetapidata(url, prt=False):                      	# get the data from th
 def captaddpos(msg, captpos, ttime, captID, flarmid):	# extract the data from the JSON object
 
 	unixtime=msg["timestamp"] 		# the time from the epoch
-	if (unixtime < ttime):			# it should not be needed as we request from/ttime on the URL 
+	type=msg["type"] 			# the time from the epoch
+	if (unixtime < ttime or type != 1):	# it should not be needed as we request from/ttime on the URL 
+		print "CAPTURS TTT>>>", ttime, unixtime, msg["date"], "Type:", type
 		return (False)			# if is lower than the last time just ignore it
-		print "CAPTURS TTT", ttime, unixtime
 	lat	=msg["latitude"] 		# extract from the JSON object the data that we need
 	lon	=msg["longitude"]
 	alt	=msg["altitude"]		# low accuracy altitude
@@ -43,28 +45,32 @@ def captaddpos(msg, captpos, ttime, captID, flarmid):	# extract the data from th
 	tme	=datetime.utcfromtimestamp(unixtime)	# get the time from the timestamp
 	date	=tme.strftime("%y%m%d")		# the date
 	time	=tme.strftime("%H%M%S")		# the time
-	vitlat  =config.FLOGGER_LATITUDE
+	vitlat  =config.FLOGGER_LATITUDE	# tje lat/long of the base station
 	vitlon  =config.FLOGGER_LONGITUDE
-	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
+	distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the station
 	pos={"registration": flarmid, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "speed":speed, "dist":distance, "device":captID}
 	captpos['captpos'].append(pos)		# and store it on the dict
 	print "CAPTPOS :", lat, lon, alt, device, distance, unixtime, dte, captID, flarmid
 	return (True)				# indicate that we added an entry to the dict
 
-def captgetaircraftpos(data, captpos, ttime, captID, flarmid, prt=False):	# return on a dictionary the position of all spidertracks
+def captgetaircraftpos(data, captpos, ttime, captID, flarmid, prt=False):	# return on a dictionary the position of all captures devices
+
+	foundone=False				# assume that we are not going to find one
 	msgcount    =data['result']		# get the count of messages
-	if msgcount == 0:
-		return (False)
-	messages    =data['position']		# get the messages
-	found=False
+	if msgcount == 0:			# check if we found some messages
+		return (False)			# nothing to do
+	messages    =data['position']		# get the multiple messages
 	#print "M:", message
-	for msg in messages:		# if not iterate the set of messages
+	for msg in messages:			# if not iterate the set of messages
 		if prt:
 			print json.dumps(msg, indent=4)        # convert JSON to dictionary
-		found=captaddpos(msg, captpos, ttime, captID, flarmid)
-	return (found)				# return if we found a message or not
+		found=captaddpos(msg, captpos, ttime, captID, flarmid) # get the individual entries
+		if found:
+			foundone=True		# found at least one
+	return (foundone)			# return if we found a message or not
 
 def captstoreitindb(datafix, curs, conn):	# store the fix into the database
+
 	for fix in datafix['captpos']:		# for each fix on the dict
 		id=fix['registration'] 		# extract the information
 		if len(id) > 9:
@@ -102,6 +108,7 @@ def captstoreitindb(datafix, curs, conn):	# store the fix into the database
 
 
 def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
+
 	for fix in datafix['captpos']:		# for each fix on the dict
 		id=fix['registration'] 		# extract the information
 		if len(id) > 9:
@@ -126,8 +133,11 @@ def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
 			lon += 'E'
 		else:
 			lon += 'W'
-		
-		aprsmsg=id+">OGCAPT,qAS,CAPTURS:/"+hora+'h'+lat+"/"+lon+"'000/000/"
+		if speed != None:
+			sss="%03d"%speed
+		else:
+			sss="000"
+		aprsmsg=id+">OGCAPT,qAS,CAPTURS:/"+hora+'h'+lat+"/"+lon+"'000/"+sss+"/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
 		aprsmsg += "\n"
@@ -138,6 +148,7 @@ def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
 
 def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all the fixes since TTIME
 
+	onefound=False
 	captLOGIN=config.CAPTURSlogin	# login of the control capture account
 	captPASSWD=config.CAPTURSpasswd
 	curs=conn.cursor()              # set the cursor for storing the fixes
@@ -168,16 +179,21 @@ def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all t
 			j=json.dumps(jsondata, indent=4)	# convert JSON to dictionary
 			print j
 		found=captgetaircraftpos(jsondata, captpos, ttime, captID, flarmid, prt=False)	# find the gliders since TTIME
+		if found:
+			onefound=True
 		if prt:
 			print captpos
 		if store:
 			captstoreitindb(captpos, curs, conn)	# and store it on the DDBB
 		if aprspush:
-			captaprspush(captpos, prt=prt)	# and store it on the DDBB
+			captaprspush(captpos, prt=prt)		# and push the date thru the APRS 
 
-	now=datetime.utcnow()
-	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
-	ts=int(td.total_seconds())	# as an integer
-	return (ts)			# return TTIME for next call
+	if onefound:
+		now=datetime.utcnow()
+		td=now-datetime(1970,1,1)       		# number of second until beginning of the day of 1-1-1970
+		ts=int(td.total_seconds())			# as an integer
+		return (ts)					# return TTIME for next call
+	else:
+		return(ttime)					# if not found, just return the same time
 
 #-------------------------------------------------------------------------------------------------------------------#
