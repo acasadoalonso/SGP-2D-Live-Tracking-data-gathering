@@ -34,8 +34,8 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
         print "Shutdown now, Time now:", local_time, " Local time."
- 	if os.path.exists(config.DBpath+"APRSPUSH.alive"):
-		os.remove(config.DBpath+"APRSPUSH.alive")	# delete the mark of being alive
+ 	if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
+		os.remove(config.DBpath+"PUSH2OGN.alive")	# delete the mark of being alive
         return                          # job done
 
 #########################################################################
@@ -58,7 +58,7 @@ def prttime(unixtime):
 #
 ########################################################################
 programver='V1.0'
-print "\n\nStart APRSPUSH "+programver
+print "\n\nStart PUSH2OGN "+programver
 print "=============================="
 
 print "Program Version:", time.ctime(os.path.getmtime(__file__))
@@ -77,7 +77,7 @@ if os.path.exists(config.PIDfile+"PUSH"):
 	raise RuntimeError("APRSlog/push already running !!!")
 	exit(-1)
 #
-APP="APRSPUSH"				# the application name
+APP="PUSH2OGN"				# the application name
 SLEEP=10				# sleep 10 seconds in between calls to the APRS
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
@@ -161,18 +161,18 @@ print "Socket sock connected"
 
 # logon to OGN APRS network
 
-login = 'user %s pass %s vers APRSPUSH %s %s'  % ("APRSPUSH", "25596" , programver, "\n")
-print "APRS login:", login
-
+login = 'user %s pass %s vers PUSH2OGN %s %s'  % (config.APRS_USER_ALT, config.APRS_PASSCODE_ALT , programver, "\n")
 sock.send(login)
 
 # Make the connection to the server
 sock_file = sock.makefile()
+
 config.SOCK=sock
 config.SOCK_FILE=sock_file
 print "APRS Version:", sock_file.readline()
 sleep (2)
-print "APRS Login reply:", sock_file.readline()
+print "APRS Login request:", login
+print "APRS Login reply:  ", sock_file.readline()
 
 
 # Initialise libfap.py for parsing returned lines
