@@ -287,8 +287,8 @@ def lt24aprspush(datafix, prt=False):		# push the data to the OGN APRS
 		aprsmsg=id+">OGLT24,qAS,LT24:/"+hora+'h'+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += " %+04dfpm "%(int(roc))+gps+" id"+uniqueid+" "+extpos+"AGL\n" 
-		if prt:
+		aprsmsg += " %+04dfpm "%(int(roc))+gps+" id"+uniqueid+" \n" 
+		if True:
 			print "APRSMSG: ", aprsmsg
 		rtn = config.SOCK_FILE.write(aprsmsg)
 

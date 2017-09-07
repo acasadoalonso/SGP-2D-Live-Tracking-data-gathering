@@ -87,7 +87,7 @@ def captstoreitindb(datafix, curs, conn):	# store the fix into the database
 		rot=0
 		sensitivity=0
 		gps=' '
-		uniqueid=' '
+		uniqueid=fix['device']
 		dist=fix['dist']
 		extpos=' '
 		addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
@@ -119,6 +119,7 @@ def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
 		latitude=fix['Lat']
 		longitude=fix['Long']
 		altitude=fix['altitude']
+		uniqueid=fix['device']
 		speed=fix['speed']
 						# build the APRS message
 		lat=deg2dms(abs(latitude))	# conver the latitude to the format required by APRS
@@ -140,7 +141,7 @@ def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
 		aprsmsg=id+">OGCAPT,qAS,CAPTURS:/"+hora+'h'+lat+"/"+lon+"'000/"+sss+"/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += "\n"
+		aprsmsg += " id"+uniqueid+" \n"
 		rtn = config.SOCK_FILE.write(aprsmsg) 
 		print "APRSMSG : ", aprsmsg
 	return(True)
