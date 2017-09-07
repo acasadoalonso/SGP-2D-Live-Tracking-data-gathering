@@ -245,7 +245,7 @@ try:
 
 		if  (spispotcount % 10) == 0:		# every 2 minutes
 			if CAPTURS:				# if we have the CAPTURS according with the configuration
-				tc   =captfindpos(tc, conn, prt=True, store=False, aprspush=True)
+				tc   =captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
