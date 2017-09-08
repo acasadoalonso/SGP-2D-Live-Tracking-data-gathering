@@ -302,12 +302,12 @@ try:
 
 				print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, tc, ty, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 
-
                 except Exception, e:
                         print ('Something\'s wrong with interface functions Exception type is %s' % (`e`))
 			if SPIDER or SPOT or LT24 or SKYLINE:
 
 				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+		sys.stdout.flush()				# flush the print messages
 
         if prt:
                 print "In main loop. Count= ", i
