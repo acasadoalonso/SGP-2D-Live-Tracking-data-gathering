@@ -193,8 +193,10 @@ min5=timedelta(seconds=300)		# 5 minutes ago
 now=now-min5				# now less 5 minutes
 td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
-tc=ts					# init the variables
-ty=ts
+tc=ts					# for capturs
+ty=ts					# for skylines
+ttspid=0				# time between spid request
+ttcapt=0				# time between capturs request
 lt24ts=ts
 spispotcount=0				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
@@ -221,17 +223,20 @@ try:
                 run_time = time.time() - start_time
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1	# just a control
+
+		try:					# lets send a message to the APRS for keep alive
+                	rtn = sock_file.write("#Python ogn aprspush App\n\n")
+                	sock_file.flush()		# Make sure keepalive gets sent. If not flushed then buffered
+
+        	except Exception, e:
+                	print ('Something\'s wrong with socket write. Exception type is %s' % (`e`))
+			now=datetime.utcnow()		# get the UTC time
+			print "UTC time is now: ", now, keepalive_count, run_time
+
 	now=datetime.utcnow()				# get the UTC time
-	try:
-                rtn = sock_file.write("#Python ogn aprspush App\n\n")
-                # Make sure keepalive gets sent. If not flushed then buffered
-                sock_file.flush()
-        except Exception, e:
-                print ('Something\'s wrong with socket write. Exception type is %s' % (`e`))
-		now=datetime.utcnow()			# get the UTC time
-		print "UTC time is now: ", now
+	tt=int((now-datetime(1970,1,1)).total_seconds())      	# number of second until beginning of the epoch
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
-		if  (spispotcount % 30) == 0:		# every 5 minutes
+		if  (tt - ttspid) > 300:		# every 5 minutes
 			if SPIDER:			# if we have SPIDER according with the config
 				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt=prt, store=False, aprspush=True)
 			else:
@@ -242,13 +247,15 @@ try:
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			ttspid = tt
 
-		if  (spispotcount % 10) == 0:		# every 2 minutes
-			if CAPTURS:				# if we have the CAPTURS according with the configuration
+		if  (tt - ttcapt) > 150:		# every 2.5 minutes
+			if CAPTURS:			# if we have the CAPTURS according with the configuration
 				tc   =captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
+			ttcapt = tt
 
 		if SKYLINE:				# if we have the SPOT according with the configuration
 			ty   =skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
@@ -285,4 +292,4 @@ except KeyboardInterrupt:
 
 shutdown(sock)
 print "Exit now ...", err
-exit(1)
+exit(0)

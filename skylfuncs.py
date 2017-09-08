@@ -68,7 +68,7 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data
 		vitlon   =config.FLOGGER_LONGITUDE
 		distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
 		pos={"pilotname": pilotname, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":dir, "speed": spd, "roc":roc, "GPS":gps , "extpos":extpos, "gliderreg":gliderreg}
-		print "SSS:", ts, ttime, pos
+		#print "SSS:", ts, ttime, pos
 		#if ts < ttime+30:		# check if the data is from before
 			#continue		# in that case nothing to do
 		skylpos['skylpos'].append(pos)	# and store it on the dict
@@ -90,7 +90,7 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
-		altim=fix['altitude'] 
+		altitude=fix['altitude'] 
 		speed=fix['speed'] 
 		course=fix['course'] 
 		roclimb=fix['roc'] 
@@ -102,7 +102,7 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 		extpos=fix['extpos']
 		gliderreg=fix['gliderreg']
 		flarmid=getflarmid(conn, gliderreg)
-		addcmd="insert into OGNDATA values ('" +flarmid+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
+		addcmd="insert into OGNDATA values ('" +flarmid+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altitude)+ "," + str(speed)+ "," + \
                str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'SKYL' ) "
         	try:				# store it on the DDBB
@@ -121,7 +121,7 @@ def skylstoreitindb(datafix, curs, conn):	# store the fix into the database
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-def skylaprspush(datafix, prt=False):
+def skylaprspush(datafix, conn, prt=False):
 
 	for fix in datafix['skylpos']:		# for each fix on the dict
 		id=fix['pilotname']		# extract the information
@@ -130,7 +130,7 @@ def skylaprspush(datafix, prt=False):
 		station=config.location_name
 		latitude=fix['Lat'] 
 		longitude=fix['Long'] 
-		altim=fix['altitude'] 
+		altitude=fix['altitude'] 
 		speed=fix['speed'] 
 		course=fix['course'] 
 		roclimb=fix['roc'] 
@@ -161,8 +161,8 @@ def skylaprspush(datafix, prt=False):
 		aprsmsg=flarmid+">OGSKYL,qAS,SKYLINES:/"+hora+'h'+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += " %+04dfpm "%(int(roc))+gps+" id"+uniqueid+" "+extpos+"AGL\n" 
-		if prt:
+		aprsmsg += " %+04dfpm "%(int(roclimb))+" id"+uniqueid+" \n" 
+		if True:
 			print "APRSMSG: ", aprsmsg
 		rtn = config.SOCK_FILE.write(aprsmsg)
 
@@ -195,7 +195,7 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):	# find all 
 	if store:
 		skylstoreitindb(skylpos, curs, conn)				# and store it on the DDBB
 	if aprspush:
-		skylaprspush(skylpos, prt=prt)					# and push it into the OGN APRS
+		skylaprspush(skylpos, conn, prt=prt)				# and push it into the OGN APRS
 	now=datetime.utcnow()
 	td=now-datetime(1970,1,1)       # number of second until beginning of the day of 1-1-1970
 	sync=int(td.total_seconds())	# as an integer
