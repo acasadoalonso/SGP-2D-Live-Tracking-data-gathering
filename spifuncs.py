@@ -199,7 +199,7 @@ def spiaprspush(data, conn, prt=False):
 		ccc="%03d"%int(course)
 		sss="%03d"%int(speed)
 	
-		aprsmsg=reg+">OGSPID,qAS,SPIDER:/"+hora+'h'+lat+lon+"'"+ccc+"/"+sss+"/"
+		aprsmsg=reg+">OGSPID,qAS,SPIDER:/"+hora+'h'+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
 
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
