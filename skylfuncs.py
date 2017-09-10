@@ -69,8 +69,8 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):	# extract the data
 		distance=vincenty((lat, lon),(vitlat,vitlon)).km    # distance to the statio
 		pos={"pilotname": pilotname, "date": date, "time":time, "Lat":lat, "Long": lon, "altitude": alt, "UnitID":id, "dist":distance, "course":dir, "speed": spd, "roc":roc, "GPS":gps , "extpos":extpos, "gliderreg":gliderreg}
 		#print "SSS:", ts, ttime, pos
-		#if ts < ttime+30:		# check if the data is from before
-			#continue		# in that case nothing to do
+		if ts < ttime+30:		# check if the data is from before
+			continue		# in that case nothing to do
 		skylpos['skylpos'].append(pos)	# and store it on the dict
 		print "SKYLPOS :", round(lat,4), round(lon,4), alt, id, round(distance,4), ts, dte, date, time, pilotname
 
