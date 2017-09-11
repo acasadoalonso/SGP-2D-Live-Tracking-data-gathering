@@ -452,7 +452,7 @@ try:
 
                 if prt:
                         print 'Parsed data: POS: ', longitude, latitude, altitude,' Speed:',speed,' Course: ',course,' Path: ',path,' Type:', type
-                        print "RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, , source, ":::"
+                        print "RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos,  source, ":::"
                         # write the DB record
 
                 if (DATA):

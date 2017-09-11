@@ -251,6 +251,7 @@ def parseraprs(packet_str, msg):
                         msg['temp']=temp
                         msg['rf']=rf
                         msg['status']=status
+                        msg['source']=source
                         return (msg)
 		if path != 'qAS':			# we dealt already with the other paths !!!
 			#print "Path:", path, packet_str
@@ -286,7 +287,7 @@ def parseraprs(packet_str, msg):
 		
                 p3=data.find(' id')                     # scan for uniqueid info
                 if p3 != -1:
-			uniqueid     = "id"+gdatar("id") # get the unique id
+			uniqueid     = "id"+gdatar(data,"id") # get the unique id
 		else:
 			uniqueid     = ' '		# no unique ID
 			
