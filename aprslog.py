@@ -57,7 +57,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.7'
+programver='V1.8'
 print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
 print "===================================================================="
 
@@ -352,6 +352,7 @@ try:
                 altitude  = msg['altitude']
                 path      = msg['path']
                 otime     = msg['otime']
+                source    = msg['source']
                 data=packet_str
                 if prt:
                         print 'Packet returned is: ', packet_str
@@ -439,14 +440,19 @@ try:
                         altim=0
                         alti='%05d' % altim             # convert it to an string
                 dist=-1
-                if station in fslod:                    # if we have the station yet
+                if station in fslod and source == 'OGN':  # if we have the station yet
                         distance=vincenty((latitude, longitude), fslod[station]).km    # distance to the station
                         dist=distance
                         if distance > 300.0:
                             print "distcheck: ", distance, data
+		if source != 'OGN':
+        		vitlat   =config.location_latitude
+        		vitlon   =config.location_longitude
+        		dist=vincenty((latitude, longitude),(vitlat,vitlon)).km    # distance to the BASE
+
                 if prt:
                         print 'Parsed data: POS: ', longitude, latitude, altitude,' Speed:',speed,' Course: ',course,' Path: ',path,' Type:', type
-                        print "RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, ":::"
+                        print "RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, , source, ":::"
                         # write the DB record
 
                 if (DATA):
@@ -459,8 +465,10 @@ try:
                         dte=date.strftime("%y%m%d")             	# today's date
                         addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                         		str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-                                        ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', 'OGN' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
-                        try:
+                                        ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', '"+source+"' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
+                        if prt:
+				print addcmd
+			try:
                                 curs.execute(addcmd)
                         except MySQLdb.Error, e:
                                 try:

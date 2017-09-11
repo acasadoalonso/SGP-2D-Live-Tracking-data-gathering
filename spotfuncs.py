@@ -152,7 +152,7 @@ def spotaprspush(datafix, prt=False):	# push the data into the OGN APRS
 		aprsmsg=id+">OGSPOT,qAS,SPOT:/"+hora+'h'+lat+"/"+lon+"'000/000/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
-		aprsmsg += " "+gps+" "+extpos+" id"+uniqueid+"\n"
+		aprsmsg += " id"+uniqueid+" "+gps+" "+extpos+" \n"
 		rtn = config.SOCK_FILE.write(aprsmsg) 
 		print "APRSMSG : ", aprsmsg
 	return(True)

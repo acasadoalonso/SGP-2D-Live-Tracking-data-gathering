@@ -8,7 +8,21 @@ import urllib2
 import json
 
 from datetime import datetime, timedelta
-
+aprssources = {
+	"APRS"   : "OGN",
+	"OGNFLR" : "OGN",
+	"OGNTRN" : "OGN",
+	"OGNDSX" : "OGN", 
+	"OGADSB" : "ADSB",
+	"OGNFNT" : "FANET",
+	"OGNPAW" : "PAW",
+	"OGSPOT" : "SPOT",
+	"OGSPID" : "SPID",
+	"OGSKYL" : "SKYL",
+	"OGLT24" : "LT24",
+	"OGCAPT" : "CAPT",
+	"OGNMAV" : "NMAV"
+	}
 #
 # low lever parser functions
 #
@@ -96,6 +110,9 @@ def get_station(data):
         station=station.upper()                 # translate to uppercase
         return (station)
 ########################################################################
+def get_source(dstcallsign):
+	return (aprssources[str(dstcallsign)])
+#########################################################################
 def gdatal (data, typer):               	# get data on the left
         p=data.find(typer)              	# scan for the type requested
         if p == -1:
@@ -190,6 +207,7 @@ def parseraprs(packet_str, msg):
                 path         = get_path(packet)
                 type         = get_type(packet)
                 dst_callsign = get_dst_callsign(packet)
+		source	     = get_source(dst_callsign)
                 destination  = get_destination(packet)
                 header       = get_header(packet)
                 otime        = get_otime(packet)
@@ -262,11 +280,16 @@ def parseraprs(packet_str, msg):
 
                	p2=data.find('/A=')+3                   # scan for the altitude on the body of the message
                 if  data[p2+7] == '!':                  # get the unique id
-                        uniqueid     = data[p2+13:p2+23] # get the unique id
                         extpos       = data[p2+7:p2+12] # get extended position indicator
                 else:
-                        uniqueid     = data[p2+7:p2+17] # get the unique id
                         extpos=' '
+		
+                p3=data.find(' id')                     # scan for uniqueid info
+                if p3 != -1:
+			uniqueid     = "id"+gdatar("id") # get the unique id
+		else:
+			uniqueid     = ' '		# no unique ID
+			
                 roclimb      = gdatal(data,"fpm ")      # get the rate of climb
                 if roclimb == ' ':				# if no rot provided
                         roclimb=0
@@ -279,6 +302,11 @@ def parseraprs(packet_str, msg):
                 p6=data.find('gps')                     # scan for gps info
                 if p6 != -1:
                         gps      = gdatar(data, "gps")  # get the gpsdata 
+                else:
+                        gps      = "NO"			# no GPS data
+                p6=data.find(' GPS')                    # scan for gps info
+                if p6 != -1:
+                        gps      = "GPS"
                 else:
                         gps      = "NO"			# no GPS data
                 dte=date.strftime("%y%m%d")		# the aprs msgs has not date
@@ -302,8 +330,9 @@ def parseraprs(packet_str, msg):
                 msg['extpos']=extpos
                 msg['type']=type
                 msg['otime']=otime
+                msg['source']=source
 		if type == 8:
-                        p=data.find(':>')             # scan for the body of the APRS message
+                        p=data.find(':>')             	# scan for the body of the APRS message
                         status=data[p+2:p+254].rstrip() # status information
                         msg['status']=status
                 return(msg)

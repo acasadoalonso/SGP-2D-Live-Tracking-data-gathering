@@ -97,14 +97,13 @@ DBhost   =config.DBhost
 DBuser   =config.DBuser
 DBpasswd =config.DBpasswd
 DBname   =config.DBname
-SPIDER   =config.SPIDER
-SPOT     =config.SPOT
-CAPTURS  =config.CAPTURS
-SKYLINE  =config.SKYLINE
-LT24     =config.LT24
-OGNT     =config.OGNT
+SPIDER	 =True
+SPOT	 =True
+CAPTURS  =True
+SKYLINE  =True
+LT24	 =True
+OGNT     =True
 # --------------------------------------#
-
 
 if SPIDER:
 	from spifuncs import *
