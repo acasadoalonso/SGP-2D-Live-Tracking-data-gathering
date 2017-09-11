@@ -21,6 +21,7 @@ OGSPID-x for the Spider
 OGLT24-x for the LiveTrack24 
 OGSKYL-x for the Skyline (XCsoar)
 OGCAPT-x for the Capture
+OGNAVI-x for the Naviter devices 
 OGNMAV-x for the MAVlink from drones
 
 Note that -x means the version number for that source, however if omitted means version 0 or (-0)

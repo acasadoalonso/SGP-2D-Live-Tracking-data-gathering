@@ -21,6 +21,7 @@ aprssources = {
 	"OGSKYL" : "SKYL",
 	"OGLT24" : "LT24",
 	"OGCAPT" : "CAPT",
+	"OGNAVI" : "NAVITER",
 	"OGNMAV" : "NMAV"
 	}
 #

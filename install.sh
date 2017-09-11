@@ -76,7 +76,7 @@ cd /var/www/html/node/						#
 python genconfig.py						#
 cd /var/www/html/node/main					#
 mysqladmin -u root password ogn					#
-mysql -u root -pogn <adduser.sql				#
+mysql -u root -pogn <doc/adduser.sql				#
 echo "CREATE DATABASE APRSLOG" | mysql -u root -pogn		#
 mysql --database APRSLOG -u root -pogn < APRSLOG.template.sql	#
 echo								#
@@ -116,7 +116,7 @@ cd								#
 sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y dist-upgrade					#
 sudo apt-get -y autoremove					#
-cp /var/www/html/node/main/aliases .bash_aliases		#
+cp /var/www/html/node/main/doc/aliases .bash_aliases		#
 touch APRSinstallation.done					#
 echo								#
 echo "========================================================================================================"	#
