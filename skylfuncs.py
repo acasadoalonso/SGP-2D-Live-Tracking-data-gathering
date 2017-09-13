@@ -162,8 +162,7 @@ def skylaprspush(datafix, conn, prt=False):
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude*3.28084)
 		aprsmsg += " id"+uniqueid+" %+04dfpm "%(int(roclimb))+" \n" 
-		if True:
-			print "APRSMSG: ", aprsmsg
+		print "APRSMSG: ", aprsmsg
 		rtn = config.SOCK_FILE.write(aprsmsg)
 
 	return (True)

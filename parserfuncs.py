@@ -305,12 +305,11 @@ def parseraprs(packet_str, msg):
                 if p6 != -1:
                         gps      = gdatar(data, "gps")  # get the gpsdata 
                 else:
-                        gps      = "NO"			# no GPS data
-                p6=data.find(' GPS')                    # scan for gps info
-                if p6 != -1:
-                        gps      = "GPS"
-                else:
-                        gps      = "NO"			# no GPS data
+                	p6=data.find(' GPS')            # scan for gps info
+                	if p6 != -1:
+                        	gps      = "GPS"	# generic GPS mark
+                	else:
+                        	gps      = "NO"		# no GPS data
                 dte=date.strftime("%y%m%d")		# the aprs msgs has not date
 
                 msg['path']=path			# return the data parsed in the dict

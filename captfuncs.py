@@ -147,7 +147,7 @@ def captaprspush(datafix, prt=False):		# push the data into the OGN APRS
 	return(True)
 
 
-def captfindpos(ttime, conn, prt=True, store=True, aprspush=False):	# find all the fixes since TTIME
+def captfindpos(ttime, conn, prt=False, store=True, aprspush=False):	# find all the fixes since TTIME
 
 	onefound=False
 	captLOGIN=config.CAPTURSlogin	# login of the control capture account
