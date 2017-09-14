@@ -4,3 +4,4 @@
 *.alive
 utils/
 log/
+tmp/
