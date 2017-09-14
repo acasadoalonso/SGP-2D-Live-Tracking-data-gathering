@@ -66,6 +66,10 @@ try:
 	LT24text        = cfg.get('location', 'LT24').strip("'").strip('"')
 	LT24username    = cfg.get('location', 'LT24username').strip("'").strip('"')
 	LT24password    = cfg.get('location', 'LT24password').strip("'").strip('"')
+	LT24clientid    = cfg.get('location', 'LT24clientid').strip("'").strip('"')
+	LT24clientid    = str(LT24clientid)
+	LT24secretkey   = cfg.get('location', 'LT24secretkey').strip("'").strip('"')
+	LT24secretkey   = str(LT24secretkey)
 except:
 	LT24text='False'
 try:

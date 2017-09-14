@@ -30,11 +30,9 @@ def lt24login(LT24path, username, password): 	# login into livetrack24.com
 	global LT24_appSecret
 	global LT24_appKey
 	global LT24login
-	f=open(LT24path+"clientid")             # open the file with the client id
-	client=f.read()                         # read it
+	client=config.LT24clientid
 	LT24_appKey=client.rstrip()             # clear the whitespace at the end
-	f=open(LT24path+"secretkey")            # open the file with the secret key
-	secretkey=f.read()                      # read it
+	secretkey=config.LT24secretkey
 	LT24_appSecret=secretkey.rstrip()       # clear the whitespace at the end
 	LT24qwe=" "				# init the seed
 	lt24req("op/ping")			# the first time always is in error but we get the first QWE

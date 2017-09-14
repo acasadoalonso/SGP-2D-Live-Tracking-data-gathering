@@ -138,7 +138,7 @@ CREATE TABLE `GLIDERS_POSITIONS` (
   `gps` char(6) DEFAULT '',
   `lastFixTx` datetime DEFAULT NULL,
   `ground` int(11) NOT NULL DEFAULT '-1',
-  `source` varchar(4) CHARACTER SET utf16 NOT NULL DEFAULT 'OGN'
+  `source` varchar(8) CHARACTER SET utf16 NOT NULL DEFAULT 'OGN'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -164,7 +164,7 @@ CREATE TABLE `OGNDATA` (
   `uniqueid` char(16) DEFAULT NULL,
   `distance` float DEFAULT NULL,
   `extpos` char(5) DEFAULT NULL,
-  `source` varchar(4) NOT NULL DEFAULT 'OGN'
+  `source` varchar(8) NOT NULL DEFAULT 'OGN'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -209,7 +209,7 @@ CREATE TABLE `OGNDATAARCHIVE` (
   `uniqueid` char(16) DEFAULT NULL,
   `distance` float DEFAULT NULL,
   `extpos` char(5) DEFAULT NULL,
-  `source` varchar(4) NOT NULL DEFAULT 'OGN'
+  `source` varchar(8) NOT NULL DEFAULT 'OGN'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
