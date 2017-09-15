@@ -156,7 +156,7 @@ atexit.register(lambda: os.remove(config.PIDfile+"PUSH"))
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((config.APRS_SERVER_ALT, config.APRS_SERVER_PORT))
-print "Socket sock connected"
+print "Socket sock connected to: ", config.APRS_SERVER_ALT, ":", config.APRS_SERVER_PORT
 
 # logon to OGN APRS network
 
