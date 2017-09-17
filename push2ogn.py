@@ -77,8 +77,8 @@ if os.path.exists(config.PIDfile+"PUSH"):
 	raise RuntimeError("APRSlog/push already running !!!")
 	exit(-1)
 #
-APP="PUSH2OGN"				# the application name
-SLEEP=10				# sleep 10 seconds in between calls to the APRS
+APP   = "PUSH2OGN"			# the application name
+SLEEP = 10				# sleep 10 seconds in between calls to the APRS
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
@@ -200,6 +200,8 @@ lt24ts=ts
 spispotcount=0				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
+day   = now.day				# day of the month
+
 if LT24:
 	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
 	lt24ts=ts
@@ -234,6 +236,16 @@ try:
 
 	now=datetime.utcnow()				# get the UTC time
 	tt=int((now-datetime(1970,1,1)).total_seconds())      	# number of second until beginning of the epoch
+	if now.day != day:				# check if day has changed 
+			day =now.day			# ref of the day
+			td=now-datetime(1970,1,1)      	# number of seconds until beginning of the day 1-1-1970
+			ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			tc=ts				# for capturs
+			ty=ts				# for skylines
+			ttspid=0			# time between spid request
+			ttcapt=0			# time between capturs request
+			lt24ts=ts			# time for LT24 
+
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 		if  (tt - ttspid) > 300:		# every 5 minutes
 			if SPIDER:			# if we have SPIDER according with the config
