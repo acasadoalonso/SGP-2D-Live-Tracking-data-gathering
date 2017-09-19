@@ -190,12 +190,17 @@ if os.path.isfile(compfile):
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
-print "APRS login:", login
 
 sock.send(login)
 
 # Make the connection to the server
 sock_file = sock.makefile()
+
+print "APRS Version:", sock_file.readline()
+sleep (2)
+print "APRS Login request:", login
+print "APRS Login reply:  ", sock_file.readline()
+
 
 # Initialise libfap.py for parsing returned lines
 print "libfap_init"
