@@ -57,14 +57,15 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.8'
+programver='V1.9'
 print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
 print "===================================================================="
 
 print "Program Version:", time.ctime(os.path.getmtime(__file__))
 date=datetime.utcnow()         		# get the date
 dte=date.strftime("%y%m%d")             # today's date
-print "\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid()
+hostname=socket.gethostname()
+print "\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
 
@@ -167,6 +168,11 @@ with open(config.PIDfile,"w") as f:
 	f.close()
 atexit.register(lambda: os.remove(config.PIDfile))
 
+
+if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
+        ognttable={}            	# init the instance of the table
+        ogntbuildtable(conn, ognttable, True) # build the table from the TRKDEVICES DB table
+
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -178,6 +184,7 @@ print "Socket sock connected"
 compfile=config.cucFileLocation + "/competitiongliders.lst"
 
 if os.path.isfile(compfile):
+	print "Competition file:", compfile
 	fd=open(compfile, 'r')
 	j=fd.read()
 	clist=json.loads(j)
@@ -186,7 +193,18 @@ if os.path.isfile(compfile):
 	for f in clist:
 		filter += f
 		filter += "/"
-	filter += " p/LF/LE/ \n"
+
+	if OGNT:
+		for f in ognttable:
+			
+			filter += f	# add the flarm id
+			filter += "/"	# separated by an slash
+
+	if hostname == "CHILEOGN":
+		filter += " p/SC/VITACURA/ROBLE/ELBOSQUE/TROCA/WBUX/COLORA/ \n"
+	else:		
+		filter += " p/LF/LE/ \n"# add all the station of france and Spain for control 
+
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
@@ -234,10 +252,6 @@ if LT24:
 	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
 	lt24ts=ts
 	LT24firsttime=True
-
-if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
-        ognttable={}            	# init the instance of the table
-        ogntbuildtable(conn, ognttable, prt) # build the table from the TRKDEVICES DB table
 
 if SPIDER or SPOT or CAPTURS or LT24:
 	print spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()

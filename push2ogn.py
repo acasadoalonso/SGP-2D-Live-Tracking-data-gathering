@@ -82,7 +82,7 @@ SLEEP = 10				# sleep 10 seconds in between calls to the APRS
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
-err   = 0				# number of read errors
+nerrors = 0				# number of errors in *funcs found
 
 fsllo={'NONE  ' : 0.0}                  # station location longitude
 fslla={'NONE  ' : 0.0}                  # station location latitude
@@ -292,6 +292,10 @@ try:
 			if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
 
 				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
+			nerrors += 1
+			if nerrors > 100:
+				shutdown(sock)		# way to many errors
+				sys.exit(-1)		# and bye ...
 
 	sys.stdout.flush()				# flush the print messages
 	sleep (SLEEP)					# sleep n seconds
@@ -302,5 +306,5 @@ except KeyboardInterrupt:
     pass
 
 shutdown(sock)
-print "Exit now ...", err
+print "Exit now ...", nerrors
 exit(0)
