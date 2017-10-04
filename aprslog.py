@@ -453,7 +453,9 @@ try:
                 rot       = msg['rot']
                 sensitivity= msg['sensitivity']
                 gps       = msg['gps']
-                hora      = msg['time']
+                hora      = msg['time']			# timestamp
+                daodatum  = msg['daodatum']		# datum used
+                resolution= msg['resolution']		# resolution in metters
                 altim=altitude                          # the altitude in meters
                 if altim > 15000 or altim < 0:
                         altim=0

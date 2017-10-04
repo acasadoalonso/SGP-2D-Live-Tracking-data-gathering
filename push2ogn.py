@@ -83,6 +83,7 @@ cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
 nerrors = 0				# number of errors in *funcs found
+day   = 0				# day of running
 
 fsllo={'NONE  ' : 0.0}                  # station location longitude
 fslla={'NONE  ' : 0.0}                  # station location latitude
@@ -187,7 +188,7 @@ alive(config.DBpath+APP, first='yes')
 # Initialise API for SPIDER & SPOT & LT24
 #-----------------------------------------------------------------
 #
-now=datetime.utcnow()			# get the UTC time
+now=datetime.utcnow()			# get the UTC timea
 min5=timedelta(seconds=300)		# 5 minutes ago
 now=now-min5				# now less 5 minutes
 td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
@@ -237,14 +238,8 @@ try:
 	now=datetime.utcnow()				# get the UTC time
 	tt=int((now-datetime(1970,1,1)).total_seconds())      	# number of second until beginning of the epoch
 	if now.day != day:				# check if day has changed 
-			day =now.day			# ref of the day
-			td=now-datetime(1970,1,1)      	# number of seconds until beginning of the day 1-1-1970
-			ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-			tc=ts				# for capturs
-			ty=ts				# for skylines
-			ttspid=0			# time between spid request
-			ttcapt=0			# time between capturs request
-			lt24ts=ts			# time for LT24 
+		shutdown(sock)				# recycle
+		exit(0)
 
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
 		if  (tt - ttspid) > 300:		# every 5 minutes
