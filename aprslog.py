@@ -448,6 +448,8 @@ try:
                 speed     = msg['speed']
                 course    = msg['course']
                 uniqueid  = msg['uniqueid']
+		if len(uniqueid) > 16:
+			uniqueid=uniqueid[0:16]		# limit to 16 chars
                 extpos    = msg['extpos']
                 roclimb   = msg['roclimb']
                 rot       = msg['rot']
