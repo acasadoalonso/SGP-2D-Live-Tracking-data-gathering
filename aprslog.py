@@ -31,6 +31,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         sock.shutdown(0)                # shutdown the connection
         sock.close()                    # close the connection file
         datafile.close()                # close the data file
+	print "Sources: ", fsour	# print the data about the different sources 
         print 'Records read:',cin, ' DB records created: ',cout    # report number of records read and IDs discovered
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
@@ -90,6 +91,7 @@ fslal={'NONE  ' : 0.0}                  # station location altitude
 fslod={'NONE  ' : (0.0, 0.0)}           # station location - tuple
 fsmax={'NONE  ' : 0.0}                  # maximun coverage
 fsalt={'NONE  ' : 0}                    # maximun altitude
+fsour={}			 	# sources
 
 # --------------------------------------#
 DATA=True
@@ -377,6 +379,11 @@ try:
                         print 'Packet returned is: ', packet_str
                         print 'Callsign is: ', id, path, otime, type
                 cin += 1                                # one more file to create
+		if not source in fsour:		    	# did we see this source
+	   	     	fsour[source]=1		    	# init the counter
+    	   	else:
+        		fsour[source] += 1	    	# increase the counter
+
                 if path == 'TCPIP*':                    # handle the TCPIP
                         status=msg['status']
 			if len(status) > 254:
