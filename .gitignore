@@ -6,3 +6,5 @@ utils/
 log/
 tmp/
 ogn-aprs-protocol/
+ss.sh
+ssc.sh
