@@ -398,8 +398,10 @@ try:
                         version=msg['version']
                         cpu=msg['cpu']
                         rf=msg['rf']
-                        if longitude == -1 and latitude == -1:	# if the status report
-                                latitude =fslla[id]		# we get tle lon/lat/alt from the table
+                        if longitude == -1 and latitude == -1 :	# if the status report
+				if not id in fslla:	# in the rare case that we got the status report but not the position report
+					continue	# in that case just continue
+                                latitude =fslla[id]	# we get tle lon/lat/alt from the table
                                 longitude=fsllo[id]
                                 altitude =fslal[id]
 				otime=datetime.utcnow()
