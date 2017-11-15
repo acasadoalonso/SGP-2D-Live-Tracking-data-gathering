@@ -238,6 +238,7 @@ try:
 	now=datetime.utcnow()				# get the UTC time
 	tt=int((now-datetime(1970,1,1)).total_seconds())      	# number of second until beginning of the epoch
 	if now.day != day:				# check if day has changed 
+		print "End of Day..."
 		shutdown(sock)				# recycle
 		exit(0)
 

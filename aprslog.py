@@ -84,6 +84,7 @@ cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
 err   = 0				# number of read errors
+day   = 0				# day of running 
 
 fsllo={'NONE  ' : 0.0}                  # station location longitude
 fslla={'NONE  ' : 0.0}                  # station location latitude
@@ -209,7 +210,7 @@ if os.path.isfile(compfile):
 
 	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+	login = 'user %s pass %s vers APRSLOG %s  filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
 
 sock.send(login)
 
@@ -249,6 +250,7 @@ ty=ts
 lt24ts=ts
 spispotcount=1				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+day   = now.day				# day of the month
 
 if LT24:
 	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
@@ -265,8 +267,12 @@ try:
     while True:
         current_time = time.time()
         local_time = datetime.now()
-        if local_time.hour == 23:
-                break
+	now=datetime.utcnow()				# get the UTC time
+	if now.day != day:				# check if day has changed 
+		print "End of Day..."
+		shutdown(sock)				# recycle
+		exit(0)
+
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
 		alive(config.APP)               		# and mark that we are still alive

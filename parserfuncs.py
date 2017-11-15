@@ -13,7 +13,7 @@ aprssources = {
 	"OGNSDR" : "OGN",
 	"OGFLR"  : "OGN",
 	"OGNFLR" : "OGN",
-	"OGNTRN" : "OGN",
+	"OGNTRK" : "OGN",
 	"OGNDSX" : "OGN", 
 	"OGADSB" : "ADSB",
 	"OGNFNT" : "FANET",
@@ -128,7 +128,11 @@ def get_station(data):
         return (station)
 ########################################################################
 def get_source(dstcallsign):
-	return (aprssources[str(dstcallsign)])
+	src=str(dstcallsign)
+	if src in aprssources:
+		return (aprssources[src])
+	else:
+		return ("UNKW")
 #########################################################################
 def gdatal (data, typer):               	# get data on the left
         p=data.find(typer)              	# scan for the type requested

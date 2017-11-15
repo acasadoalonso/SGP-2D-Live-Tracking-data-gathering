@@ -30,10 +30,10 @@ else:
 
 try:
 
-        inscmd="select * from RECEIVERS where idrec = '"+station+"' order by `otime` desc ;"
-	#print inscmd
+        selcmd="select * from RECEIVERS where idrec = '"+station+"' order by `otime` desc ;"
+	#print selcmd
         try:
-               curs.execute(inscmd)
+               curs.execute(selcmd)
         except MySQLdb.Error, e:
                try:
                     print ">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1])
