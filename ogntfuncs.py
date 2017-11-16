@@ -33,7 +33,7 @@ def ogntbuildtable(conn, ognttable, prt=False):	# function to build the OGN trac
 		auxtable[o]=f
 	
 	unmatched_item = set(oldtable.items()) ^ set(ognttable.items())
-	if len(unmatched_item) != 0:
+	if len(unmatched_item) != 0 and prt:
 		print "OGNTtable:", ognttable
 		print "OGNTtable:", auxtable
 	return(ognttable)

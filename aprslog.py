@@ -3,6 +3,7 @@
 # Python code to show access to OGN Beacons
 #
 # Version for gathering all the records for the world
+#
 
 from datetime import datetime
 from libfap import *
@@ -24,6 +25,7 @@ from   time import sleep                # use the sleep function
 #from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
+
 #########################################################################
 def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
                                         # shutdown before exit
@@ -43,9 +45,6 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
 
 #########################################################################
 
-#########################################################################
-#########################################################################
-
 def signal_term_handler(signal, frame):
     print 'got SIGTERM ... shutdown orderly'
     libfap.fap_cleanup()                        # close libfap
@@ -58,7 +57,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.9'
+programver='V1.10'
 print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
 print "===================================================================="
 
@@ -70,10 +69,11 @@ print "\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid()
 date = datetime.now()
 print "Time now is: ", date, " Local time"
 
+# ---------------------------------------#
 #
 # get the SPIDER TRACK  & SPOT information
 #
-# --------------------------------------#
+# ---------------------------------------#
 import config
 if os.path.exists(config.PIDfile):
 	raise RuntimeError("APRSlog already running !!!")
@@ -143,12 +143,13 @@ if OGNT:
 
 
 # --------------------------------------#
+
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
 
 print "MySQL: Database:", DBname, " at Host:", DBhost
 
-#----------------------ogn_aprslog.py start-----------------------
+#----------------------aprslog.py start-----------------------#
 
 prtreq =  sys.argv[1:]
 if prtreq and prtreq[0] == 'prt':
@@ -186,40 +187,35 @@ print "Socket sock connected"
 
 compfile=config.cucFileLocation + "/competitiongliders.lst"
 
-if os.path.isfile(compfile):
+if os.path.isfile(compfile):		# if we are in competition mode
 	print "Competition file:", compfile
 	fd=open(compfile, 'r')
 	j=fd.read()
 	clist=json.loads(j)
 	fd.close()
-	filter="filter b/"
+	filter="filter b/"		# filter to only those gliders in competition
 	for f in clist:
-		filter += f
+		filter += f		# add the flarmid
 		filter += "/"
 
-	if OGNT:
-		for f in ognttable:
+	if OGNT:			# if we have ONT tracker paired
+		for f in ognttable:	# foe each ogntracker
 			
-			filter += f	# add the flarm id
+			filter += f	# add the flarm id/tracker id associated
 			filter += "/"	# separated by an slash
 
-	if hostname == "CHILEOGN":
-		filter += " p/SC/VITACURA/ROBLE/ELBOSQUE/TROCA/WBUX/COLORA/ \n"
-	else:		
-		filter += " p/LF/LE/ \n"# add all the station of france and Spain for control 
-
-	login = 'user %s pass %s vers APRSLOG %s %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG %s  filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
 
-sock.send(login)
+sock.send(login)			# send the login to the APRS server
 
 # Make the connection to the server
 sock_file = sock.makefile()
 
 print "APRS Version:", sock_file.readline()
 sleep (2)
-print "APRS Login request:", login
+print "APRS Login request:", login	# for control print the login sent and get the response
 print "APRS Login reply:  ", sock_file.readline()
 
 
@@ -231,10 +227,10 @@ local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
 print "APRS data file is: ", OGN_DATA
-datafile = open (OGN_DATA, 'a')
+datafile = open (OGN_DATA, 'a')		# data file for loggin if requested
 keepalive_count = 1
 keepalive_time = time.time()
-alive(config.APP, first='yes')
+alive(config.APP, first='yes')		# create the ALIVE file/lock
 #
 #-----------------------------------------------------------------
 # Initialise API for SPIDER & SPOT & LT24
@@ -267,13 +263,13 @@ try:
     while True:
         current_time = time.time()
         local_time = datetime.now()
-	now=datetime.utcnow()				# get the UTC time
-	if now.day != day:				# check if day has changed 
-		print "End of Day..."
-		shutdown(sock)				# recycle
+	now=datetime.utcnow()					# get the UTC time
+	if now.day != day:					# check if day has changed 
+		print "End of Day..."				# end of UTC day 
+		shutdown(sock, datafile)			# recycle
 		exit(0)
 
-        elapsed_time = current_time - keepalive_time
+        elapsed_time = current_time - keepalive_time		# get the time since last keep-alive
         if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
 		alive(config.APP)               		# and mark that we are still alive
                 try:
@@ -340,11 +336,10 @@ try:
                 print "In main loop. Count= ", i
                 i += 1
         try:
-                # Read packet string from socket
-                packet_str = sock_file.readline()
+                packet_str = sock_file.readline() 		# Read packet string from socket
 
                 if len(packet_str) > 0 and packet_str[0] <> "#" and config.LogData:
-                        datafile.write(packet_str)
+                        datafile.write(packet_str)		# log the data if requested
 
         except socket.error:
                 print "Socket error on readline"
@@ -366,12 +361,12 @@ try:
 
         ix=packet_str.find('>')
         cc= packet_str[0:ix]
-        packet_str=cc.upper()+packet_str[ix:]
+        packet_str=cc.upper()+packet_str[ix:]			# conver the ID to uppercase
 	msg={}
-	msg=parseraprs(packet_str, msg)
-        if  len(packet_str) > 0 and packet_str[0] <> "#":
+        if  len(packet_str) > 0 and packet_str[0] <> "#":	# if not a heartbeat from the server 
 
-        	msg=parseraprs(packet_str, msg)
+        	msg=parseraprs(packet_str, msg)			# parse the APRS message
+                data      = packet_str
                 id        = msg['id']                         	# id
                 type      = msg['type']				# APRS msg type
                 longitude = msg['longitude']
@@ -380,7 +375,6 @@ try:
                 path      = msg['path']
                 otime     = msg['otime']
                 source    = msg['source']
-                data=packet_str
                 if prt:
                         print 'Packet returned is: ', packet_str
                         print 'Callsign is: ', id, path, otime, type
@@ -391,13 +385,13 @@ try:
         		fsour[source] += 1	    	# increase the counter
 
                 if path == 'TCPIP*':                    # handle the TCPIP
-                        status=msg['status']
+                        status=msg['status']		# get the full status message
 			if len(status) > 254:
 				status=status[0:254]
-                        temp=msg['temp']
-                        version=msg['version']
-                        cpu=msg['cpu']
-                        rf=msg['rf']
+                        temp=msg['temp']		# the temperature of the station
+                        version=msg['version']		# OGN software version
+                        cpu=msg['cpu']			# cpu usage
+                        rf=msg['rf']			# underground noise
                         if longitude == -1 and latitude == -1 :	# if the status report
 				if not id in fslla:	# in the rare case that we got the status report but not the position report
 					continue	# in that case just continue
@@ -406,7 +400,7 @@ try:
                                 altitude =fslal[id]
 				otime=datetime.utcnow()
                                 #print "TTT:", id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
-                        if not id in fslod :
+                        if not id in fslod :		# if we not have it yeat on the table
                            fslla[id]=latitude           # save the location of the station
                            fsllo[id]=longitude          # save the location of the station
                            fslal[id]=altitude           # save the location of the station
@@ -426,8 +420,8 @@ try:
                                                 print ">>>MySQL2 Error: %s" % str(e)
                                         print ">>>MySQL3 error:",  cout, inscmd
                                         print ">>>MySQL4 data :",  data
-                        cout +=1
-                        conn.commit()
+                        cout +=1			# number of records saved
+                        conn.commit()			# commit to the DB
                         continue
 		if type == 8:				# if status report
                         status=msg['status']		# get the status message
@@ -447,15 +441,13 @@ try:
                                                 print ">>>MySQL2 Error: %s" % str(e)
                                         print ">>>MySQL3 error:",  cout, inscmd
                                         print ">>>MySQL4 data :",  data
-                if path == 'qAC':
+                if path == 'qAC':			# the case of a qAC message that is not a TCPIP* 
                         print "qAC>>>:", data
                         continue                        # the case of the TCP IP as well
-                if path == 'CAPTURS':
-                        print "CAPTURS>>>:", data
 		if longitude == -1 or latitude == -1:	# if no position like in the status report
 			continue			# that is the case of the ogn trackers status reports
                 if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN": # if std records
-                        station=msg['station']
+                        station=msg['station']		# get the station ID
                 else:
 			station="Unkown"
                         continue                        # nothing else to do
@@ -477,13 +469,13 @@ try:
                 if altim > 15000 or altim < 0:
                         altim=0
                         alti='%05d' % altim             # convert it to an string
-                dist=-1
+                dist=-1					# the case of when did not receive the station YET
                 if station in fslod and source == 'OGN':  # if we have the station yet
                         distance=vincenty((latitude, longitude), fslod[station]).km    # distance to the station
                         dist=distance
                         if distance > 300.0:
                             print "distcheck: ", distance, data
-		if source != 'OGN':
+		if source != 'OGN':			# in the case of a NON OGN we use the base as reference point
         		vitlat   =config.location_latitude
         		vitlon   =config.location_longitude
         		dist=vincenty((latitude, longitude),(vitlat,vitlon)).km    # distance to the BASE
