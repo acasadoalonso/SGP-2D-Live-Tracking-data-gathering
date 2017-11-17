@@ -39,6 +39,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         conn.close()                    # close the database
         local_time = datetime.now() # report date and time now
         print "Time now:", local_time, " Local time."
+        print "=====================================" 
  	if os.path.exists("APRS.alive"):
 		os.remove("APRS.alive")	# delete the mark of being alive
         return                          # job done
@@ -47,7 +48,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
 
 def signal_term_handler(signal, frame):
     print 'got SIGTERM ... shutdown orderly'
-    libfap.fap_cleanup()                        # close libfap
+    libfap.fap_cleanup()                # close libfap
     shutdown(sock, datafile ) # shutdown orderly
     sys.exit(0)
 
@@ -410,7 +411,7 @@ try:
 			if data.find(":/") != -1:	# it is the position report ??
 				continue		# we do not want that message ... we want the status report ...
                         inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
-                                         (id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
+                                         (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
                         try:
                                         curs.execute(inscmd)
                         except MySQLdb.Error, e:
