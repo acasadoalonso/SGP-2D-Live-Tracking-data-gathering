@@ -186,28 +186,32 @@ print "Socket sock connected"
 
 # logon to OGN APRS network
 
-compfile=config.cucFileLocation + "/competitiongliders.lst"
+compfile=config.cucFileLocation + "competitiongliders.lst"
 
 if os.path.isfile(compfile):		# if we are in competition mode
 	print "Competition file:", compfile
 	fd=open(compfile, 'r')
 	j=fd.read()
-	clist=json.loads(j)
+	if len(j) > 0:
+		clist=json.loads(j)
+	else:
+		clist=[]
 	fd.close()
-	filter="filter b/"		# filter to only those gliders in competition
+	filter="b/"			# filter to only those gliders in competition
 	for f in clist:
 		filter += f		# add the flarmid
 		filter += "/"
 
 	if OGNT:			# if we have ONT tracker paired
-		for f in ognttable:	# foe each ogntracker
+		for f in ognttable:	# for each ogntracker
 			
 			filter += f	# add the flarm id/tracker id associated
 			filter += "/"	# separated by an slash
+	filter += "\n"
 
-	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
 
 sock.send(login)			# send the login to the APRS server
 
@@ -341,7 +345,8 @@ try:
 
                 if len(packet_str) > 0 and packet_str[0] <> "#" and config.LogData:
                         datafile.write(packet_str)		# log the data if requested
-
+		if prt:
+			print packet_str
         except socket.error:
                 print "Socket error on readline"
                 continue

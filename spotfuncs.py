@@ -34,7 +34,7 @@ def spotaddpos(msg, spotpos, ttime, regis, flarmid):	# extract the data from the
 
 	unixtime=msg["unixTime"] 		# the time from the epoch
 	altitude=msg["altitude"] 
-	if (unixtime < ttime or altitude == 0):
+	if (unixtime < ttime ):
 		return (False)			# if is lower than the last time just ignore it
 	reg=regis
 	lat=msg["latitude"] 			# extract from the JSON object the data that we need
@@ -184,6 +184,7 @@ def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):	# find all 
 			url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+spotID+"/message.json?feedPassword="+str(spotpasswd)
 		if prt:
 			print url
+		#print "PPP:", reg, flarmid, url
 		spotpos={"spotpos":[]}				# init the dict
 		jsondata=spotgetapidata(url)			# get the JSON data from the SPOT server
 		if prt:						# if we require printing the raw data

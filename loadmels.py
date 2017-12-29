@@ -33,6 +33,7 @@ for station in stations:
 	temp=0
 	rf=0
 	status=' '
+	lstfix='2000-01-01'
 	if otime == ' ' or otime == '':
 		continue
 
