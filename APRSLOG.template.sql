@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: May 24, 2017 at 05:02 PM
--- Server version: 5.7.18-0ubuntu0.16.04.1
--- PHP Version: 7.0.15-0ubuntu0.16.04.4
+-- Generation Time: Feb 26, 2018 at 04:05 PM
+-- Server version: 5.7.21-0ubuntu0.16.04.1
+-- PHP Version: 7.0.25-0ubuntu0.16.04.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -19,11 +19,14 @@ SET time_zone = "+00:00";
 --
 -- Database: `APRSLOG`
 --
+CREATE DATABASE IF NOT EXISTS `APRSLOG` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `APRSLOG`;
 
 DELIMITER $$
 --
 -- Functions
 --
+DROP FUNCTION IF EXISTS `GETBEARING`$$
 CREATE DEFINER=`ogn`@`%` FUNCTION `GETBEARING` (`lat1` DOUBLE, `lon1` DOUBLE, `lat2` DOUBLE, `lon2` DOUBLE) RETURNS DOUBLE NO SQL
     DETERMINISTIC
     COMMENT 'Returns the initial bearing, in degrees, to follow the great circle route             from point (lat1,lon1), to point (lat2,lon2)'
@@ -39,6 +42,7 @@ BEGIN
      RETURN bearing;
 END$$
 
+DROP FUNCTION IF EXISTS `GETBEARINGROSE`$$
 CREATE DEFINER=`ogn`@`%` FUNCTION `GETBEARINGROSE` (`lat1` DOUBLE, `lon1` DOUBLE, `lat2` DOUBLE, `lon2` DOUBLE) RETURNS VARCHAR(5) CHARSET utf8 NO SQL
     DETERMINISTIC
     COMMENT 'Returns the initial bearing, in degrees, to follow the great circle route             from point (lat1,lon1), to point (lat2,lon2)'
@@ -75,6 +79,7 @@ BEGIN
      RETURN bearingRose;
 END$$
 
+DROP FUNCTION IF EXISTS `GETDISTANCE`$$
 CREATE DEFINER=`ogn`@`%` FUNCTION `GETDISTANCE` (`deg_lat1` FLOAT, `deg_lng1` FLOAT, `deg_lat2` FLOAT, `deg_lng2` FLOAT) RETURNS FLOAT BEGIN 
   DECLARE distance FLOAT;
   DECLARE delta_lat FLOAT; 
@@ -106,6 +111,7 @@ DELIMITER ;
 -- Table structure for table `GLIDERS`
 --
 
+DROP TABLE IF EXISTS `GLIDERS`;
 CREATE TABLE `GLIDERS` (
   `idglider` char(9) DEFAULT NULL,
   `registration` char(9) DEFAULT NULL,
@@ -118,9 +124,36 @@ CREATE TABLE `GLIDERS` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `GLIDERS_INFO`
+--
+
+DROP TABLE IF EXISTS `GLIDERS_INFO`;
+CREATE TABLE `GLIDERS_INFO` (
+  `registration` char(6) NOT NULL,
+  `maker` varchar(50) NOT NULL,
+  `model` varchar(50) NOT NULL,
+  `owner` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `GLIDERS_PILOT`
+--
+
+DROP TABLE IF EXISTS `GLIDERS_PILOT`;
+CREATE TABLE `GLIDERS_PILOT` (
+  `CN` varchar(10) NOT NULL,
+  `Pilot` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `GLIDERS_POSITIONS`
 --
 
+DROP TABLE IF EXISTS `GLIDERS_POSITIONS`;
 CREATE TABLE `GLIDERS_POSITIONS` (
   `flarmId` varchar(50) NOT NULL,
   `lat` float DEFAULT '0',
@@ -147,6 +180,7 @@ CREATE TABLE `GLIDERS_POSITIONS` (
 -- Table structure for table `OGNDATA`
 --
 
+DROP TABLE IF EXISTS `OGNDATA`;
 CREATE TABLE `OGNDATA` (
   `idflarm` char(9) DEFAULT NULL,
   `date` char(6) DEFAULT NULL,
@@ -170,6 +204,7 @@ CREATE TABLE `OGNDATA` (
 --
 -- Triggers `OGNDATA`
 --
+DROP TRIGGER IF EXISTS `INSERTGLIDERPOSITION`;
 DELIMITER $$
 CREATE TRIGGER `INSERTGLIDERPOSITION` AFTER INSERT ON `OGNDATA` FOR EACH ROW IF ((SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId=NEW.idflarm)=0) THEN
 	INSERT INTO GLIDERS_POSITIONS  (flarmId, lat, lon, altitude, course, date, time, rot, speed, climb, station, sensitivity, gps, lastFixTx, source) VALUES (NEW.idflarm, NEW.latitude, NEW.longitude, NEW.altitude, NEW.course, NEW.date, NEW.time, NEW.rot, NEW.speed, NEW.roclimb, NEW.station, NEW.sensitivity, NEW.gps, NOW(), NEW.source);
@@ -192,6 +227,7 @@ DELIMITER ;
 -- Table structure for table `OGNDATAARCHIVE`
 --
 
+DROP TABLE IF EXISTS `OGNDATAARCHIVE`;
 CREATE TABLE `OGNDATAARCHIVE` (
   `idflarm` char(9) DEFAULT NULL,
   `date` char(6) DEFAULT NULL,
@@ -215,9 +251,24 @@ CREATE TABLE `OGNDATAARCHIVE` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `OGNTRKSTATUS`
+--
+
+DROP TABLE IF EXISTS `OGNTRKSTATUS`;
+CREATE TABLE `OGNTRKSTATUS` (
+  `id` varchar(9) NOT NULL,
+  `station` varchar(9) NOT NULL,
+  `otime` datetime NOT NULL,
+  `status` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Status of the OGN trackers';
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `RECEIVERS`
 --
 
+DROP TABLE IF EXISTS `RECEIVERS`;
 CREATE TABLE `RECEIVERS` (
   `idrec` char(9) DEFAULT NULL COMMENT 'Id of station',
   `lati` double DEFAULT NULL,
@@ -234,6 +285,7 @@ CREATE TABLE `RECEIVERS` (
 --
 -- Triggers `RECEIVERS`
 --
+DROP TRIGGER IF EXISTS `UPDATERECEIVERSSTATUS`;
 DELIMITER $$
 CREATE TRIGGER `UPDATERECEIVERSSTATUS` AFTER INSERT ON `RECEIVERS` FOR EACH ROW IF ((SELECT count(idrec) FROM RECEIVERS_STATUS WHERE idrec=NEW.idrec)=0) THEN
 	INSERT INTO RECEIVERS_STATUS  (alti, cpu, idrec, lati, longi, otime, rf, status, temp, version, lastFixRx) VALUES (NEW.alti, NEW.cpu, NEW.idrec, NEW.lati, NEW.longi, NEW.otime, NEW.rf, NEW.status, NEW.temp, NEW.version, NOW());
@@ -250,6 +302,7 @@ DELIMITER ;
 -- Table structure for table `RECEIVERS_STATUS`
 --
 
+DROP TABLE IF EXISTS `RECEIVERS_STATUS`;
 CREATE TABLE `RECEIVERS_STATUS` (
   `idrec` char(9) DEFAULT NULL COMMENT 'Id of station',
   `lati` double DEFAULT NULL,
@@ -268,9 +321,57 @@ CREATE TABLE `RECEIVERS_STATUS` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `telescopio`
+--
+DROP VIEW IF EXISTS `telescopio`;
+CREATE TABLE `telescopio` (
+`flarmId` varchar(50)
+,`lat` float
+,`lon` float
+,`altitude` float
+,`course` float
+,`date` char(6)
+,`time` char(6)
+,`rot` float
+,`speed` float
+,`distance` float
+,`climb` float
+,`station` varchar(50)
+,`sensitivity` float
+,`gps` char(6)
+,`lastFixTx` datetime
+,`ground` int(11)
+,`source` varchar(8)
+,`REG` varchar(9)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `TRKDEV`
+--
+DROP VIEW IF EXISTS `TRKDEV`;
+CREATE TABLE `TRKDEV` (
+`id` varchar(16)
+,`owner` varchar(64)
+,`spotid` varchar(36)
+,`spotpasswd` varchar(16)
+,`compid` varchar(3)
+,`model` varchar(16)
+,`registration` varchar(9)
+,`active` tinyint(1)
+,`devicetype` varchar(6)
+,`flarmid` varchar(9)
+,`GLID_REG` varchar(9)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `TRKDEVICES`
 --
 
+DROP TABLE IF EXISTS `TRKDEVICES`;
 CREATE TABLE `TRKDEVICES` (
   `id` varchar(16) NOT NULL,
   `owner` varchar(64) NOT NULL,
@@ -287,9 +388,24 @@ CREATE TABLE `TRKDEVICES` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `TRKSTA`
+--
+DROP VIEW IF EXISTS `TRKSTA`;
+CREATE TABLE `TRKSTA` (
+`id` varchar(9)
+,`station` varchar(9)
+,`otime` datetime
+,`status` varchar(255)
+,`TRK_NAME` varchar(9)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `WAYPOINTS`
 --
 
+DROP TABLE IF EXISTS `WAYPOINTS`;
 CREATE TABLE `WAYPOINTS` (
   `idWaypoint` int(11) NOT NULL,
   `waypoint` varchar(100) NOT NULL,
@@ -298,6 +414,33 @@ CREATE TABLE `WAYPOINTS` (
   `waypointLat` float NOT NULL,
   `waypointLon` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `telescopio`
+--
+DROP TABLE IF EXISTS `telescopio`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`ogn`@`%` SQL SECURITY DEFINER VIEW `telescopio`  AS  select `GLIDERS_POSITIONS`.`flarmId` AS `flarmId`,`GLIDERS_POSITIONS`.`lat` AS `lat`,`GLIDERS_POSITIONS`.`lon` AS `lon`,`GLIDERS_POSITIONS`.`altitude` AS `altitude`,`GLIDERS_POSITIONS`.`course` AS `course`,`GLIDERS_POSITIONS`.`date` AS `date`,`GLIDERS_POSITIONS`.`time` AS `time`,`GLIDERS_POSITIONS`.`rot` AS `rot`,`GLIDERS_POSITIONS`.`speed` AS `speed`,`GLIDERS_POSITIONS`.`distance` AS `distance`,`GLIDERS_POSITIONS`.`climb` AS `climb`,`GLIDERS_POSITIONS`.`station` AS `station`,`GLIDERS_POSITIONS`.`sensitivity` AS `sensitivity`,`GLIDERS_POSITIONS`.`gps` AS `gps`,`GLIDERS_POSITIONS`.`lastFixTx` AS `lastFixTx`,`GLIDERS_POSITIONS`.`ground` AS `ground`,`GLIDERS_POSITIONS`.`source` AS `source`,(select `GLIDERS`.`registration` from `GLIDERS` where (`GLIDERS`.`idglider` = substr(`GLIDERS_POSITIONS`.`flarmId`,4,6))) AS `REG` from `GLIDERS_POSITIONS` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `TRKDEV`
+--
+DROP TABLE IF EXISTS `TRKDEV`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`ogn`@`%` SQL SECURITY DEFINER VIEW `TRKDEV`  AS  select `TRKDEVICES`.`id` AS `id`,`TRKDEVICES`.`owner` AS `owner`,`TRKDEVICES`.`spotid` AS `spotid`,`TRKDEVICES`.`spotpasswd` AS `spotpasswd`,`TRKDEVICES`.`compid` AS `compid`,`TRKDEVICES`.`model` AS `model`,`TRKDEVICES`.`registration` AS `registration`,`TRKDEVICES`.`active` AS `active`,`TRKDEVICES`.`devicetype` AS `devicetype`,`TRKDEVICES`.`flarmid` AS `flarmid`,(select `GLIDERS`.`registration` from `GLIDERS` where (`GLIDERS`.`idglider` = substr(`TRKDEVICES`.`flarmid`,4,6))) AS `GLID_REG` from `TRKDEVICES` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `TRKSTA`
+--
+DROP TABLE IF EXISTS `TRKSTA`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`ogn`@`%` SQL SECURITY DEFINER VIEW `TRKSTA`  AS  select `OGNTRKSTATUS`.`id` AS `id`,`OGNTRKSTATUS`.`station` AS `station`,`OGNTRKSTATUS`.`otime` AS `otime`,`OGNTRKSTATUS`.`status` AS `status`,(select `GLIDERS`.`registration` from `GLIDERS` where (`GLIDERS`.`idglider` = substr(`OGNTRKSTATUS`.`id`,4,6))) AS `TRK_NAME` from `OGNTRKSTATUS` ;
 
 --
 -- Indexes for dumped tables
@@ -311,6 +454,18 @@ ALTER TABLE `GLIDERS`
   ADD UNIQUE KEY `GLIDERIDX` (`idglider`);
 
 --
+-- Indexes for table `GLIDERS_INFO`
+--
+ALTER TABLE `GLIDERS_INFO`
+  ADD PRIMARY KEY (`registration`);
+
+--
+-- Indexes for table `GLIDERS_PILOT`
+--
+ALTER TABLE `GLIDERS_PILOT`
+  ADD PRIMARY KEY (`CN`,`Pilot`);
+
+--
 -- Indexes for table `GLIDERS_POSITIONS`
 --
 ALTER TABLE `GLIDERS_POSITIONS`
@@ -321,7 +476,8 @@ ALTER TABLE `GLIDERS_POSITIONS`
 --
 ALTER TABLE `OGNDATA`
   ADD KEY `Flr` (`idflarm`),
-  ADD KEY `Sta` (`station`);
+  ADD KEY `Sta` (`station`),
+  ADD KEY `idxidtime` (`idflarm`,`date`,`time`);
 
 --
 -- Indexes for table `OGNDATAARCHIVE`
@@ -331,16 +487,17 @@ ALTER TABLE `OGNDATAARCHIVE`
   ADD KEY `Sta` (`station`);
 
 --
--- Indexes for table `RECEIVERS`
+-- Indexes for table `OGNTRKSTATUS`
 --
-ALTER TABLE `RECEIVERS`
-  ADD UNIQUE KEY `RECEIVERSIDX` (`idrec`,`otime`) USING BTREE;
+ALTER TABLE `OGNTRKSTATUS`
+  ADD KEY `Idxid` (`id`),
+  ADD KEY `Idxsta` (`station`);
 
 --
 -- Indexes for table `RECEIVERS_STATUS`
 --
 ALTER TABLE `RECEIVERS_STATUS`
-  ADD UNIQUE KEY `RECEIVERS_STATUSIDX` (`idrec`,`otime`) USING BTREE;
+  ADD UNIQUE KEY `POSITIONS` (`idrec`);
 
 --
 -- Indexes for table `TRKDEVICES`
@@ -363,11 +520,12 @@ ALTER TABLE `WAYPOINTS`
 -- AUTO_INCREMENT for table `WAYPOINTS`
 --
 ALTER TABLE `WAYPOINTS`
-  MODIFY `idWaypoint` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=491;
+  MODIFY `idWaypoint` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 DELIMITER $$
 --
 -- Events
 --
+DROP EVENT `restore_max_distance`$$
 CREATE DEFINER=`ogn`@`%` EVENT `restore_max_distance` ON SCHEDULE EVERY 1 DAY STARTS '2016-12-20 00:30:00' ON COMPLETION NOT PRESERVE ENABLE DO UPDATE RECEIVERS_STATUS SET maxDistance=0 where maxDistance<>0 AND ((select count(*) from OGNDATA where station=idrec and date=CONCAT(RIGHT(YEAR(NOW()),2), MONTH(NOW()), DAY(NOW())))=0)$$
 
 DELIMITER ;
