@@ -1,0 +1,3 @@
+task :xml_libs, :hosts => "ubuntu" do
+  run "ls -x1 /usr/lib | grep -i xml"
+end
