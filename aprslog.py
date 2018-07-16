@@ -499,6 +499,8 @@ try:
 
                         date=datetime.utcnow()         			# get the date from the system as the APRS packet does not contain the date
                         dte=date.strftime("%y%m%d")             	# today's date
+			if len(source) > 4:
+				source = source[0:3]			# restrict the length to 4 chars
                         addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
                         		str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
                                         ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', '"+source+"' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "

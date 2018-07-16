@@ -16,14 +16,14 @@ aprssources = {
 	"OGNTRK" : "OGN",
 	"OGNDSX" : "OGN", 
 	"OGADSB" : "ADSB",
-	"OGNFNT" : "FANET",
+	"OGNFNT" : "FANE",
 	"OGNPAW" : "PAW",
 	"OGSPOT" : "SPOT",
 	"OGSPID" : "SPID",
 	"OGSKYL" : "SKYL",
 	"OGLT24" : "LT24",
 	"OGCAPT" : "CAPT",
-	"OGNAVI" : "NAVITER",
+	"OGNAVI" : "NAVI",
 	"OGNMAV" : "NMAV"
 	}
 #
@@ -175,11 +175,13 @@ def spanishsta(station):                # return true if is an Spanish station
 		station[0:8] == 'STOROSIA'  or	\
 		station[0:9] == 'STOROSIAE' or	\
 		station[0:9] == 'STOROSIAW' or	\
-		station[0:4] == 'PALO'      or	\
+		station[0:9] == 'STOROE'    or	\
+		station[0:9] == 'STOROW'    or	\
 		station[0:5] == 'PALOE'     or	\
 		station[0:5] == 'PALOW'     or	\
 		station[0:8] == 'BOITAULL'  or  \
 		station[0:8] == 'LAMOLINA'  or	\
+		station[0:8] == 'TORDELORI' or	\
 		station[0:8] == 'PORTAINE'  :
         return True
     else:
