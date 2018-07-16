@@ -146,7 +146,7 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
  
 LogData=False                                   # report the configuration paramenters
 APP="APRSLOG"					# the application name
-print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBpasswd, DBname, DBpath
+print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_ALT, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
 print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
 # --------------------------------------#
