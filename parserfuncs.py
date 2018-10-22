@@ -26,6 +26,13 @@ aprssources = {
 	"OGNAVI" : "NAVI",
 	"OGNMAV" : "NMAV"
 	}
+def isFloat(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
 #
 # low lever parser functions
 #
@@ -181,7 +188,8 @@ def spanishsta(station):                # return true if is an Spanish station
 		station[0:5] == 'PALOW'     or	\
 		station[0:8] == 'BOITAULL'  or  \
 		station[0:8] == 'LAMOLINA'  or	\
-		station[0:8] == 'TORDELORI' or	\
+	   	station[0:8] == 'TORDELORI' or	\
+	   	station[0:8] == 'PICDELORI' or	\
 		station[0:8] == 'PORTAINE'  :
         return True
     else:
@@ -267,7 +275,10 @@ def parseraprs(packet_str, msg):
                         if tempC == ' ':
                                 temp = -99.9		# -99 means no temp declared
                         else:
-                                temp=float(tempC)	# temperature
+                            if isFloat(tempC):          # check for numeric, just in case 
+                                    temp=float(tempC)	# temperature
+                            else:
+                                    temp=-99.9
                         version=gdatar(data, " v0.")    # version
                         cpus=gdatar(data,"CPU:")        # CPU usagea
                         cpu=0.0

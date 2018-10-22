@@ -44,6 +44,7 @@ sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo pip install --upgrade pip					#
 sudo pip install ephem pytz geopy configparser pycountry	#
+sudo pip install mysql-python					#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
