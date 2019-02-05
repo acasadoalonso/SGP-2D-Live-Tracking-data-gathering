@@ -24,6 +24,7 @@ aprssources = {
 	"OGLT24" : "LT24",
 	"OGCAPT" : "CAPT",
 	"OGNAVI" : "NAVI",
+	"OGNXCG" : "XCG",
 	"OGNMAV" : "NMAV"
 	}
 def isFloat(string):

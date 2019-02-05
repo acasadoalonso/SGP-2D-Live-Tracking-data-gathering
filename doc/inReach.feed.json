@@ -1,0 +1,63 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -2.592966,
+                    51.476795,
+                    57.19
+                ]
+            },
+            "properties": {
+                "name": "Doug Redpath",
+                "styleUrl": "#style_903377",
+                "styleHash": "3a0fa094",
+                "timestamp": "2018-10-06T12:45:45Z",
+                "Id": "3762450",
+                "Time UTC": "10/6/2018 12:45:45 PM",
+                "Time": "10/6/2018 1:45:45 PM",
+                "Name": "Doug Redpath",
+                "Map Display Name": "Doug Redpath",
+                "Device Type": "inReach 2.5",
+                "IMEI": "300434060464260",
+                "Incident Id": "",
+                "Latitude": "51.476795",
+                "Longitude": "-2.592966",
+                "Elevation": "57.19 m from MSL",
+                "Velocity": "0.0 km/h",
+                "Course": "0.00 ° True",
+                "Valid GPS Fix": "True",
+                "In Emergency": "False",
+                "Text": "",
+                "Event": "Tracking interval received.",
+                "visibility": "true"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -2.592966,
+                        51.476795,
+                        57.19
+                    ]
+                ]
+            },
+            "properties": {
+                "name": "Doug Redpath",
+                "styleUrl": "#linestyle_903377",
+                "styleHash": "175bea9b",
+                "description": "Doug Redpath's track log",
+                "stroke": "#0055ff",
+                "stroke-opacity": 1,
+                "stroke-width": 1,
+                "visibility": "true"
+            }
+        }
+    ]
+}

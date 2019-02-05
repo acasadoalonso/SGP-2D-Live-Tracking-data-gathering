@@ -1,0 +1,64 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    32.304933,
+                    35.083196,
+                    2
+                ]
+            },
+            "properties": {
+                "name": "Ian Lewis",
+                "styleUrl": "#style_88184",
+                "styleHash": "-6e233e4e",
+                "description": "Safe, on the move. Indy +44 7584039200",
+                "timestamp": "2018-11-16T10:45:00Z",
+                "Id": "269809961",
+                "Time UTC": "11/16/2018 10:45:00 AM",
+                "Time": "11/16/2018 10:45:00 AM",
+                "Name": "Ian Lewis",
+                "Map Display Name": "Ian Lewis",
+                "Device Type": "inReach 2.5",
+                "IMEI": "300434060496190",
+                "Incident Id": "",
+                "Latitude": "35.083196",
+                "Longitude": "32.304933",
+                "Elevation": "2.00 m from MSL",
+                "Velocity": "0.0 km/h",
+                "Course": "0.00 ° True",
+                "Valid GPS Fix": "True",
+                "In Emergency": "False",
+                "Text": "Safe, on the move. Indy +44 7584039200",
+                "Event": "Quick Text to MapShare received",
+                "visibility": "true"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        32.304933,
+                        35.083196,
+                        2
+                    ]
+                ]
+            },
+            "properties": {
+                "name": "Ian Lewis",
+                "styleUrl": "#linestyle_88184",
+                "styleHash": "2eb67ed5",
+                "description": "Ian Lewis's track log",
+                "stroke": "#4f96c6",
+                "stroke-opacity": 1,
+                "stroke-width": 1,
+                "visibility": "true"
+            }
+        }
+    ]
+}

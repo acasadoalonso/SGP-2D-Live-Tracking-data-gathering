@@ -14,7 +14,8 @@ if configdir == None:
 	configdir='/etc/local/'
 configfile=configdir+'APRSconfig.ini'
 hostname=socket.gethostname()
-print "Hostname:", hostname, " and config file: ", configfile
+processid=str(os.getpid())
+print "Hostname:", hostname, " and config file: ", configfile,processid 
 cfg=ConfigParser()                                                              # get the configuration parameters
 cfg.read(configfile)                                                            # reading it for the configuration file
 print "Config.ini sections:", cfg.sections()                                    # report the different sections
@@ -56,6 +57,10 @@ try:
 	SPOTtext        = cfg.get('location', 'SPOT').strip("'").strip('"')
 except:
 	SPOTtext='False'
+try:
+	INREACHtext        = cfg.get('location', 'INREACH').strip("'").strip('"')
+except:
+	INREACHtext='False'
 try:
 	CAPTURStext     = cfg.get('location', 'CAPTURS').strip("'").strip('"')
 	CAPTURSlogin    = cfg.get('location', 'CAPTURSlogin').strip("'").strip('"')
@@ -120,6 +125,10 @@ if (SPOTtext == 'True'):
         SPOT = True
 else:
         SPOT = False
+if (INREACHtext == 'True'):
+        INREACH = True
+else:
+        INREACH = False
 if (CAPTURStext == 'True'):
         CAPTURS = True
 else:
@@ -148,7 +157,7 @@ LogData=False                                   # report the configuration param
 APP="APRSLOG"					# the application name
 print "Config server values:",                  "MySQL=", MySQL, DBhost, DBuser, DBname, DBpath
 print "Config APRS values:",                    APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_ALT, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS
-print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
+print "Config location :",     			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT
 # --------------------------------------#
 APP='APRS'					# alternate PUSH2OGN
 SOCK=0
