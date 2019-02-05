@@ -37,7 +37,6 @@ count=1
 td=now-datetime(1970,1,1)         # number of second until beginning of the day
 ts=int(td.total_seconds())
 print count, "--->", ttime, ts
-ts=0
 while True:
 	ts=inreachfindpos(ts, conn, prt=False)
 	time.sleep(300)  
