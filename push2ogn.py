@@ -57,7 +57,7 @@ def prttime(unixtime):
 
 #
 ########################################################################
-programver='V1.0'
+programver='V1.1'
 print "\n\nStart PUSH2OGN "+programver
 print "=============================="
 
@@ -65,16 +65,17 @@ print "Program Version:", time.ctime(os.path.getmtime(__file__))
 date=datetime.utcnow()         		# get the date
 dte=date.strftime("%y%m%d")             # today's date
 print "\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid()
-date = datetime.now()
+date = datetime.now()                   # local time
 print "Time now is: ", date, " Local time"
 
+# --------------------------------------#
 #
-# get the SPIDER TRACK  & SPOT information
+# get the SPIDER TRACK  & SPOT & InReach ... information
 #
 # --------------------------------------#
-import config
+import config                           # get the configuration data
 if os.path.exists(config.PIDfile+"PUSH"):
-	raise RuntimeError("APRSlog/push already running !!!")
+	raise RuntimeError("APRSpush already running !!!")
 	exit(-1)
 #
 APP   = "PUSH2OGN"			# the application name
@@ -98,8 +99,10 @@ DBhost   =config.DBhost
 DBuser   =config.DBuser
 DBpasswd =config.DBpasswd
 DBname   =config.DBname
+# we force everything TRUE as we try to push to the APRS
 SPIDER	 =True
 SPOT	 =True
+INREACH	 =True
 CAPTURS  =True
 SKYLINE  =True
 LT24	 =True
@@ -114,6 +117,9 @@ if SPIDER:
 
 if SPOT:
 	from spotfuncs import *
+
+if INREACH:
+	from inreachfuncs import *
 
 if CAPTURS:
 	from captfuncs import *
@@ -135,21 +141,21 @@ if LT24:
 # --------------------------------------#
 
 
-# --------------------------------------#
+# -----------------------------------------------------------------#
 conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs=conn.cursor()                      # set the cursor
 
 print "MySQL: Database:", DBname, " at Host:", DBhost
 
-#----------------------ogn_aprspush.py start-----------------------
+#----------------------ogn_aprspush.py start-----------------------#
 
-prtreq =  sys.argv[1:]
+prtreq =  sys.argv[1:]              # check if the prt arg is there
 if prtreq and prtreq[0] == 'prt':
     prt = True
 else:
     prt = False
 
-with open(config.PIDfile+"PUSH","w") as f:
+with open(config.PIDfile+"PUSH","w") as f:  # set the lock file  as the pid
 	f.write (str(os.getpid()))
 	f.close()
 atexit.register(lambda: os.remove(config.PIDfile+"PUSH"))
@@ -184,9 +190,9 @@ keepalive_count = 1
 keepalive_time = time.time()
 alive(config.DBpath+APP, first='yes')
 #
-#-----------------------------------------------------------------
-# Initialise API for SPIDER & SPOT & LT24
-#-----------------------------------------------------------------
+#-----------------------------------------------------------------#
+# Initialise API for SPIDER & SPOT & INREACH & LT24
+#-----------------------------------------------------------------#
 #
 now=datetime.utcnow()			# get the UTC timea
 min5=timedelta(seconds=300)		# 5 minutes ago
@@ -195,9 +201,10 @@ td=now-datetime(1970,1,1)         	# number of seconds until beginning of the da
 ts=int(td.total_seconds())		# Unix time - seconds from the epoch
 tc=ts					# for capturs
 ty=ts					# for skylines
+tr=ts					# for inReach
 ttspid=0				# time between spid request
 ttcapt=0				# time between capturs request
-lt24ts=ts
+lt24ts=ts                               # the same
 spispotcount=0				# loop counter
 ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
 
@@ -209,7 +216,7 @@ if LT24:
 	LT24firsttime=True
 
 
-if SPIDER or SPOT or CAPTURS or LT24:
+if SPIDER or SPOT or INREACH or CAPTURS or LT24:
 	print spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
 
 date = datetime.now()
@@ -243,7 +250,7 @@ try:
 		exit(0)
 
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
-		if  (tt - ttspid) > 300:		# every 5 minutes
+		if  (tt - ttspid) > 300:		# every 5 minutes for SPIDER, SPOT, INREACH
 			if SPIDER:			# if we have SPIDER according with the config
 				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt=prt, store=False, aprspush=True)
 			else:
@@ -254,9 +261,14 @@ try:
 			else:
 				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
 				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
+			if INREACH:			# if we have the INREACH according with the configuration
+				tr   =inreachfindpos(tr, conn, prt=prt, store=False, aprspush=True)
+			else:
+				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
+				tr=int(td.total_seconds())	# Unix time - seconds from the epoch
 			ttspid = tt
 
-		if  (tt - ttcapt) > 150:		# every 2.5 minutes
+		if  (tt - ttcapt) > 150:		# every 2.5 minutes for CAPTUR
 			if CAPTURS:			# if we have the CAPTURS according with the configuration
 				tc   =captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
 			else:
@@ -264,7 +276,7 @@ try:
 				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
 			ttcapt = tt
 
-		if SKYLINE:				# if we have the SPOT according with the configuration
+		if SKYLINE:				# if we have the SKYLINE according with the configuration
 			ty   =skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
 		else:
 			td=now-datetime(1970,1,1)      	# number of second until beginning of the day
@@ -278,14 +290,14 @@ try:
 
 		spispotcount += 1			# we report a counter of calls to the interfaces
 
-		if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
+		if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS:
 
-			print spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "Tcapt", prttime(tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat()
+			print spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat()
 
 
 	except Exception, e:
                         print ('Something\'s wrong with interface functions Exception type is %s' % (`e`))
-			if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
+			if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS:
 
 				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
 			nerrors += 1
