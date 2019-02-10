@@ -60,7 +60,6 @@ count=1
 td=now-datetime(1970,1,1)       # number of second until beginning of the epoch
 ts=int(td.total_seconds())      # UNIX time
 print "Count=", count, "---> Now=", ttime, "TS=", ts # print it as control
-ts=0
 while True:
 	ts=inreachfindpos(ts, conn, prt=False, aprspush=True)
 	time.sleep(300)  

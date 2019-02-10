@@ -262,17 +262,24 @@ def parseraprs(packet_str, msg):
                 destination  = get_destination(packet)
                 header       = get_header(packet)
                 otime        = get_otime(packet)
-                data=packet_str
-                ix=packet_str.find('>')
-                cc= packet_str[0:ix]
-                if path == 'TCPIP*':                    # handle the TCPIP
+                data         = packet_str
+                ix           = packet_str.find('>')
+                cc           = packet_str[0:ix]
+                ix           = packet_str.find(':')     # look for the message type
+                msgtype      = packet_str[ix+1:ix+2]    # check if it is position report or status report 
+                if msgtype != '>' and msgtype != '/':   # only status or location messages
+                    print "MMM>>>", type, data
+                if path == 'TCPIP*' and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
                         if cc.isupper():
                                 id=callsign
                         else:
                                 id=cc
                         station=id
                         p=data.find(' v0.')             # scan for the body of the APRS message
-                        status=data[p+1:p+254].rstrip() # status information
+                        if type == 8 and p > 0:
+                            status=data[p+1:p+254].rstrip() # status informationa
+                        else:
+                            status=" "
                         tempC=gdatal(data, "C ")        # temperature
                         if tempC == ' ':
                                 temp = -99.9		# -99 means no temp declared
@@ -316,7 +323,7 @@ def parseraprs(packet_str, msg):
 		else:
 			station = "Unkown"		# always one station
 
-		if type != 8:				# if not status report
+		if type != 8:			# if not status report
 			if otime != 0:			# if time is provided ???
                 		hora=otime.strftime("%H%M%S")	# the aprs msgs has the time in this case
 			else:	
@@ -391,6 +398,9 @@ def parseraprs(packet_str, msg):
                         p=data.find(':>')             	# scan for the body of the APRS message
                         status=data[p+2:p+254].rstrip() # status information
                         msg['status']=status
+                else:
+                        msg['status']="NOSTATUS"
+
 		libfap.fap_free(packet)			# just in case free memory, to avoid memory leaks.
                 return(msg)
         else:

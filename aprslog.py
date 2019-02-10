@@ -390,7 +390,7 @@ try:
     	   	else:
         		fsour[source] += 1	    	# increase the counter
 
-                if path == 'TCPIP*':                    # handle the TCPIP
+                if path == 'TCPIP*' and (type == 0 or type == 8):  # handle the TCPIP only for position or status reports
                         status=msg['status']		# get the full status message
 			if len(status) > 254:
 				status=status[0:254]
