@@ -27,7 +27,8 @@ def inreachgetapidata(url, prt=False):                      	# get the data from
         try:
             r = urllib2.urlopen(req)            # open the url resource
         except urllib2.HTTPError, e:
-            print e.fp.read()
+            print "InReach read error:", e.fp.read()
+            return ' '
         kml= r.read()                           # read the data on KML format
         if kml == "An error occured.":
             return ' '
