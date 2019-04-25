@@ -35,8 +35,12 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         datafile.close()                # close the data file
 	print "Sources: ", fsour	# print the data about the different sources 
         print 'Records read:',cin, ' DB records created: ',cout    # report number of records read and IDs discovered
-        conn.commit()                   # commit the DB updates
-        conn.close()                    # close the database
+        try:
+            conn.commit()               # commit the DB updates
+            conn.close()                # close the database
+        except:
+            print "ignore MySql errors at this time"
+
         local_time = datetime.now() # report date and time now
         print "Time now:", local_time, " Local time."
         print "=====================================" 
@@ -394,7 +398,10 @@ try:
                         status=msg['status']		# get the full status message
 			if len(status) > 254:
 				status=status[0:254]
-                        temp=msg['temp']		# the temperature of the station
+                        try:
+                            temp=msg['temp']		# the temperature of the station
+                        except:
+                            print "APRSlog Error:", msg, packet_str
                         version=msg['version']		# OGN software version
                         cpu=msg['cpu']			# cpu usage
                         rf=msg['rf']			# underground noise
@@ -414,6 +421,9 @@ try:
                            fsmax[id]=0.0                # initial coverage zero
                            fsalt[id]=0                  # initial coverage zero
 			if data.find(":/") != -1:	# it is the position report ??
+				continue		# we do not want that message ... we want the status report ...
+			if data.find(":)") != -1:	# it is the message report ??
+                                print ">>>>", data
 				continue		# we do not want that message ... we want the status report ...
                         inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
                                          (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)

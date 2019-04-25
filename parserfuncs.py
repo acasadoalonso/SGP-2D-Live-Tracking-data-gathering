@@ -127,7 +127,7 @@ def get_otime(packet):
         itime=packet[0].timestamp[0]
         otime=datetime.utcfromtimestamp(itime)
     except ValueError:
-        otime = 0
+        otime = datetime.utcfromtimestamp(0)
     return otime
 
 def get_station(data):
@@ -181,17 +181,15 @@ def spanishsta(station):                # return true if is an Spanish station
 		station[0:5] == 'AVILA'     or	\
 		station[0:9] == 'ALCAZAREN' or	\
 		station[0:7] == 'ANDORRA'   or	\
-		station[0:8] == 'STOROSIA'  or	\
-		station[0:9] == 'STOROSIAE' or	\
-		station[0:9] == 'STOROSIAW' or	\
 		station[0:9] == 'STOROE'    or	\
 		station[0:9] == 'STOROW'    or	\
 		station[0:5] == 'PALOE'     or	\
 		station[0:5] == 'PALOW'     or	\
 		station[0:8] == 'BOITAULL'  or  \
 		station[0:8] == 'LAMOLINA'  or	\
-	   	station[0:8] == 'TORDELORI' or	\
-	   	station[0:8] == 'PICDELORI' or	\
+		station[0:8] == 'CEREJA'    or	\
+	   	station[0:8] == 'FLYMASTER' or	\
+	   	station[0:8] == 'SPOT'      or	\
 		station[0:8] == 'PORTAINE'  :
         return True
     else:
