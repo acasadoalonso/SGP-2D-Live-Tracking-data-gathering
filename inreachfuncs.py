@@ -201,7 +201,7 @@ def inreachaprspush(datafix, prt=False):	# push the data into the OGN APRS
 		else:
 			lon += 'W'
 		
-		aprsmsg=id+">OGINREACH,qAS,INREACH:/"+hora+'h'+lat+"/"+lon+"'000/000/"
+		aprsmsg=id+">OGINRE,qAS,INREACH:/"+hora+'h'+lat+"/"+lon+"'000/000/"
 		if altitude > 0:
 			aprsmsg += "A=%06d"%int(altitude)
 		aprsmsg += " id"+uniqueid+" "+gps+" "+extpos+" "+pilotname+" \n"

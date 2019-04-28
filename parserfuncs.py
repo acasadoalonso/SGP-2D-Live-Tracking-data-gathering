@@ -19,6 +19,7 @@ aprssources = {
 	"OGNFNT" : "FANE",
 	"OGNPAW" : "PAW",
 	"OGSPOT" : "SPOT",
+	"OGINRE" : "INREACH",
 	"OGFLYM" : "FLYM",
 	"OGSPID" : "SPID",
 	"OGSKYL" : "SKYL",
@@ -91,7 +92,7 @@ def get_path(packet):
     try:
         path=packet[0].path[0]
     except ValueError:
-        path = -1
+        path = "NOPATH"
     return path
 
 def get_type(packet):
