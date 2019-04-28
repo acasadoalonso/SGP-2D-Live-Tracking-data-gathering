@@ -176,9 +176,9 @@ def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):	# find all 
 			flarmid=getflarmid(conn, registration)	# get it from the registration
 		else:
 			chkflarmid(flarmid)
-                if flarmid == "NOREG":  # in case of no registration
+                if flarmid == "NOREG":  # in case of no registration on the DDB
                         print ">>>> Reg", reg, "spotID", spotID, "FlarmID", flarmid, "Registration", registration, "<<<<<<\n"
-                        continue        # just print warning and ignore it
+                        flarmid=registration    # just print warning and use the registration
 
 					# build the URL to call to the SPOT server
 		if spotpasswd == '' or spotpasswd == None:
