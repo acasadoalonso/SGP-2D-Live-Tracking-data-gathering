@@ -377,7 +377,11 @@ try:
 
         	msg=parseraprs(packet_str, msg)			# parse the APRS message
                 data      = packet_str
-                id        = msg['id']                         	# id
+                if 'id' in msg:
+                    id        = msg['id']                      	# id
+                else:
+                    print ">>>Missing ID", data
+                    continue
                 type      = msg['type']				# APRS msg type
                 longitude = msg['longitude']
                 latitude  = msg['latitude']
