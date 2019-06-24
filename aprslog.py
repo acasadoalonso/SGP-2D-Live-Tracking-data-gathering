@@ -44,8 +44,8 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         local_time = datetime.now() # report date and time now
         print "Time now:", local_time, " Local time."
         print "=====================================" 
- 	if os.path.exists("APRS.alive"):
-		os.remove("APRS.alive")	# delete the mark of being alive
+ 	if os.path.exists(config.APP+".alive"):
+		os.remove(config.APP+".alive")	# delete the mark of being alive
         return                          # job done
 
 #########################################################################
@@ -62,7 +62,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.10'
+programver='V1.11'
 print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
 print "===================================================================="
 
@@ -84,7 +84,7 @@ if os.path.exists(config.PIDfile):
 	raise RuntimeError("APRSlog already running !!!")
 	exit(-1)
 #
-APP="APRSLOG"				# the application name
+APP="APRS"				# the application name
 cin   = 0                               # input record counter
 cout  = 0                               # output file counter
 i     = 0                               # loop counter
@@ -380,7 +380,7 @@ try:
                 if 'id' in msg:
                     id        = msg['id']                      	# id
                 else:
-                    print ">>>Missing ID", data
+                    print ">>>Missing ID:>>>", data
                     continue
                 type      = msg['type']				# APRS msg type
                 longitude = msg['longitude']
@@ -427,8 +427,8 @@ try:
 			if data.find(":/") != -1:	# it is the position report ??
 				continue		# we do not want that message ... we want the status report ...
 			if data.find(":)") != -1:	# it is the message report ??
-                                print ">>>>", data
-				continue		# we do not want that message ... we want the status report ...
+                            print ">>> :)>>>", data
+		            continue		        # we do not want that message ... we want the status report ...
                         inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
                                          (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
                         try:
@@ -462,7 +462,7 @@ try:
                                         print ">>>MySQL3 error:",  cout, inscmd
                                         print ">>>MySQL4 data :",  data
                 if path == 'qAC':			# the case of a qAC message that is not a TCPIP* 
-                        print "qAC>>>:", data
+                        print ">>>qAC>>>:", data
                         continue                        # the case of the TCP IP as well
 		if longitude == -1 or latitude == -1:	# if no position like in the status report
 			continue			# that is the case of the ogn trackers status reports
