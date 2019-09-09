@@ -8,3 +8,4 @@ tmp/
 ogn-aprs-protocol/
 sscommit.sh
 sslink.sh
+__pycache__

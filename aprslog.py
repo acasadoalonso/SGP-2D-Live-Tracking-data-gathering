@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Python code to show access to OGN Beacons
 #
@@ -6,7 +6,6 @@
 #
 
 from datetime import datetime
-from libfap import *
 from ctypes import *
 import socket
 import time
@@ -18,43 +17,45 @@ import os
 import os.path
 import signal
 import atexit
-import kglid
-from   parserfuncs import *             # the ogn/ham parser functions
-from   geopy.distance import vincenty   # use the Vincenty algorithm^M
-from   time import sleep                # use the sleep function
-#from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
+from parserfuncs import *               # the ogn/ham parser functions
+from geopy.distance import vincenty     # use the Vincenty algorithm^M
+from time import sleep                  # use the sleep function
+# from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
-from flarmfuncs import *		# import the functions delaing with the Flarm ID
+from flarmfuncs import *                # import the functions delaing with the Flarm ID
 
 #########################################################################
+
+
 def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
                                         # shutdown before exit
-        libfap.fap_cleanup()            # close lifap in order to avoid memory leaks
-        sock.shutdown(0)                # shutdown the connection
-        sock.close()                    # close the connection file
-        datafile.close()                # close the data file
-	print "Sources: ", fsour	# print the data about the different sources 
-        print 'Records read:',cin, ' DB records created: ',cout    # report number of records read and IDs discovered
-        try:
-            conn.commit()               # commit the DB updates
-            conn.close()                # close the database
-        except:
-            print "ignore MySql errors at this time"
+    sock.shutdown(0)                    # shutdown the connection
+    sock.close()                        # close the connection file
+    datafile.close()                    # close the data file
+    print("Sources: ", fsour)           # print the data about the different sources
+                                        # report number of records read and IDs discovered
+    print('Records read:', cin, ' DB records created: ', cout)
+    try:
+        conn.commit()                   # commit the DB updates
+        conn.close()                    # close the database
+    except:
+        print("Ignore MySql errors at this time -- shutdown")
 
-        local_time = datetime.now() # report date and time now
-        print "Time now:", local_time, " Local time."
-        print "=====================================" 
- 	if os.path.exists(config.APP+".alive"):
-		os.remove(config.APP+".alive")	# delete the mark of being alive
-        return                          # job done
+    local_time = datetime.now()         # report date and time now
+    print("Time now:", local_time, " Local time.")
+    print("=====================================")
+    if os.path.exists(config.APP+".alive"):
+        os.remove(config.APP+".alive")  # delete the mark of being alive
+    return                              # job done
 
 #########################################################################
 
+
 def signal_term_handler(signal, frame):
-    print 'got SIGTERM ... shutdown orderly'
-    libfap.fap_cleanup()                # close libfap
-    shutdown(sock, datafile ) # shutdown orderly
+    print('got SIGTERM ... shutdown orderly')
+    shutdown(sock, datafile)            # shutdown orderly
     sys.exit(0)
+
 
 # ......................................................................#
 signal.signal(signal.SIGTERM, signal_term_handler)
@@ -62,101 +63,64 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver='V1.11'
-print "\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver
-print "===================================================================="
+programver = 'V2.00'
+print("\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver)
+print("====================================================================")
 
-print "Program Version:", time.ctime(os.path.getmtime(__file__))
-date=datetime.utcnow()         		# get the date
-dte=date.strftime("%y%m%d")             # today's date
-hostname=socket.gethostname()
-print "\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid()
+print("Program Version:", time.ctime(os.path.getmtime(__file__)))
+date = datetime.utcnow()                # get the date
+dte = date.strftime("%y%m%d")           # today's date
+hostname = socket.gethostname()
+print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
-print "Time now is: ", date, " Local time"
+print("Time now is: ", date, " Local time")
 
 # ---------------------------------------#
 #
-# get the SPIDER TRACK  & SPOT information
-#
-# ---------------------------------------#
 import config
 if os.path.exists(config.PIDfile):
-	raise RuntimeError("APRSlog already running !!!")
-	exit(-1)
+    raise RuntimeError("APRSlog already running !!!")
+    exit(-1)
 #
-APP="APRS"				# the application name
-cin   = 0                               # input record counter
-cout  = 0                               # output file counter
-i     = 0                               # loop counter
-err   = 0				# number of read errors
-day   = 0				# day of running 
+APP = "APRS"				# the application name
+cin = 0                                 # input record counter
+cout = 0                                # output file counter
+i = 0                                   # loop counter
+err = 0				        # number of read errors
+day = 0				        # day of running
 
-fsllo={'NONE  ' : 0.0}                  # station location longitude
-fslla={'NONE  ' : 0.0}                  # station location latitude
-fslal={'NONE  ' : 0.0}                  # station location altitude
-fslod={'NONE  ' : (0.0, 0.0)}           # station location - tuple
-fsmax={'NONE  ' : 0.0}                  # maximun coverage
-fsalt={'NONE  ' : 0}                    # maximun altitude
-fsour={}			 	# sources
+fsllo = {'NONE  ': 0.0}                 # station location longitude
+fslla = {'NONE  ': 0.0}                 # station location latitude
+fslal = {'NONE  ': 0.0}                 # station location altitude
+fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
+fsmax = {'NONE  ': 0.0}                 # maximun coverage
+fsalt = {'NONE  ': 0}                   # maximun altitude
+fsour = {}			 	# sources
 
 # --------------------------------------#
-DATA=True
-RECV=True
-DBpath   =config.DBpath
-DBhost   =config.DBhost
-DBuser   =config.DBuser
-DBpasswd =config.DBpasswd
-DBname   =config.DBname
-SPIDER   =config.SPIDER
-SPOT     =config.SPOT
-CAPTURS  =config.CAPTURS
-SKYLINE  =config.SKYLINE
-LT24     =config.LT24
-OGNT     =config.OGNT
+DATA = True
+RECV = True
+DBpath      = config.DBpath
+DBhost      = config.DBhost
+DBuser      = config.DBuser
+DBpasswd    = config.DBpasswd
+DBname      = config.DBname
+OGNT        = config.OGNT
 # --------------------------------------#
 
-
-if SPIDER:
-	from spifuncs import *
-	spiusername =config.SPIuser
-	spipassword =config.SPIpassword
-	spisysid =config.SPISYSid
-
-if SPOT:
-	from spotfuncs import *
-
-if CAPTURS:
-	from captfuncs import *
-
-if SKYLINE:
-	from skylfuncs import *
-
-if LT24:
-	from lt24funcs import *
-	lt24username =config.LT24username
-	lt24password =config.LT24password
-	LT24qwe=" "
-	LT24_appSecret= " "
-	LT24_appKey= " "
-	LT24path=DBpath+"LT24/"
-	LT24login=False
-	LT24firsttime=True
 if OGNT:
-	from ogntfuncs import *
+    from ogntfuncs import *
 
 # --------------------------------------#
 
+conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
+curs = conn.cursor()                    # set the cursor
 
-# --------------------------------------#
-
-conn=MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
-curs=conn.cursor()                      # set the cursor
-
-print "MySQL: Database:", DBname, " at Host:", DBhost
+print("MySQL: Database:", DBname, " at Host:", DBhost)
 
 #----------------------aprslog.py start-----------------------#
 
-prtreq =  sys.argv[1:]
+prtreq = sys.argv[1:]
 if prtreq and prtreq[0] == 'prt':
     prt = True
 else:
@@ -172,98 +136,92 @@ else:
     RECV = True
     DATA = True
 
-with open(config.PIDfile,"w") as f:
-	f.write (str(os.getpid()))
-	f.close()
-atexit.register(lambda: os.remove(config.PIDfile))
+with open(config.PIDfile, "w") as f:    # create the lock file
+    f.write(str(os.getpid()))
+    f.close()
+atexit.register(lambda: os.remove(config.PIDfile)) # remove it at exit
 
 
 if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
-        ognttable={}            	# init the instance of the table
-        ogntbuildtable(conn, ognttable, True) # build the table from the TRKDEVICES DB table
+    ognttable = {}            	        # init the instance of the table
+    # build the table from the TRKDEVICES DB table
+    ogntbuildtable(conn, ognttable, prt)
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
-print "Socket sock connected"
+print("Socket sock connected")
 
 # logon to OGN APRS network
 
-compfile=config.cucFileLocation + "competitiongliders.lst"
+compfile = config.cucFileLocation + "competitiongliders.lst"
 
 if os.path.isfile(compfile):		# if we are in competition mode
-	print "Competition file:", compfile
-	fd=open(compfile, 'r')
-	j=fd.read()
-	if len(j) > 0:
-		clist=json.loads(j)
-	else:
-		clist=[]
-	fd.close()
-	filter="b/"			# filter to only those gliders in competition
-	for f in clist:
-		filter += f		# add the flarmid
-		filter += "/"
+    print("Competition file:", compfile)
+    fd = open(compfile, 'r')
+    j = fd.read()
+    if len(j) > 0:
+        clist = json.loads(j)
+    else:
+        clist = []
+    fd.close()
+    filter = "b/"			# filter to only those gliders in competition
+    for f in clist:
+        filter += f		        # add the flarmid
+        filter += "/"
 
-	if OGNT:			# if we have ONT tracker paired
-		for f in ognttable:	# for each ogntracker
-			
-			filter += f	# add the flarm id/tracker id associated
-			filter += "/"	# separated by an slash
-	filter += "\n"
+    if OGNT:			        # if we have ONT tracker paired
+        for f in ognttable:             # for each ogntracker
 
-	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, filter)
+            filter += f  # add the flarm id/tracker id associated
+            filter += "/"  # separated by an slash
+    filter += "\n"
+
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (
+        config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
-	login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s'  % (config.APRS_USER, config.APRS_PASSCODE , programver, config.APRS_FILTER_DETAILS)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (
+        config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+login=login.encode(encoding='utf-8', errors='strict') 
 
 sock.send(login)			# send the login to the APRS server
 
 # Make the connection to the server
-sock_file = sock.makefile()
-
-print "APRS Version:", sock_file.readline()
-sleep (2)
-print "APRS Login request:", login	# for control print the login sent and get the response
-print "APRS Login reply:  ", sock_file.readline()
+sock_file = sock.makefile(mode='rw')    # make read7write as we need to send the keep_alive
 
 
-# Initialise libfap.py for parsing returned lines
-print "libfap_init"
-libfap.fap_init()
+print("APRS Version:", sock_file.readline())
+sleep(2)
+# for control print the login sent and get the response
+print("APRS Login request:", login)
+print("APRS Login reply:  ", sock_file.readline())
+
+
 start_time = time.time()
 local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
-print "APRS data file is: ", OGN_DATA
-datafile = open (OGN_DATA, 'a')		# data file for loggin if requested
+print("APRS data file is: ", OGN_DATA)
+datafile = open(OGN_DATA, 'a')		# data file for loggin if requested
 keepalive_count = 1
 keepalive_time = time.time()
 alive(config.APP, first='yes')		# create the ALIVE file/lock
 #
 #-----------------------------------------------------------------
-# Initialise API for SPIDER & SPOT & LT24
 #-----------------------------------------------------------------
 #
-now=datetime.utcnow()			# get the UTC time
-min5=timedelta(seconds=300)		# 5 minutes ago
-now=now-min5				# now less 5 minutes
-td=now-datetime(1970,1,1)         	# number of seconds until beginning of the day 1-1-1970
-ts=int(td.total_seconds())		# Unix time - seconds from the epoch
-tc=ts					# init the variables
-ty=ts
-lt24ts=ts
-spispotcount=1				# loop counter
-ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
-day   = now.day				# day of the month
-
-if LT24:
-	lt24login(LT24path, lt24username, lt24password)	# login into the LiveTrack24 server
-	lt24ts=ts
-	LT24firsttime=True
-
-if SPIDER or SPOT or CAPTURS or LT24:
-	print spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat()
+now = datetime.utcnow()			# get the UTC time
+min5 = timedelta(seconds=300)		# 5 minutes ago
+now = now-min5				# now less 5 minutes
+# number of seconds until beginning of the day 1-1-1970
+td = now-datetime(1970, 1, 1)
+ts = int(td.total_seconds())		# Unix time - seconds from the epoch
+tc = ts					# init the variables
+ty = ts
+lt24ts = ts
+ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
+day = now.day				# day of the month
 
 date = datetime.now()
 
@@ -272,271 +230,285 @@ try:
     while True:
         current_time = time.time()
         local_time = datetime.now()
-	now=datetime.utcnow()					# get the UTC time
-	if now.day != day:					# check if day has changed 
-		print "End of Day..."				# end of UTC day 
-		shutdown(sock, datafile)			# recycle
-		exit(0)
+        now = datetime.utcnow()		# get the UTC time
+        if now.day != day:	        # check if day has changed
+            print("End of Day...")	# end of UTC day
+            shutdown(sock, datafile)	# recycle
+            exit(0)
 
-        elapsed_time = current_time - keepalive_time		# get the time since last keep-alive
+                                        # get the time since last keep-alive
+        elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
-		alive(config.APP)               		# and mark that we are still alive
-                try:
-                        rtn = sock_file.write("#Python ognES App\n\n")
-                        # Make sure keepalive gets sent. If not flushed then buffered
-                        sock_file.flush()
-                        datafile.flush()
-                        run_time = time.time() - start_time
-                        if prt:
-                                print "Send keepalive number: ", keepalive_count, " After elapsed_time: ", int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs"
-                        keepalive_time = current_time
-                        keepalive_count = keepalive_count + 1
-			now=datetime.utcnow()			# get the UTC time
-                except Exception, e:
-                        print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
-			now=datetime.utcnow()			# get the UTC time
-			print "UTC time is now: ", now
-                try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
-			if SPIDER:				# if we have SPIDER according with the config
-				ttime=spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt)
-			else:
-				ttime=now.strftime("%Y-%m-%dT%H:%M:%SZ")# format required by SPIDER
+                                        # and mark that we are still alive
+            alive(config.APP)
+            try:
+                rtn = sock_file.write("#Python ognES App\n\n")
+                                        # Make sure keepalive gets sent. If not flushed then buffered
+                sock_file.flush()
+                datafile.flush()
+                run_time = time.time() - start_time
+                if prt:
+                    print("Send keepalive number: ", keepalive_count, " After elapsed_time: ", int(
+                        (current_time - keepalive_time)), " After runtime: ", int(run_time), " secs")
+                keepalive_time = current_time
+                keepalive_count = keepalive_count + 1
+                now = datetime.utcnow()	# get the UTC time
+            except Exception as e:
+                print((
+                    'something\'s wrong with socket write. Exception type is %s' % (repr(e))))
+                now = datetime.utcnow()	# get the UTC time
+                print("UTC time is now: ", now)
+            if OGNT:                   	# if we need aggregation of FLARM and OGN trackers data
+                                        # rebuild the table from the TRKDEVICES DB table
+                ogntbuildtable(conn, ognttable, prt)
 
-			if SPOT:				# if we have the SPOT according with the configuration
-				ts   =spotfindpos(ts, conn)
-			else:
-				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-				ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-
-			if CAPTURS:				# if we have the CAPTURS according with the configuration
-				tc   =captfindpos(tc, conn)
-			else:
-				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-				tc=int(td.total_seconds())	# Unix time - seconds from the epoch
-
-			if SKYLINE:				# if we have the SPOT according with the configuration
-				ty   =skylfindpos(ty, conn)
-			else:
-				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-				ty=int(td.total_seconds())	# Unix time - seconds from the epoch
-			if LT24:				# if we have the LT24 according with the configuration
-				lt24ts   =lt24findpos(lt24ts, conn, LT24firsttime) # find the position and add it to the DDBB
-				LT24firsttime=False		# only once the addpos
-			else:
-				td=now-datetime(1970,1,1)      	# number of second until beginning of the day
-				lt24ts=int(td.total_seconds())	# Unix time - seconds from the epoch
-
-			spispotcount += 1			# we report a counter of calls to the interfaces
-
-			if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
-        			ogntbuildtable(conn, ognttable, prt) # rebuild the table from the TRKDEVICES DB table
-			if SPIDER or SPOT or LT24 or SKYLINE or CAPTURS:
-
-				print spispotcount, "---> SPIDER TTime:", ttime, "SPOT Unix time:", ts, tc, ty, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
-
-                except Exception, e:
-                        print ('Something\'s wrong with interface functions Exception type is %s' % (`e`))
-			if SPIDER or SPOT or LT24 or SKYLINE:
-
-				print spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat()
-		sys.stdout.flush()				# flush the print messages
+            sys.stdout.flush()		# flush the print messages
 
         if prt:
-                print "In main loop. Count= ", i
-                i += 1
+            print("In main loop. Count= ", i)
+            i += 1
         try:
-                packet_str = sock_file.readline() 		# Read packet string from socket
+            packet_str = sock_file.readline() 		# Read packet string from socket
 
-                if len(packet_str) > 0 and packet_str[0] <> "#" and config.LogData:
-                        datafile.write(packet_str)		# log the data if requested
-		if prt:
-			print packet_str
+            if len(packet_str) > 0 and packet_str[0] != "#" and config.LogData:
+                datafile.write(packet_str)		# log the data if requested
+            if prt:
+                print(packet_str)
         except socket.error:
-                print "Socket error on readline"
-                continue
+            print("Socket error on readline")
+            continue
         if prt:
-                print packet_str
+            print(packet_str)
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
-                err +=1
-                if err > 25:
-                        print "Read returns zero length string. Failure.  Orderly closeout"
-                        date = datetime.now()
-                        print "UTC now is: ", date
-                        break
-                else:
-			sleep(5) 		# wait 5 seconds
-                        continue
+            err += 1
+            if err > 25:
+                print("Read returns zero length string. Failure.  Orderly closeout")
+                date = datetime.now()
+                print("UTC now is: ", date)
+                break
+            else:
+                sleep(5) 		# wait 5 seconds
+                continue
 
-        ix=packet_str.find('>')
-        cc= packet_str[0:ix]
-        packet_str=cc.upper()+packet_str[ix:]			# conver the ID to uppercase
-	msg={}
-        if  len(packet_str) > 0 and packet_str[0] <> "#":	# if not a heartbeat from the server 
+        ix = packet_str.find('>')
+        cc = packet_str[0:ix]
+        packet_str = cc.upper()+packet_str[ix:]		# conver the ID to uppercase
+        msg = {}
+        # if not a heartbeat from the server
+        if len(packet_str) > 0 and packet_str[0] != "#":
 
-        	msg=parseraprs(packet_str, msg)			# parse the APRS message
-                data      = packet_str
-                if 'id' in msg:
-                    id        = msg['id']                      	# id
+            msg = parseraprs(packet_str, msg)		# parse the APRS message
+            if msg == -1:
+                continue
+            data = packet_str
+            if prt:
+
+                print ("MSG:  ", msg)
+            if 'id' in msg:
+                id = msg['id']                      	# id
+            else:
+                print(">>>Missing ID:>>>", data)
+                continue
+            aprstype    = msg['aprstype']		# APRS msg type
+            longitude   = msg['longitude']
+            latitude    = msg['latitude']
+            altitude    = msg['altitude']
+            path        = msg['path']
+            relay       = msg['relay']
+            otime       = msg['otime']
+            source      = msg['source']
+            station     = msg['station']
+            if prt:
+                print('Packet returned is: ', packet_str)
+                print('Callsign is: ', id, path, otime, aprstype)
+            cin += 1                            # one more file to create
+            if not source in fsour:	    	# did we see this source
+                fsour[source] = 1	    	# init the counter
+            else:
+                fsour[source] += 1	    	# increase the counter
+
+            # handle the TCPIP only for position or status reports
+            if source == 'FANE':
+                continue
+            if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
+                status = msg['status']		# get the full status message
+                if len(status) > 254:
+                    status = status[0:254]
+                if 'temp' in msg:
+                        temp = msg['temp']	# station temperature
+                        if temp == None or type(temp) == None:
+                            temp = -1.0
                 else:
-                    print ">>>Missing ID:>>>", data
+                        temp=-1.0
+                if 'version' in msg:
+                        version = msg['version']# station SW version
+                        if type(version) == None:
+                            version= ' '
+                else:
+                        version = ' '
+                if 'cpu' in msg:                # station CPU load
+                        cpu = msg['cpu']	# CPU load
+                        if type(cpu) == None:
+                            cpu = 0
+                else:
+                        cpu = 0
+                if 'rf' in msg:                 #
+                        rf = msg['rf']	        # RF sensitibity load
+                        if type(rf) == None:
+                            rf= '0'
+                else:
+                        rf = '0'
+
+                if longitude == -1 and latitude == -1:  # if the status report
+                    if not id in fslla:  # in the rare case that we got the status report but not the position report
+                        continue  # in that case just continue
+                    # we get tle lon/lat/alt from the table
+                    latitude = fslla[id]
+                    longitude = fsllo[id]
+                    altitude = fslal[id]
+                    otime = datetime.utcnow()
+                    #print "TTT:", id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
+                if not id in fslod:		# if we not have it yeat on the table
+                                                # save the location of the station
+                    fslla[id] = latitude
+                                                # save the location of the station
+                    fsllo[id] = longitude
+                                                # save the location of the station
+                    fslal[id] = altitude
+                                                # save the location of the station
+                    fslod[id] = (latitude, longitude)
+                    fsmax[id] = 0.0             # initial coverage zero
+                    fsalt[id] = 0               # initial coverage zero
+                if data.find(":/") != -1:       # it is the position report ??
+                                                # we do not want that message ... we want the status report ...
                     continue
-                type      = msg['type']				# APRS msg type
-                longitude = msg['longitude']
-                latitude  = msg['latitude']
-                altitude  = msg['altitude']
-                path      = msg['path']
-                otime     = msg['otime']
-                source    = msg['source']
+                if data.find(":)") != -1:       # it is the message report ??
+                    print(">>> :)>>>", data)
+                                                # we do not want that message ... we want the status report ...
+                    continue
+                ccchk=cc[0:4]                   # just the first 4 chars
+                if ccchk =="BSKY" or ccchk == "FNB1" or ccchk == "AIRS":    # useless sta
+                    continue
+
+                try:
+                    inscmd = "insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
+                    (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
+                except:
+                    print ("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu,"T:",  temp, "R:", rf, status, "\nMGS:", msg)
+                try:
+                    curs.execute(inscmd)
+                except MySQLdb.Error as e:
+                    try:
+                        print(">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
+                    except IndexError:
+                        print(">>>MySQL2 Error: %s" % str(e))
+                    print(">>>MySQL3 error:",  cout, inscmd)
+                    print(">>>MySQL4 data :",  data)
+                cout += 1			# number of records saved
+                conn.commit()			# commit to the DB
+                continue
+            if aprstype == 'status':		# if status report
+                status = msg['status']		# get the status message
+                                                # and the station receiving that status report
+                station = msg['station']
+                otime = datetime.utcnow()	# get the time from the system
+                if len(status) > 254:
+                    status = status[0:254]
+                #print "Status report:", id, station, otime, status
+                inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
+                    (id, station, otime, status)
+                try:
+                    curs.execute(inscmd)
+                except MySQLdb.Error as e:
+                    try:
+                        print(">>>MySQL1 Error [%d]: %s" % (
+                            e.args[0], e.args[1]))
+                    except IndexError:
+                        print(">>>MySQL2 Error: %s" % str(e))
+                    print(">>>MySQL3 error:",  cout, inscmd)
+                    print(">>>MySQL4 data :",  data)
+            if path == 'qAC':			# the case of a qAC message that is not a TCPIP*
+                print(">>>qAC>>>:", data)
+                continue                        # the case of the TCP IP as well
+            if longitude == -1 or latitude == -1:  # if no position like in the status report
+                continue			# that is the case of the ogn trackers status reports
+            # if std records FLARM or OGN
+            #
+            if 'speed' in msg:
+                speed       = msg['speed']
+            else:
+                print ("MMMMM>>>>", msg)
+            course      = msg['course']
+            uniqueid    = msg['uniqueid']
+            if len(uniqueid) > 16:
+                uniqueid = uniqueid[0:16]	# limit to 16 chars
+            extpos      = msg['extpos']
+            roclimb     = msg['roclimb']
+            rot         = msg['rot']
+            sensitivity = msg['sensitivity']
+            gps         = msg['gps']
+            hora        = msg['time']		# timestamp
+            altim = altitude                    # the altitude in meters
+            if altim > 15000 or altim < 0:
+                altim = 0
+                alti = '%05d' % altim           # convert it to an string
+            dist = -1				# the case of when did not receive the station YET
+            if station in fslod and source == 'OGN':  # if we have the station yet
+                                                # distance to the station
+                distance = vincenty((latitude, longitude), fslod[station]).km
+                dist = distance
+                if distance > 300.0:
+                    print("distcheck: ", distance, data)
+            if source != 'OGN':			# in the case of a NON OGN we use the base as reference point
+                vitlat = config.location_latitude
+                vitlon = config.location_longitude
+                                                # distance to the BASE
+                dist = vincenty((latitude, longitude), (vitlat, vitlon)).km
+
+            if prt:
+                print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
+                print("RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, source, ":::")
+                # write the DB record
+
+            if (DATA):
+                                                # if we have OGN tracker aggregation and is an OGN tracker
+                if OGNT and id[0:3] == 'OGN':
+
+                    if id in ognttable:		# if the device is on the list
+                                                # substitude the OGN tracker ID for the related FLARMID
+                        id = ognttable[id]
+
+                                                # get the date from the system as the APRS packet does not contain the date
+                date = datetime.utcnow()
+                dte = date.strftime("%y%m%d")  	# today's date
+                if len(source) > 4:
+                    source = source[0:3]	# restrict the length to 4 chars
+                addcmd = "insert into OGNDATA values ('" + id + "','" + dte + "','" + hora + "','" + station + "'," + str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
+                    str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
+                    ",'" + gps + "','" + uniqueid + "'," + \
+                    str(dist) + ",'" + extpos + "', '"+source + \
+                    "' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
                 if prt:
-                        print 'Packet returned is: ', packet_str
-                        print 'Callsign is: ', id, path, otime, type
-                cin += 1                                # one more file to create
-		if not source in fsour:		    	# did we see this source
-	   	     	fsour[source]=1		    	# init the counter
-    	   	else:
-        		fsour[source] += 1	    	# increase the counter
-
-                if path == 'TCPIP*' and (type == 0 or type == 8):  # handle the TCPIP only for position or status reports
-                        status=msg['status']		# get the full status message
-			if len(status) > 254:
-				status=status[0:254]
-                        try:
-                            temp=msg['temp']		# the temperature of the station
-                        except:
-                            print "APRSlog Error:", msg, packet_str
-                        version=msg['version']		# OGN software version
-                        cpu=msg['cpu']			# cpu usage
-                        rf=msg['rf']			# underground noise
-                        if longitude == -1 and latitude == -1 :	# if the status report
-				if not id in fslla:	# in the rare case that we got the status report but not the position report
-					continue	# in that case just continue
-                                latitude =fslla[id]	# we get tle lon/lat/alt from the table
-                                longitude=fsllo[id]
-                                altitude =fslal[id]
-				otime=datetime.utcnow()
-                                #print "TTT:", id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
-                        if not id in fslod :		# if we not have it yeat on the table
-                           fslla[id]=latitude           # save the location of the station
-                           fsllo[id]=longitude          # save the location of the station
-                           fslal[id]=altitude           # save the location of the station
-                           fslod[id]=(latitude, longitude) # save the location of the station
-                           fsmax[id]=0.0                # initial coverage zero
-                           fsalt[id]=0                  # initial coverage zero
-			if data.find(":/") != -1:	# it is the position report ??
-				continue		# we do not want that message ... we want the status report ...
-			if data.find(":)") != -1:	# it is the message report ??
-                            print ">>> :)>>>", data
-		            continue		        # we do not want that message ... we want the status report ...
-                        inscmd="insert into RECEIVERS values ('%s', %f,  %f,  %f, '%s', '%s', %f, %f, '%s', '%s')" %\
-                                         (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
-                        try:
-                                        curs.execute(inscmd)
-                        except MySQLdb.Error, e:
-                                        try:
-                                                print ">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1])
-                                        except IndexError:
-                                                print ">>>MySQL2 Error: %s" % str(e)
-                                        print ">>>MySQL3 error:",  cout, inscmd
-                                        print ">>>MySQL4 data :",  data
-                        cout +=1			# number of records saved
-                        conn.commit()			# commit to the DB
-                        continue
-		if type == 8:				# if status report
-                        status=msg['status']		# get the status message
-                        station=msg['station']		# and the station receiving that status report
-			otime=datetime.utcnow()		# get the time from the system
-			if len(status) > 254:
-				status=status[0:254]
-			#print "Status report:", id, station, otime, status
-                        inscmd="insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
-                                         (id, station, otime, status)
-                        try:
-                                        curs.execute(inscmd)
-                        except MySQLdb.Error, e:
-                                        try:
-                                                print ">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1])
-                                        except IndexError:
-                                                print ">>>MySQL2 Error: %s" % str(e)
-                                        print ">>>MySQL3 error:",  cout, inscmd
-                                        print ">>>MySQL4 data :",  data
-                if path == 'qAC':			# the case of a qAC message that is not a TCPIP* 
-                        print ">>>qAC>>>:", data
-                        continue                        # the case of the TCP IP as well
-		if longitude == -1 or latitude == -1:	# if no position like in the status report
-			continue			# that is the case of the ogn trackers status reports
-                if path == 'qAS' or path == 'RELAY*' or path[0:3] == "OGN": # if std records
-                        station=msg['station']		# get the station ID
-                else:
-			station="Unkown"
-                        continue                        # nothing else to do
-                #
-                speed     = msg['speed']
-                course    = msg['course']
-                uniqueid  = msg['uniqueid']
-		if len(uniqueid) > 16:
-			uniqueid=uniqueid[0:16]		# limit to 16 chars
-                extpos    = msg['extpos']
-                roclimb   = msg['roclimb']
-                rot       = msg['rot']
-                sensitivity= msg['sensitivity']
-                gps       = msg['gps']
-                hora      = msg['time']			# timestamp
-                daodatum  = msg['daodatum']		# datum used
-                resolution= msg['resolution']		# resolution in metters
-                altim=altitude                          # the altitude in meters
-                if altim > 15000 or altim < 0:
-                        altim=0
-                        alti='%05d' % altim             # convert it to an string
-                dist=-1					# the case of when did not receive the station YET
-                if station in fslod and source == 'OGN':  # if we have the station yet
-                        distance=vincenty((latitude, longitude), fslod[station]).km    # distance to the station
-                        dist=distance
-                        if distance > 300.0:
-                            print "distcheck: ", distance, data
-		if source != 'OGN':			# in the case of a NON OGN we use the base as reference point
-        		vitlat   =config.location_latitude
-        		vitlon   =config.location_longitude
-        		dist=vincenty((latitude, longitude),(vitlat,vitlon)).km    # distance to the BASE
-
-                if prt:
-                        print 'Parsed data: POS: ', longitude, latitude, altitude,' Speed:',speed,' Course: ',course,' Path: ',path,' Type:', type
-                        print "RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos,  chr(daodatum), resolution, source, ":::"
-                        # write the DB record
-
-                if (DATA):
-			if OGNT and id[0:3] == 'OGN':			# if we have OGN tracker aggregation and is an OGN tracker
-
-				if id in ognttable:			# if the device is on the list
-					id=ognttable[id]		# substitude the OGN tracker ID for the related FLARMID
-
-                        date=datetime.utcnow()         			# get the date from the system as the APRS packet does not contain the date
-                        dte=date.strftime("%y%m%d")             	# today's date
-			if len(source) > 4:
-				source = source[0:3]			# restrict the length to 4 chars
-                        addcmd="insert into OGNDATA values ('" +id+ "','" + dte+ "','" + hora+ "','" + station+ "'," + str(latitude)+ "," + str(longitude)+ "," + str(altim)+ "," + str(speed)+ "," + \
-                        		str(course)+ "," + str(roclimb)+ "," +str(rot) + "," +str(sensitivity) + \
-                                        ",'" + gps+ "','" + uniqueid+ "'," + str(dist)+ ",'" + extpos+ "', '"+source+"' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
-                        if prt:
-				print addcmd
-			try:
-                                curs.execute(addcmd)
-                        except MySQLdb.Error, e:
-                                try:
-                                        print ">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1])
-                                except IndexError:
-                                                print ">>>MySQL Error: %s" % str(e)
-                                print ">>>MySQL error:", cout, addcmd
-                                print ">>>MySQL data :",  data
-                        cout +=1
-                        conn.commit()                   # commit the DB updates
+                    print(addcmd)
+                try:
+                    curs.execute(addcmd)
+                except MySQLdb.Error as e:
+                    try:
+                        print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                    except IndexError:
+                        print(">>>MySQL Error: %s" % str(e))
+                    print(">>>MySQL error:", cout, addcmd)
+                    print(">>>MySQL data :",  data)
+                cout += 1
+                conn.commit()                   # commit the DB updates
 
 
 except KeyboardInterrupt:
-    print "Keyboard input received, ignore"
+    print("Keyboard input received, ignore")
     pass
 
 shutdown(sock, datafile)
-print "Exit now ...", err
+print("Exit now ...", err)
 exit(1)
