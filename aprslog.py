@@ -307,7 +307,7 @@ try:
 
                 print ("MSG:  ", msg)
             if 'id' in msg:
-                id = msg['id']                      	# id
+                ident = msg['id']                      	# id
             else:
                 print(">>>Missing ID:>>>", data)
                 continue
@@ -322,7 +322,7 @@ try:
             station     = msg['station']
             if prt:
                 print('Packet returned is: ', packet_str)
-                print('Callsign is: ', id, path, otime, aprstype)
+                print('Callsign is: ', ident, path, otime, aprstype)
             cin += 1                            # one more file to create
             if not source in fsour:	    	# did we see this source
                 fsour[source] = 1	    	# init the counter
@@ -362,25 +362,25 @@ try:
                         rf = '0'
 
                 if longitude == -1 and latitude == -1:  # if the status report
-                    if not id in fslla:  # in the rare case that we got the status report but not the position report
+                    if not ident in fslla:  # in the rare case that we got the status report but not the position report
                         continue  # in that case just continue
                     # we get tle lon/lat/alt from the table
-                    latitude = fslla[id]
-                    longitude = fsllo[id]
-                    altitude = fslal[id]
+                    latitude = fslla[ident]
+                    longitude = fsllo[ident]
+                    altitude = fslal[ident]
                     otime = datetime.utcnow()
-                    #print "TTT:", id, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
-                if not id in fslod:		# if we not have it yeat on the table
+                    #print "TTT:", ident, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
+                if not ident in fslod:		# if we not have it yeat on the table
                                                 # save the location of the station
-                    fslla[id] = latitude
+                    fslla[ident] = latitude
                                                 # save the location of the station
-                    fsllo[id] = longitude
+                    fsllo[ident] = longitude
                                                 # save the location of the station
-                    fslal[id] = altitude
+                    fslal[ident] = altitude
                                                 # save the location of the station
-                    fslod[id] = (latitude, longitude)
-                    fsmax[id] = 0.0             # initial coverage zero
-                    fsalt[id] = 0               # initial coverage zero
+                    fslod[ident] = (latitude, longitude)
+                    fsmax[ident] = 0.0             # initial coverage zero
+                    fsalt[ident] = 0               # initial coverage zero
                 if data.find(":/") != -1:       # it is the position report ??
                                                 # we do not want that message ... we want the status report ...
                     continue
@@ -416,9 +416,9 @@ try:
                 otime = datetime.utcnow()	# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
-                #print "Status report:", id, station, otime, status
+                #print "Status report:", ident, station, otime, status
                 inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
-                    (id, station, otime, status)
+                    (ident, station, otime, status)
                 try:
                     curs.execute(inscmd)
                 except MySQLdb.Error as e:
@@ -474,18 +474,18 @@ try:
 
             if (DATA):
                                                 # if we have OGN tracker aggregation and is an OGN tracker
-                if OGNT and id[0:3] == 'OGN':
+                if OGNT and ident[0:3] == 'OGN':
 
-                    if id in ognttable:		# if the device is on the list
+                    if ident in ognttable:		# if the device is on the list
                                                 # substitude the OGN tracker ID for the related FLARMID
-                        id = ognttable[id]
+                        ident = ognttable[ident]
 
                                                 # get the date from the system as the APRS packet does not contain the date
                 date = datetime.utcnow()
                 dte = date.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
                     source = source[0:3]	# restrict the length to 4 chars
-                addcmd = "insert into OGNDATA values ('" + id + "','" + dte + "','" + hora + "','" + station + "'," + str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
+                addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                     str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
                     ",'" + gps + "','" + uniqueid + "'," + \
                     str(dist) + ",'" + extpos + "', '"+source + \

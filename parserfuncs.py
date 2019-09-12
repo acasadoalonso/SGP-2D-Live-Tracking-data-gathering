@@ -503,13 +503,14 @@ def parseraprs(packet_str, msg):
 ########################################################################
 
 
-def SRSSgetapidata(url):                        # get the data from the API server
+def SRSSgetapidata(url):                    # get the data from the API server
 
-    req = urllib.request.Request(url)              # buil the request
+    req = urllib.request.Request(url)       # buil the request
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
-    r = urllib.request.urlopen(req)                # open the url resource
-    j_obj = json.load(r)                    # convert to JSON
+    r = urllib.request.urlopen(req)         # open the url resource
+    js=r.read().decode('UTF-8')
+    j_obj = json.loads(js)                  # convert to JSON
     return j_obj                            # return the JSON object
 
 

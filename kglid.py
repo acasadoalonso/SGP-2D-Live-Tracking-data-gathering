@@ -12417,6 +12417,7 @@ kglid  = {
 		'DDD85D' : 'D-1355',
 		'DDD85E' : 'OO-ZKZ',
 		'DDD85F' : 'OO-ZAO',
+		'DDD860' : 'D-6211',
 		'DDD861' : 'OH-883',
 		'DDD864' : 'D-KMWW',
 		'DDD865' : 'F-CGFY',

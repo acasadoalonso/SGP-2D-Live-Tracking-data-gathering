@@ -113,10 +113,10 @@ def spibuildtable(conn, spidtable, prt=False):
     cursG.execute( "select id, flarmid, registration from TRKDEVICES where devicetype = 'SPID' and active = 1; ")
     for rowg in cursG.fetchall(): 	    # look for that registration on the OGN database
 
-        id = rowg[0]		            # registration to report
+        ident = rowg[0]		            # registration to report
         flarmid = rowg[1]		    # Flarm id to be linked
         registration = rowg[2]              # registration id to be linked
-        if flarmid == None or flarmid == '':	# if flarmid is not provided
+        if flarmid == None or flarmid == '': # if flarmid is not provided
                                             # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:
@@ -124,7 +124,7 @@ def spibuildtable(conn, spidtable, prt=False):
         if flarmid == "NOREG":              # in case of no registration on the DDBa
             flarmid=getognflarmid(registration)
 
-        spidtable[id] = flarmid             # substitute the id by the Flarmid
+        spidtable[ident] = flarmid          # substitute the id by the Flarmid
     if prt:
         print("SPIDtable:", spidtable)
     return(spidtable)
@@ -138,10 +138,10 @@ def spistoreitindb(data, curs, conn, prt=False):
     spibuildtable(conn, spidtable, prt)
     for fix in data['spiderpos']:	    # for each position that we have on the dict
                                             # extract the information to store on the DDBB
-        id = fix['registration']
-        if len(id) > 9:
-            id = id[0:9]
-        if id == "HBEAT":		    # if it is the heartbeat just ignore it
+        ident = fix['registration']
+        if len(ident) > 9:
+            ident = ident[0:9]
+        if ident == "HBEAT":		    # if it is the heartbeat just ignore it
             continue
         dte = fix['date']
         hora = fix['time']
@@ -159,10 +159,10 @@ def spistoreitindb(data, curs, conn, prt=False):
         uniqueid = fix["UnitID"]
         dist = fix['dist']
         extpos = fix['extpos']		    # store 3D/2D on the extended position
-        if id in spidtable:		    # if ID is on the table substitude the spiderid by the flarmID
-            reg = spidtable[id]
+        if ident in spidtable:		    # if ID is on the table substitude the spiderid by the flarmID
+            reg = spidtable[ident]
         else:
-            reg = "XX-"+id		    # if not ... just add the registration prefix
+            reg = "XX-"+ident		    # if not ... just add the registration prefix
         addcmd = "insert into OGNDATA values ('" + reg + "','" + dte + "','" + hora + "','" + station + "'," + str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
             str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
             ",'" + gps + "','" + uniqueid + "'," + \
@@ -188,10 +188,10 @@ def spiaprspush(data, conn, prt=False):
     spibuildtable(conn, spidtable, prt)
     for fix in data['spiderpos']:	    # for each position that we have on the dict
                                             # extract the information to store on the DDBB
-        id = fix['registration']
-        if len(id) > 9:
-            id = id[0:9]
-        if id == "HBEAT":		    # if it is the heartbeat just ignore it
+        ident = fix['registration']
+        if len(ident) > 9:
+            ident = ident[0:9]
+        if ident == "HBEAT":		    # if it is the heartbeat just ignore it
             continue
         dte = fix['date']
         hora = fix['time']
@@ -209,10 +209,10 @@ def spiaprspush(data, conn, prt=False):
         uniqueid = fix["UnitID"]	    # internal ID
         dist = fix['dist']		    # dist not used
         extpos = fix['extpos']		    # store 3D/2D on the extended position
-        if id in spidtable:		    # if ID is on the table substitude the spiderid by the flramid
-            reg = spidtable[id]
+        if ident in spidtable:		    # if ID is on the table substitude the spiderid by the flramid
+            reg = spidtable[ident]
         else:
-            reg = "SPI"+id		    # if not ... just add the registration prefix
+            reg = "SPI"+ident		    # if not ... just add the registration prefix
                                             # build the APRS message
                                             # conver the latitude to the format required by APRS
         lat = deg2dmslat(abs(latitude))
