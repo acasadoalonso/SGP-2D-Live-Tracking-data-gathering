@@ -6,7 +6,5 @@ utils/
 log/
 tmp/
 ogn-aprs-protocol/
-sscommit.sh
-sslink.sh
 __pycache__
 doc/FLARM*
