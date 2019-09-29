@@ -31,9 +31,12 @@ echo " "							#
 echo								#
 cd /var/www/html/main						#
 sudo apt-get install -y mysql-server mysql-client sqlite3	#
-sudo apt-get install -y python3-dev python3-pip python-mysqld  	#
+sudo apt-get install -y python3-dev python3-pip 		#
+sudo apt-get install -y python-mysqld  				#
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt npm nodejs		# 
+git config --global user.email "acasadoalonso@gmail.com"        #
+git config --global user.name "Angel Casado"                    #
 sudo apt-get install -y apache2 php 				#
 sudo apt-get install -y php-sqlite php-mcrypt php-mysql php-cli #
 sudo apt-get install -y php-mbstring php-gettext php-json	#
@@ -51,6 +54,7 @@ echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo -H python3 -m pip install --upgrade pip			#
+pip3 -V
 sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
 sudo apt-get install libmysqlclient-dev 			#
 sudo -H pip3 install mysqlclient 				#
