@@ -1,15 +1,21 @@
 #!/bin/bash 
 echo								#
+echo " "							#
 echo "Installing the SGP 2D live tracking interface ...." 	#
+echo "=================================================="	#
+echo " "							#
 echo								#
 export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 sudo apt-get install -y software-properties-common 		#
-sudo apt-get install -y python-software-properties 		#
+sudo apt-get install -y python3-software-properties 		#
 sudo apt-get install -y build-essential 			#
 #sudo rm /etc/apt/sources.list.d/ondre*				#
 #sudo add-apt-repository ppa:ondrej/php				#
 echo								#
-echo " lets update the operating system libraries  ...." 	#
+echo " "							#
+echo "Lets update the operating system libraries  ...." 	#
+echo "=================================================="	#
+echo " "							#
 echo								#
 sudo apt-get update						#
 sudo apt-get install -y language-pack-en-base 			# 
@@ -17,19 +23,21 @@ export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 echo "export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8 " >>~/.profile #
 echo "export LD_LIBRARY_PATH=/usr/local/lib" >>~/.profile 	#
 sudo apt-get -y upgrade						#
-cd /var/www/html/node/main/libfap-1.5/deb			#
-sudo dpkg -i lib*amd64.deb					#
 echo								#
+echo " "							#
 echo "Installing the packages required . (LAMP stack)..."	#
+echo "=================================================="	#
+echo " "							#
 echo								#
-cd /var/www/html/node/main					#
+cd /var/www/html/main						#
 sudo apt-get install -y mysql-server mysql-client sqlite3	#
-sudo apt-get install -y python-dev python-pip python-mysqldb    #
+sudo apt-get install -y python3-dev python3-pip python-mysqld  	#
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt npm nodejs		# 
 sudo apt-get install -y apache2 php 				#
 sudo apt-get install -y php-sqlite php-mcrypt php-mysql php-cli #
 sudo apt-get install -y php-mbstring php-gettext php-json	#
+sudo apt-get install -y php7.2					#
 sudo a2enmod rewrite						#
 sudo phpenmod mcrypt						#
 sudo phpenmod mbstring						#
@@ -42,9 +50,10 @@ echo "Installing phpmyadmin  ... "				#
 echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
-sudo pip install --upgrade pip					#
-sudo pip install ephem pytz geopy configparser pycountry	#
-sudo pip install mysql-python					#
+sudo -H python3 -m pip install --upgrade pip			#
+sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
+sudo apt-get install libmysqlclient-dev 			#
+sudo -H pip3 install mysqlclient 				#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
@@ -65,17 +74,16 @@ then								#
     sudo chmod 777 /var/www/html/cuc				#
 fi								#
 echo								#
-if [ ! -f /var/www/html/index.php ]				#
-then								#
-    sudo ln /var/www/html/node/index.php /var/www/html/index.php #
-fi								#
+echo " "							#
 echo "Installing the templates needed  ...." 			#
+echo "=================================================="	#
+echo " "							#
 echo								#
-cd /var/www/html/node/main					#
+cd /var/www/html/main						#
 sudo cp config.template /etc/local/APRSconfig.ini		#
-cd /var/www/html/node/						#
-python genconfig.py						#
-cd /var/www/html/node/main					#
+cd /var/www/html/						#
+python3 genconfig.py						#
+cd /var/www/html/main						#
 mysqladmin -u root password ogn					#
 mysql -u root -pogn <doc/adduser.sql				#
 echo "CREATE DATABASE APRSLOG" | mysql -u root -pogn		#
@@ -94,11 +102,8 @@ if [ ! -d ~/src  ]						#
 then								#
 	mkdir ~/src   						#
 	mkdir ~/src/APRSsrc					#
-	ln -s /var/www/html/node/main ~/src/APRSsrc		#
+	ln -s /var/www/html/main ~/src/APRSsrc			#
 fi								#
-cp *.sh ~/src  							#
-cd ..								#
-cp *.py ~/src/APRSsrc						#
 ls  -la ~/src 							#
 if [ ! -d /nfs  ]						#
 then								#
@@ -107,7 +112,7 @@ then								#
 	sudo mkdir /nfs/OGN/APRSdata				#
 	sudo chown vagrant:vagrant /nfs/OGN/APRSdata		#
 	sudo chmod 777 /nfs/OGN/APRSdata			#
-	cd /var/www/html/node/				#
+	cd /var/www/html/					#
 	sudo chown vagrant:vagrant *				# 
 	sudo chmod 777 *					#
 	sudo chown vagrant:vagrant */*				# 
@@ -117,7 +122,7 @@ cd								#
 sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y dist-upgrade					#
 sudo apt-get -y autoremove					#
-cp /var/www/html/node/main/doc/aliases .bash_aliases		#
+cp /var/www/html/main/doc/aliases .bash_aliases			#
 touch APRSinstallation.done					#
 echo								#
 echo "========================================================================================================"	#
@@ -130,4 +135,6 @@ echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html & .
 echo "Install phpmyadmin if needed !!!                                                                          #
 echo "========================================================================================================"	#
 echo								#
+bash
+alias
 
