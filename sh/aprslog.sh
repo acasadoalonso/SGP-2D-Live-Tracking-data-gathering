@@ -5,6 +5,6 @@ date                            		>>aprs.log
 python3 ~/src/APRSsrc/APRScalsunrisesunset.py 	>>aprs.log
 echo "APRSLIVE.sh:"	            		>>aprs.log
 echo "===========:"     	       		>>aprs.log
-python3 /home/angel/src/APRSsrc/aprslog.py      >>aprs.log 2>>aprserr.log &
-pgrep -a python					>>aprs.log
+python3 ~/src/APRSsrc/aprslog.py      		>>aprs.log 2>>aprserr.log &
+pgrep -a python3				>>aprs.log
 cd
