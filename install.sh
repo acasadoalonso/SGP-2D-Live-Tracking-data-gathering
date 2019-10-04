@@ -38,7 +38,8 @@ sudo apt-get install -y pkg-config git	mutt npm nodejs		#
 git config --global user.email "acasadoalonso@gmail.com"        #
 git config --global user.name "Angel Casado"                    #
 sudo apt-get install -y apache2 php 				#
-sudo apt-get install -y php-sqlite php-mcrypt php-mysql php-cli #
+sudo apt-get install -y php-sqlite3 php-mysql php-cli 		#
+sudo apt-get install -y php-mcrypt 				#
 sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo apt-get install -y php7.2					#
 sudo a2enmod rewrite						#
@@ -54,9 +55,9 @@ echo								#
 sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo -H python3 -m pip install --upgrade pip			#
-pip3 -V
+pip3 -V								#
 sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
-sudo apt-get install libmysqlclient-dev 			#
+sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 install mysqlclient 				#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
@@ -88,7 +89,8 @@ sudo cp config.template /etc/local/APRSconfig.ini		#
 cd /var/www/html/						#
 python3 genconfig.py						#
 cd /var/www/html/main						#
-mysqladmin -u root password ogn					#
+echo "Running msqladmin .... assign root password ... "		#
+sudo mysqladmin -u root password ogn					#
 mysql -u root -pogn <doc/adduser.sql				#
 echo "CREATE DATABASE APRSLOG" | mysql -u root -pogn		#
 mysql --database APRSLOG -u root -pogn < APRSLOG.template.sql	#
@@ -135,7 +137,7 @@ echo "Review the configuration file on /etc/local ..."								#
 echo "Review the configuration of the crontab and the shell scripts on ~/src " 					#
 echo "In order to execute the APRSLOG data crawler execute:  bash ~/src/APSRlive.sh " 				#
 echo "Check the placement of the RootDocument on APACHE2 ... needs to be /var/www/html				#
-echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html & ./main & ~/src			#
+echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html  ./main  ~/src			#
 echo "Install phpmyadmin if needed !!!                                                                          #
 echo "========================================================================================================"	#
 echo								#
