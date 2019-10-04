@@ -525,7 +525,7 @@ DELIMITER $$
 --
 -- Events
 --
-DROP EVENT `restore_max_distance`$$
+DROP EVENT IF EXISTS `restore_max_distance`$$
 CREATE DEFINER=`ogn`@`%` EVENT `restore_max_distance` ON SCHEDULE EVERY 1 DAY STARTS '2016-12-20 00:30:00' ON COMPLETION NOT PRESERVE ENABLE DO UPDATE RECEIVERS_STATUS SET maxDistance=0 where maxDistance<>0 AND ((select count(*) from OGNDATA where station=idrec and date=CONCAT(RIGHT(YEAR(NOW()),2), MONTH(NOW()), DAY(NOW())))=0)$$
 
 DELIMITER ;

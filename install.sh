@@ -91,9 +91,13 @@ python3 genconfig.py						#
 cd /var/www/html/main						#
 echo "Running msqladmin .... assign root password ... "		#
 sudo mysqladmin -u root password ogn				#
+echo "Create the APRSogn login-path: Type assigned password"	#
+mysql_config_editor set --login-path=APRSogn --user=ogn --password
+echo "Create user ogn ..."					#
 sudo mysql  <doc/adduser.sql					#
-echo "CREATE DATABASE APRSLOG" | sudo mysql 			#
-sudo mysql --database APRSLOG < APRSLOG.template.sql		#
+echo "Create database APRSLOG ..."				#
+echo "CREATE DATABASE APRSLOG" | mysql --login-path=APRSogn	#
+mysql --login-path=APRSogn --database APRSLOG < APRSLOG.template.sql #
 echo								#
 echo "Optional steps ... "					#
 echo								#
