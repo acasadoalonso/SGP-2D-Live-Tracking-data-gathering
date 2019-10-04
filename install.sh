@@ -134,17 +134,17 @@ sudo apt-get -y dist-upgrade					#
 sudo apt-get -y autoremove					#
 cp /var/www/html/main/doc/aliases .bash_aliases			#
 touch APRSinstallation.done					#
-echo								#
+echo ""								#
 echo "========================================================================================================"	#
-echo "Installation done ..."					#
+echo "Installation done ..."											#
 echo "Review the configuration file on /etc/local ..."								#
 echo "Review the configuration of the crontab and the shell scripts on ~/src " 					#
 echo "In order to execute the APRSLOG data crawler execute:  bash ~/src/APSRlive.sh " 				#
-echo "Check the placement of the RootDocument on APACHE2 ... needs to be /var/www/html				#
-echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html  ./main  ~/src			#
-echo "Install phpmyadmin if needed !!!                                                                          #
+echo "Check the placement of the RootDocument on APACHE2 ... needs to be /var/www/html	"			#
+echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html  main  src		"		#
+echo "Install phpmyadmin if needed !!!                                                           "              #
 echo "========================================================================================================"	#
-echo								#
+echo ""								#
 bash
 alias
 
