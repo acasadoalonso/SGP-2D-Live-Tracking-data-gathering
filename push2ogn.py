@@ -81,7 +81,7 @@ print("Time now is: ", date, " Local time")
 #
 # --------------------------------------#
 import config                           # get the configuration data
-if os.path.exists(config.PIDfile+"PUSH"):
+if os.path.exists(config.PIDfile):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 #
