@@ -14,7 +14,9 @@ def getddbdata():                           # get the data from the API server
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")
     r = urllib.request.urlopen(req)         # open the url resource
-    j_obj = json.load(r)                    # convert to JSONa
+    js=r.read().decode('UTF-8')
+    j_obj = json.loads(js)                  # convert to JSON
+
     _ogninfo_ = j_obj                       # save the data on the global storage
     return j_obj                            # return the JSON objecta
 
