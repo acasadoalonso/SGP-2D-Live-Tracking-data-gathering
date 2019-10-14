@@ -156,10 +156,10 @@ if prtreq and prtreq[0] == 'prt':
 else:
     prt = False
 
-with open(config.PIDfile+"PUSH", "w") as f:  # set the lock file  as the pid
+with open(config.PIDfile, "w") as f:  # set the lock file  as the pid
     f.write(str(os.getpid()))
     f.close()
-atexit.register(lambda: os.remove(config.PIDfile+"PUSH"))
+atexit.register(lambda: os.remove(config.PIDfile))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
