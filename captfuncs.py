@@ -24,7 +24,9 @@ def captgetapidata(url, prt=False):
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
     r = urllib.request.urlopen(req)     # open the url resource
-    j_obj = json.load(r)                # convert to JSON
+    js=r.read().decode('UTF-8')
+    j_obj = json.loads(js)                  # convert to JSON
+
     if prt:
         print(json.dumps(j_obj, indent=4))
     return j_obj                        # return the JSON object

@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 import urllib.request, urllib.error, urllib.parse
 import json
 import xml.etree.ElementTree as ET
@@ -254,8 +254,8 @@ def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=Tr
     ttime = spigetaircraftpos(html, spipos)
     if prt:
         print(spipos)		        # print the raw data
-    if store:
+    if store and len(spipos) > 1:
         spistoreitindb(spipos, curs, conn, prt)  # store the fixes on the DDBB
-    if aprspush:
+    if aprspush and len(spipos) > 1:
         spiaprspush(spipos, conn, prt)	# push the fixes to the OGN APRS
     return (ttime)			# return the TTIME for the next request

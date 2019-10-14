@@ -29,7 +29,9 @@ def skylgetapidata(url): 	            # get the data from the API server
     req.add_header("Accept", "application/json")
     req.add_header("Content-Type", "application/json")
     r = urllib.request.urlopen(req)         # open the url resource
-    j_obj = json.load(r)                    # convert to JSON
+    js=r.read().decode('UTF-8')
+    j_obj = json.loads(js)                  # convert to JSON
+
     return j_obj                            # return the JSON object
 #-------------------------------------------------------------------------------------------------------------------#
 

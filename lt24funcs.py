@@ -103,7 +103,9 @@ def lt24getapidata(url, auth, prt=False):       # get the data from the API serv
     req.add_header("Accept", "application/json")
     req.add_header("Content-Type", "application/hal+json")
     r = urllib.request.urlopen(req)             # open the url resource
-    j_obj = json.load(r)                        # convert to JSON
+    js=r.read().decode('UTF-8')
+    j_obj = json.loads(js)                  # convert to JSON
+
     if prt:
         print(json.dumps(j_obj, indent=4))      # convert JSON to dictionary
     return j_obj                                # return the JSON object

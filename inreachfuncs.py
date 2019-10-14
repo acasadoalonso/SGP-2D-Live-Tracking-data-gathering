@@ -29,7 +29,7 @@ def inreachgetapidata(url, prt=False):
     except urllib.error.HTTPError as e:
         print("InReach read error:", e.fp.read())
         return ' '
-    kml = r.read()                          # read the data on KML format
+    kml = r.read().decode('UTF-8')          # read the data on KML format
     if kml == "An error occured.":
         return ' '
     if prt:
