@@ -457,7 +457,7 @@ try:
             dist = -1				# the case of when did not receive the station YET
             if station in fslod and source == 'OGN':  # if we have the station yet
                                                 # distance to the station
-                distance = vincenty((latitude, longitude), fslod[station]).km
+                distance = distance((latitude, longitude), fslod[station]).km
                 dist = distance
                 if distance > 300.0:
                     print("distcheck: ", distance, data)
@@ -465,7 +465,7 @@ try:
                 vitlat = config.location_latitude
                 vitlon = config.location_longitude
                                                 # distance to the BASE
-                dist = vincenty((latitude, longitude), (vitlat, vitlon)).km
+                dist = distance((latitude, longitude), (vitlat, vitlon)).km
 
             if prt:
                 print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)

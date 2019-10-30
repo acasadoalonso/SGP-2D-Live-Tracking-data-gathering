@@ -303,8 +303,11 @@ def parseraprs(packet_str, msg):
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
         date = datetime.utcnow() 			# get the date
-        callsign = packet['name']     	                # get the call sign FLARM ID or station name
-        id = callsign                         	        # id
+        if 'name' in packet:
+        	callsign = packet['name']               # get the call sign FLARM ID or station name
+        	id = callsign                  	        # id
+        else:
+                return -1
         longitude = get_longitude(packet)
         latitude = get_latitude(packet)
         altitude = get_altitude(packet)
