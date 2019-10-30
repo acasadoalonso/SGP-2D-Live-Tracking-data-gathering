@@ -19,6 +19,7 @@ import signal
 import atexit
 from parserfuncs import *               # the ogn/ham parser functions
 from geopy.distance import vincenty     # use the Vincenty algorithm^M
+from geopy.distance import geodesic     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
@@ -457,7 +458,7 @@ try:
             dist = -1				# the case of when did not receive the station YET
             if station in fslod and source == 'OGN':  # if we have the station yet
                                                 # distance to the station
-                distance = distance((latitude, longitude), fslod[station]).km
+                distance = geodesic((latitude, longitude), fslod[station]).km
                 dist = distance
                 if distance > 300.0:
                     print("distcheck: ", distance, data)
@@ -465,7 +466,7 @@ try:
                 vitlat = config.location_latitude
                 vitlon = config.location_longitude
                                                 # distance to the BASE
-                dist = distance((latitude, longitude), (vitlat, vitlon)).km
+                dist = geodesic((latitude, longitude), (vitlat, vitlon)).km
 
             if prt:
                 print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
