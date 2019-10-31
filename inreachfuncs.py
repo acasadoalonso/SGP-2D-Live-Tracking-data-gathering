@@ -13,7 +13,6 @@ import signal
 from geopy.distance import vincenty         # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
-import kglid
 from flarmfuncs import *
 from parserfuncs import deg2dmslat, deg2dmslon
 

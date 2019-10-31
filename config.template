@@ -1,9 +1,9 @@
-; Silent Wings Server configuration file
+; APRSlog configuration file
 
 [server]
 port: 80
-pid=/tmp/sws.pid
-; where the webserver documentets are
+pid=/tmp/APRS.pid
+; where the webserver documents are
 root=/var/www/html 
 ; if we plan to use the MySQL database or the SQLITE3 database
 MySQL    =False
@@ -52,35 +52,23 @@ APRS_FILTER_DETAILS = 'filter r/44.11/+5.56/100  '
 location_latitude  = 44.11
 location_longitud  = 5.56
 location_name      = "Sisteron"
+
 ; APRSLOG collects data from the OGN, SPIDER, SPOT, LT24, SKYLINES annd aggregates data fro the OGN trackers
 ; the behaviour of how to aggregate that data is defined thry the TRKDEVICES tabale of the database
 
 ; if SPIDER data is used ???
 SPIDER             = False
-SPIuser            = "your@email.org"        
-SPIpassword        = "spider"
 ; if SPOT data is used ???
 SPOT               = False
 ; if LiveTrack24 clients data is used ???
 LT24               = False
-LT24username       = "yourid"
-LT24password       = "yourpassword"
-; specify where to find the pilot pictures in the FAI's ranking list of the local directory pic
-PicPilots          = 'FAI'
-
-; name of the events
-eventname1="CNVV 2017"
-eventname2="OGN LIVE"
-; description of the events
-eventdesc1="Campeonato Nacional de Vuelo a Vela"
-eventdesc2="OGN Live tracking in Alps "
 
 [filter]
 ; further filter to the data to be saved in order to improve the performance
 ; the filter are defined by a set of two paralelles if zero means no filter
 FILTER_LATI1 = 42.0
 FILTER_LATI2 = 46.0
-; secondary fileter
+; secondary filter
 FILTER_LATI3 = -30.0 	
 FILTER_LATI4 = -36.0 
 

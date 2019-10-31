@@ -17,7 +17,6 @@ import hmac
 import urllib.request, urllib.parse, urllib.error
 import random
 import config
-import kglid
 from flarmfuncs import *
 from parserfuncs import deg2dmslat, deg2dmslon
 

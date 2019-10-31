@@ -15,7 +15,6 @@ from geopy.distance import vincenty         # use the Vincenty algorithm
 import MySQLdb                              # the SQL data base routines
 # ---------------- #
 import config
-import kglid
 from flarmfuncs  import *
 from ognddbfuncs import *
 from parserfuncs import deg2dmslat, deg2dmslon
