@@ -129,6 +129,7 @@ then								#
 	sudo chmod 777 */*					#
 fi								#
 cd								#
+sudo apt-get install percona-toolkit				#
 sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y dist-upgrade					#
 sudo apt-get -y autoremove					#

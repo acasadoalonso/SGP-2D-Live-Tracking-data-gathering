@@ -1,9 +1,14 @@
 #!/bin/sh
 cd /nfs/OGN/SWdata
-date														     
-server="localhost"
+date	
+if [ $# = 0 ]; then
+	server='localhost'
+else
+	server=$1
+fi
+echo "Server: "$server
 hostname=$(hostname)
-cd ~/src
+cd ~/src/APRSsrc
 day=$(date +%d)
 mon=$(date +%m)
 yea=$(date +%y)
@@ -42,34 +47,34 @@ mv cuc/*csv  cuc/archive	2>/dev/null
 cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files"							                                     >>APRSproc.log 2>/dev/null
-sudo wget "http://localhost/node/heatmap.php" -o tempfile >/dev/null 2>/dev/null
-sudo rm tempfile* heatmap*  >/dev/null 2>/dev/null
+sudo wget "http://$server/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
+sudo rm tempfile* heatmap*  											     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql -v -u ogn -pogn -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"')-3; " | mysql -v -u ogn -pogn -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATA;"                                    | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS ; "                                  | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql    -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql -v -u ogn -pogn -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"')-3; " | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mysqldump -u ogn -pogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql		     2>/dev/null
-mysqldump -u ogn -pogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql		     2>/dev/null
+mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql		     2>/dev/null
+mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql		     2>/dev/null
 cp /nfs/OGN/src/kglid.py                                             /var/www/html/files 
 ls -la /var/www/html/files/											     >>APRSproc.log 2>/dev/null
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
 if [ -f TRKDEVICES.sql ]
 then
-       	echo "DELETE FROM TRKDEVICES ; "                       | mysql -v -u ogn -pogn  APRSLOG 		     >>APRSproc.log 2>/dev/null           
-        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql -v -u ogn -pogn APRSLOG		     >>APRSproc.log 2>/dev/null
-	echo "select * FROM TRKDEVICES ; "                     | mysql -v -u ogn -pogn  APRSLOG        		     >>APRSproc.log 2>/dev/null
+       	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
+        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>APRSproc.log 2>/dev/null
+	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        		     >>APRSproc.log 2>/dev/null
 
 	rm TRKDEVICES.sql
 else
-        /home/angel/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=localhost >>APRSproc.log 2>/dev/null
+        /home/angel/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
@@ -79,8 +84,7 @@ mv aprs.log  archive/APRSlog$(date +%y%m%d).log
 mv DATA*.log archive		2>/dev/null
 mv APRS*.log archive  		2>/dev/null
 rm APRS.alive  			2>/dev/null
-cd ~/src
+cd ~/src/APRSsrc
 sudo  rm   /var/www/html/node/nohup.out 									     >/dev/null 2>/dev/null
-#rsync -rl  /var/www/html/node /nfs/OGN/src/APRSsrc
 cd
 
