@@ -6,12 +6,12 @@ else
 fi
 echo "Server: "$server
 if [ $# > 1 ]; then
-	server2='localhost'
-else
 	server2=$2
+else
+	server2='localhost'
 fi
-echo "Server2 "$server2
-
+echo "Server2: "$server2
+echo $# $2
 hostname=$(hostname)
 
 cd /nfs/OGN/SWdata
@@ -20,8 +20,9 @@ if [ -f TRKDEVICES.sql ]
 then
 	echo "=============================================APRSLOG.============================================="    
        	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v -h $server APRSLOG 		     
-        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG
-	echo "=============================================SWIFACE.============================================="    
+        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v -h $server APRSLOG
+	echo "select count(*) from TRKDEVICES;" |    mysql --login-path=SARogn -h $server APRSLOG
+	#echo "=============================================SWIFACE.============================================="    
        	#echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v SWIFACE -h $server2 		     
         #sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v SWIFACE -h casadonfs
 	#echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v SWIFACE -h $server2
