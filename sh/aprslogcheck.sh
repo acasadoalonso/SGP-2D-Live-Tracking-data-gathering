@@ -9,7 +9,7 @@ then
                         sudo kill $pnum
                 fi
 #               restart OGN data collector
-                bash /home/angel/src/APRS/main/sh/aprslog.sh 
+                bash /home/angel/src/APRSsrc/main/sh/aprslog.sh 
                 logger -t $0 "APRS Log seems down, restarting"
                 date >>/nfs/OGN/SWdata/.APRSrestart.log
 else
