@@ -3,13 +3,13 @@ alive=$"/nfs/OGN/SWdata/APRS.alive"
 if [ ! -f $alive ]
 then
                 logger  -t $0 "APRS Log is not alive"
-                pnum=$(pgrep -x -f "python3 /home/angel/src/APRSsrc/aprslog.py")
+                pnum=$(pgrep -x -f "python3 /home/angel/src/APRSsrc/main/aprslog.py")
                 if [ $? -eq 0 ] # if OGN repo interface is  not running
                 then
                         sudo kill $pnum
                 fi
 #               restart OGN data collector
-                bash /home/angel/src/APRS/sh/aprslog.sh 
+                bash /home/angel/src/APRS/main/sh/aprslog.sh 
                 logger -t $0 "APRS Log seems down, restarting"
                 date >>/nfs/OGN/SWdata/.APRSrestart.log
 else

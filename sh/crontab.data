@@ -1,6 +1,6 @@
 MAILTO="acasado@acm.org"
-30  23 *    *  *        /bin/bash ~/src/APRSsrc/sh/aprsidaily.sh
-*/10 08-18 * * *        /bin/bash ~/src/APRSsrc/sh/aprslogcheck.sh >/dev/null 2>&1 
-@reboot /bin/bash ~/src/APRSsrc/sh/aprslogcheck.sh >/dev/null 2>&1 
-@reboot /bin/bash ~/src/APRSsrc/sh/aprslogcheck.sh >/dev/null 2>&1 
+30  23 *    *  *        /bin/bash ~/src/APRSsrc/main/sh/aprsidaily.sh
+*/10 08-18 * * *        /bin/bash ~/src/APRSsrc/main/sh/aprslogcheck.sh >/dev/null 2>&1 
+@reboot /bin/bash ~/src/APRSsrc/main/sh/aprslogcheck.sh >/dev/null 2>&1 
+@reboot /bin/bash ~/src/APRSsrc/main/sh/aprslogcheck.sh >/dev/null 2>&1 
 @reboot sudo nohup forever start -l 2D.log -o 2D.out -e 2D.err -a /var/www/html/node/data.js
