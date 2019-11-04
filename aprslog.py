@@ -30,8 +30,11 @@ from flarmfuncs import *                # import the functions delaing with the 
 
 def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
                                         # shutdown before exit
-    sock.shutdown(0)                    # shutdown the connection
-    sock.close()                        # close the connection file
+    try:
+        sock.shutdown(0)                # shutdown the connection
+        sock.close()                    # close the connection file
+    except:
+        print("Ignore SOCK errors at this time -- shutdown")
     datafile.close()                    # close the data file
     print("Sources: ", fsour)           # print the data about the different sources
                                         # report number of records read and IDs discovered
