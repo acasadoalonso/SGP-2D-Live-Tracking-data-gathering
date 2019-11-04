@@ -89,6 +89,7 @@ cout = 0                                # output file counter
 i = 0                                   # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
+maxnerrs = 50                           # max number of error before quiting
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -100,7 +101,6 @@ fsour = {}			 	# sources
 
 # --------------------------------------#
 DATA = True
-RECV = True
 DBpath      = config.DBpath
 DBhost      = config.DBhost
 DBuser      = config.DBuser
@@ -129,13 +129,8 @@ else:
 
 if prtreq and prtreq[0] == 'DATA':
     DATA = True
-    RECV = False
-elif prtreq and prtreq[0] == 'RECV':
-    RECV = True
+if prtreq and prtreq[0] == 'NODATA':
     DATA = False
-else:
-    RECV = True
-    DATA = True
 
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))
@@ -203,7 +198,7 @@ start_time = time.time()
 local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
-print("APRS data file is: ", OGN_DATA)
+print("APRS data file is: ", OGN_DATA, DATA)
 datafile = open(OGN_DATA, 'a')		# data file for loggin if requested
 keepalive_count = 1
 keepalive_time = time.time()
@@ -255,8 +250,7 @@ try:
                 keepalive_count = keepalive_count + 1
                 now = datetime.utcnow()	# get the UTC time
             except Exception as e:
-                print((
-                    'something\'s wrong with socket write. Exception type is %s' % (repr(e))))
+                print(( 'something\'s wrong with socket write. Exception type is %s' % (repr(e))))
                 now = datetime.utcnow()	# get the UTC time
                 print("UTC time is now: ", now)
             if OGNT:                   	# if we need aggregation of FLARM and OGN trackers data
@@ -284,7 +278,7 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
-            if err > 25:
+            if err > maxnerrs:
                 print("Read returns zero length string. Failure.  Orderly closeout")
                 date = datetime.now()
                 print("UTC now is: ", date)
@@ -430,6 +424,7 @@ try:
                         print(">>>MySQL2 Error: %s" % str(e))
                     print(">>>MySQL3 error:",  cout, inscmd)
                     print(">>>MySQL4 data :",  data)
+                cout += 1			# number of records saved
             if path == 'qAC':			# the case of a qAC message that is not a TCPIP*
                 print(">>>qAC>>>:", data)
                 continue                        # the case of the TCP IP as well
@@ -471,13 +466,14 @@ try:
             if prt:
                 print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
                 print("RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, source, ":::")
-                # write the DB record
 
-            if (DATA):
+                                                # write the DB record
+
+            if (DATA):                          # if we need to store on the database
                                                 # if we have OGN tracker aggregation and is an OGN tracker
                 if OGNT and ident[0:3] == 'OGN':
 
-                    if ident in ognttable:		# if the device is on the list
+                    if ident in ognttable:	# if the device is on the list
                                                 # substitude the OGN tracker ID for the related FLARMID
                         ident = ognttable[ident]
 
@@ -502,7 +498,8 @@ try:
                         print(">>>MySQL Error: %s" % str(e))
                     print(">>>MySQL error:", cout, addcmd)
                     print(">>>MySQL data :",  data)
-                cout += 1
+                
+                cout += 1			# number of records saved
                 conn.commit()                   # commit the DB updates
 
 

@@ -58,7 +58,8 @@ sudo -H python3 -m pip install --upgrade pip			#
 pip3 -V								#
 sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
 sudo apt-get install -y libmysqlclient-dev 			#
-sudo -H pip3 install mysqlclient 				#
+sudo -H pip3 uninstall mysqlclient				#
+sudo -H pip3 install --no-binary mysqlclient mysqlclient	#
 cd /var/www/html/						#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#

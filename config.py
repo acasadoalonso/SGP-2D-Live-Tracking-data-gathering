@@ -160,8 +160,7 @@ else:
     PUSH2OGN = False
 
 # --------------------------------------#
-assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)
-                                  ) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
+assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
 
 # report the configuration paramenters
 LogData = False
