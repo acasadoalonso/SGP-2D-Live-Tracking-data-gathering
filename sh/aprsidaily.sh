@@ -46,31 +46,34 @@ mv cuc/*lst  cuc/archive	2>/dev/null
 mv cuc/*csv  cuc/archive	2>/dev/null
 cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
-echo "Gen the heatmaps files"							                                     >>APRSproc.log 2>/dev/null
-sudo wget "http://$server/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
-sudo rm tempfile* heatmap*  											     >/dev/null     2>/dev/null
+echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
+sudo wget "http://$hostname/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
+sudo rm tempfile* heatmap.php.*  										     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"')-3; " | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG            >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG            >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql		     2>/dev/null
-mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql		     2>/dev/null
-cp /nfs/OGN/src/kglid.py                                             /var/www/html/files 
-ls -la /var/www/html/files/											     >>APRSproc.log 2>/dev/null
+if [ -d /var/www/html/filles ]a
+then
+	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
+	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
+	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files 
+	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
+fi
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
 if [ -f TRKDEVICES.sql ]
 then
        	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
         sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>APRSproc.log 2>/dev/null
-	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        		     >>APRSproc.log 2>/dev/null
+	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        	     >>APRSproc.log 2>/dev/null
 
 	rm TRKDEVICES.sql
 else

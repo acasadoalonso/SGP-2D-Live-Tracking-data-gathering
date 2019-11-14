@@ -5,12 +5,11 @@
 # Version for gathering all the records for the world
 #
 
-from datetime import datetime
-from ctypes import *
+from   datetime import datetime
+from   ctypes import *
 import socket
 import time
 import string
-#import ephem
 import pytz
 import sys
 import os
@@ -23,7 +22,7 @@ from geopy.distance import geodesic     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
-from flarmfuncs import *                # import the functions delaing with the Flarm ID
+from flarmfuncs import *                # import the functions relating with the Flarm ID
 
 #########################################################################
 
@@ -52,7 +51,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         os.remove(config.APP+".alive")  # delete the mark of being alive
     return                              # job done
 
-#########################################################################
+#######################################################################
 
 
 def signal_term_handler(signal, frame):
@@ -61,28 +60,29 @@ def signal_term_handler(signal, frame):
     sys.exit(0)
 
 
-# ......................................................................#
+# .....................................................................#
 signal.signal(signal.SIGTERM, signal_term_handler)
-# ......................................................................#
+# .....................................................................#
 
 #
 ########################################################################
-programver = 'V2.00'
+programver = 'V2.00'			# manually set the program version !!!
+
 print("\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver)
 print("====================================================================")
-
+#					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 date = datetime.utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
-hostname = socket.gethostname()
+hostname = socket.gethostname()		# get the hostname 
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
 print("Time now is: ", date, " Local time")
 
-# ---------------------------------------#
+# --------------------------------------#
 #
-import config
-if os.path.exists(config.PIDfile):
+import config				# import the configuration details
+if os.path.exists(config.PIDfile):	# check if this program is aleady running !!!
     raise RuntimeError("APRSlog already running !!!")
     exit(-1)
 #
@@ -103,7 +103,7 @@ fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
 
 # --------------------------------------#
-DATA = True
+DATA = True				# use the configuration values
 DBpath      = config.DBpath
 DBhost      = config.DBhost
 DBuser      = config.DBuser
@@ -116,7 +116,7 @@ if OGNT:
     from ogntfuncs import *
 
 # --------------------------------------#
-
+					# open the DataBase
 conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs = conn.cursor()                    # set the cursor
 
@@ -124,7 +124,7 @@ print("MySQL: Database:", DBname, " at Host:", DBhost)
 
 #----------------------aprslog.py start-----------------------#
 
-prtreq = sys.argv[1:]
+prtreq = sys.argv[1:]			# check the arguments
 if prtreq and prtreq[0] == 'prt':
     prt = True
 else:
@@ -136,7 +136,7 @@ if prtreq and prtreq[0] == 'NODATA':
     DATA = False
 
 with open(config.PIDfile, "w") as f:    # create the lock file
-    f.write(str(os.getpid()))
+    f.write(str(os.getpid()))		# to avoid running the same program twice 
     f.close()
 atexit.register(lambda: os.remove(config.PIDfile)) # remove it at exit
 
@@ -157,11 +157,11 @@ print("Socket sock connected")
 compfile = config.cucFileLocation + "competitiongliders.lst"
 
 if os.path.isfile(compfile):		# if we are in competition mode
-    print("Competition file:", compfile)
+    print("Competition file:", compfile)# we restrict only to the flamrs of the competition gliders
     fd = open(compfile, 'r')
     j = fd.read()
     if len(j) > 0:
-        clist = json.loads(j)
+        clist = json.loads(j)		# load the list of flarms used on the competition
     else:
         clist = []
     fd.close()
@@ -170,31 +170,31 @@ if os.path.isfile(compfile):		# if we are in competition mode
         filter += f		        # add the flarmid
         filter += "/"
 
-    if OGNT:			        # if we have ONT tracker paired
+    if OGNT:			        # if we have OGN tracker paired
         for f in ognttable:             # for each ogntracker
 
             filter += f  # add the flarm id/tracker id associated
             filter += "/"  # separated by an slash
     filter += "\n"
 
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (
-        config.APRS_USER, config.APRS_PASSCODE, programver, filter)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (
-        config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
-login=login.encode(encoding='utf-8', errors='strict') 
+
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+
+login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
 sock.send(login)			# send the login to the APRS server
 
 # Make the connection to the server
-sock_file = sock.makefile(mode='rw')    # make read7write as we need to send the keep_alive
+sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
 
 
-print("APRS Version:", sock_file.readline())
+print("APRS Version:", sock_file.readline())	# report the APRS version
 sleep(2)
 # for control print the login sent and get the response
 print("APRS Login request:", login)
-print("APRS Login reply:  ", sock_file.readline())
+print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
 
 
 start_time = time.time()
