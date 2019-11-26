@@ -42,6 +42,7 @@ sudo apt-get install -y php-sqlite3 php-mysql php-cli 		#
 sudo apt-get install -y php-mcrypt 				#
 sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo apt-get install -y php7.2					#
+sudo apt-get install -y ntpdate					#
 sudo a2enmod rewrite						#
 sudo phpenmod mcrypt						#
 sudo phpenmod mbstring						#
@@ -57,6 +58,7 @@ sudo service apache2 restart					#
 sudo -H python3 -m pip install --upgrade pip			#
 pip3 -V								#
 sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
+sudo -H python3 -m pip install tqdm 				#
 sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 uninstall mysqlclient				#
 sudo -H pip3 install --no-binary mysqlclient mysqlclient	#

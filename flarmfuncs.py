@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import kglid
-
+import MySQLdb 
 unkglider = []
 
 
