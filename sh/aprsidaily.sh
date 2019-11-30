@@ -61,10 +61,11 @@ echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-p
 echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-if [ -d /var/www/html/filles ]a
+if [ -d /var/www/html/filles ]
 then
 	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
 	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
+	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump    2>/dev/null
 	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files 
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
