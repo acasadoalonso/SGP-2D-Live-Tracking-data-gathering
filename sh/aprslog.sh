@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /nfs/OGN/SWdata 
-echo "============================:"   		>>aprs.log
+echo "========"$(hostname)"===============:"	>>aprs.log
 date                            		>>aprs.log
 python3 ~/src/APRSsrc/main/APRScalsunrisesunset.py >>aprs.log
 echo "APRSLIVE.sh:"	            		>>aprs.log
