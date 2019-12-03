@@ -1,12 +1,12 @@
 #!/bin/sh
 cd /nfs/OGN/SWdata
-date	
+date														     >>APRSproc.log 2>/dev/null
 if [ $# = 0 ]; then
 	server='localhost'
 else
 	server=$1
 fi
-echo "Server: "$server
+echo "Server: "$server                                                                                               >>APRSproc.log 
 hostname=$(hostname)
 cd ~/src/APRSsrc
 day=$(date +%d)
