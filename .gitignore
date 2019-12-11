@@ -8,4 +8,5 @@ tmp/
 ogn-aprs-protocol/
 __pycache__
 doc/FLARM*
+config/
 ss*

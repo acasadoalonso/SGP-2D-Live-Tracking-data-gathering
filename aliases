@@ -1,4 +1,4 @@
-alias sql="mysql -h localhost -u ogn -pogn"
+alias sql="mysql --login-path=SARogn -h localhost "
 alias log="tail -n 40 /var/log/syslog"
 alias py="pgrep -a python"
 alias nd="pgrep -a nodejs"

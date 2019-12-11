@@ -33,7 +33,7 @@ then
 
 	rm TRKDEVICES.sql
 else
-	/home/angel/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null	
+	~/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null	
 fi
 echo "Done."     		     						                                    
 date														   

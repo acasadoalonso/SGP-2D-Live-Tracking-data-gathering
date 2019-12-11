@@ -1,0 +1,24 @@
+{
+  "name": "APRSsrc",
+  "version": "1.0.0",
+  "description": "## SGP 2D live tracking - data crawling component",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering/issues"
+  },
+  "homepage": "https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering#readme"
+}

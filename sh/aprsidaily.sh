@@ -78,17 +78,17 @@ then
 
 	rm TRKDEVICES.sql
 else
-        /home/angel/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
+        ~/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- pi@acasado.es 
-mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log
-mv aprs.log  archive/APRSlog$(date +%y%m%d).log
-mv DATA*.log archive		2>/dev/null
-mv APRS*.log archive  		2>/dev/null
-rm APRS.alive  			2>/dev/null
+mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 	2>/dev/null
+mv aprs.log  archive/APRSlog$(date +%y%m%d).log      	2>/dev/null
+mv DATA*.log archive					2>/dev/null
+mv APRS*.log archive  					2>/dev/null
+rm APRS.alive  						2>/dev/null
 cd ~/src/APRSsrc
-sudo  rm   /var/www/html/node/nohup.out 									     >/dev/null 2>/dev/null
+sudo  rm   /var/www/html/node/nohup.out	     >/dev/null 2>/dev/null
 cd
 
