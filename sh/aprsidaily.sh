@@ -66,7 +66,7 @@ then
 	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
 	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
 	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump    2>/dev/null
-	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files 
+	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files 		2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
@@ -82,7 +82,7 @@ else
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat mailames.txt)
+mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat mailnames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 	2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      	2>/dev/null
 mv DATA*.log archive					2>/dev/null
