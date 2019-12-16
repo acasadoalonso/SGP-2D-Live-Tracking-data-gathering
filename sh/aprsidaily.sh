@@ -61,7 +61,7 @@ echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-p
 echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-if [ -d /var/www/html/filles ]
+if [ -d /var/www/html/files ]
 then
 	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
 	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
@@ -70,7 +70,7 @@ then
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
-if [ -f TRKDEVICES.sql ]
+if [[ -f TRKDEVICES.sql && $(hostname) != 'CHILEOGN' ]]
 then
        	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
         sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>APRSproc.log 2>/dev/null
@@ -82,7 +82,7 @@ else
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- pi@acasado.es 
+mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat mailames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 	2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      	2>/dev/null
 mv DATA*.log archive					2>/dev/null
