@@ -256,6 +256,14 @@ try:
                 print(( 'something\'s wrong with socket write. Exception type is %s' % (repr(e))))
                 now = datetime.utcnow()	# get the UTC time
                 print("UTC time is now: ", now)
+                err += 1
+                if err > maxnerrs:
+                    print("Write returns an error code. Failure.  Orderly closeout")
+                    date = datetime.now()
+                    break
+                else:
+                    sleep(5) 		# wait 5 seconds
+                    continue
             if OGNT:                   	# if we need aggregation of FLARM and OGN trackers data
                                         # rebuild the table from the TRKDEVICES DB table
                 ogntbuildtable(conn, ognttable, prt)
@@ -509,7 +517,7 @@ try:
 except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
-
+print ("end of loop ... error detected\n\n")
 shutdown(sock, datafile)
 print("Exit now ...", err)
 exit(1)
