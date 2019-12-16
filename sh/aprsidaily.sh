@@ -82,7 +82,7 @@ else
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat mailnames.txt)
+mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat ~/src/APRSsrc/sh/mailnames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 	2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      	2>/dev/null
 mv DATA*.log archive					2>/dev/null
