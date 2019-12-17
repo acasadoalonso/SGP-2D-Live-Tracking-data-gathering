@@ -47,7 +47,7 @@ mv cuc/*csv  cuc/archive	2>/dev/null
 cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
-sudo wget "http://$hostname/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
+sudo wget "http://localhost/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
 sudo rm tempfile* heatmap.php.*  										     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
