@@ -64,7 +64,7 @@ def get_latitude(packet):
 
 
 def get_altitude(packet):
-    if 'altitude' in packet:
+    if 'altitude' in packet and packet['altitude'] != None:
         altitude = packet['altitude']
     else:
         altitude = -1

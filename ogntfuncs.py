@@ -3,12 +3,14 @@
 # OGN tracker integration functions
 #
 # -------------------------------------------------------------------------------------------------------------------------------- #
-import kglid
-from flarmfuncs import *
+from flarmfuncs  import *
+from ognddbfuncs import *
 
-
+#
 # function to build the OGN tracker table of relation between flarmid and registrations
-def ogntbuildtable(conn, ognttable, prt=False):
+#
+def ogntbuildtable(conn, ognttable, prt=False): # conn is the DB connection id, ogntable is where to return the pairs table
+
     oldtable = ognttable.copy()         # have a copy of it
     auxtable = {}			# the aux table to know the registrations
     cursG = conn.cursor()               # set the cursor for searching the devices
@@ -29,16 +31,14 @@ def ogntbuildtable(conn, ognttable, prt=False):
 
         ognttable[ogntid] = flarmid
 
-        # check that the registration is on the table - sanity checka
-        if ogntid[3:] not in kglid.kglid:
+        # check that the registration is on the table - sanity check
+        o=getognreg(ogntid)
+        if o == "NOreg":
             o = 'NoregO'
-        else:
-            o = kglid.kglid[ogntid[3:]]
         # check that the registration is on the table - sanity checka
-        if flarmid[3:] not in kglid.kglid:
+        f=getognreg(flarmid)
+        if f == "NOreg":
             f = 'NoregF'
-        else:
-            f = kglid.kglid[flarmid[3:]]
         auxtable[o] = f
 
     unmatched_item = set(oldtable.items()) ^ set(ognttable.items())
