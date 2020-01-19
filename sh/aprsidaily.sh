@@ -44,6 +44,10 @@ mv cuc/*json cuc/archive	2>/dev/null
 mv cuc/*tsk  cuc/archive	2>/dev/null
 mv cuc/*lst  cuc/archive	2>/dev/null
 mv cuc/*csv  cuc/archive	2>/dev/null
+cd /var/www/html/SWS
+mv cuc/*json cuc/archive	2>/dev/null
+mv cuc/*tsk  cuc/archive	2>/dev/null
+mv cuc/*lst  cuc/archive	2>/dev/null
 cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null

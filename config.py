@@ -57,10 +57,14 @@ FLOGGER_LONGITUDE = cfg.get(
     'location', 'location_longitud').strip("'").strip('"')
 
 try:
-    cucFileLocation = cfg.get(
-        'server', 'cucFileLocation').strip("'").strip('"')
+    cucFileLocation = cfg.get('server', 'cucFileLocation').strip("'").strip('"')
 except:
     cucFileLocation = "/var/www/html/cuc/"
+
+try:
+    DELAY = cfg.get('server', 'DELAY').strip("'").strip('"')
+except:
+    DELAY = 1200				# default 20 munutes = 1200 seconds
 
 try:
     location_name = cfg.get('location', 'location_name').strip("'").strip('"')
@@ -107,6 +111,12 @@ try:
 except:
     OGNTtext = 'False'
 
+try:
+    ADSBtext = cfg.get('location', 'ADSB').strip("'").strip('"')
+    ADSBhost = cfg.get('location', 'ADSBHOST').strip("'").strip('"')
+except:
+    ADSBtext = 'False'
+
 
 DBpath = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext = cfg.get('server', 'MySQL').strip("'").strip('"')
@@ -121,6 +131,10 @@ try:
     PIDfile = cfg.get('server', 'pid').strip("'").strip('"')
 except:
     PIDfile = '/tmp/APRS.pid'
+try:
+    DLYPIDfile = cfg.get('server', 'dlypid').strip("'").strip('"')
+except:
+    DLYPIDfile = '/tmp/DLY.pid'
 # --------------------------------------#
 if (MySQLtext == 'True'):
     MySQL = True
@@ -158,6 +172,10 @@ if (OGNTtext == 'True'):
     OGNT = True
 else:
     OGNT = False
+if (ADSBtext == 'True'):
+    ADSB = True
+else:
+    ADSB = False
 if (PUSH2OGNtext == 'True'):
     PUSH2OGN = True
 else:
@@ -172,7 +190,7 @@ APP = "APRSLOG"					# the application name
 print("Hostname:            ", hostname, " and config file: ", configfile, processid)
 print("Config server values:",                  "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
 print("Config APRS values:  ",                  APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-print("Config location :    ", 			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT)
+print("Config location :    ", 			location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT, "ADSB=", ADSB)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0

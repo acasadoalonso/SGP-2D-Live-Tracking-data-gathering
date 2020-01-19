@@ -2,6 +2,7 @@
 *.log
 *.lock
 *.alive
+ogndecode/
 utils/
 log/
 tmp/

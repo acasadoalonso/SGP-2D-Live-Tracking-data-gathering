@@ -231,8 +231,9 @@ try:
         local_time = datetime.now()
         now = datetime.utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
-            print("End of Day...")	# end of UTC day
+            print("End of Day...\n\n\n", day)	# end of UTC day
             shutdown(sock, datafile)	# recycle
+            print("Bye ...\n\n\n", day)	# end of UTC day
             exit(0)
 
                                         # get the time since last keep-alive
@@ -422,7 +423,7 @@ try:
                 otime = datetime.utcnow()	# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
-                #print "Status report:", ident, station, otime, status
+                #print ("Status report:", ident, station, otime, status)
                 inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
                     (ident, station, otime, status)
                 try:
