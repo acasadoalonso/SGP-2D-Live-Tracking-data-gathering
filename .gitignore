@@ -3,6 +3,7 @@
 *.lock
 *.alive
 ogndecode/
+DecKey.py
 utils/
 log/
 tmp/

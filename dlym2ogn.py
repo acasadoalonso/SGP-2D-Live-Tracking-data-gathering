@@ -235,7 +235,8 @@ now = now-min5				# now less 5 minutes
 td = now-datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by 
-decKey=b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+import DecKey
+#decKey=b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 day = now.day				# day of the month
 
 try:

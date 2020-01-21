@@ -254,12 +254,12 @@ try:
                 keepalive_count = keepalive_count + 1
                 now = datetime.utcnow()	# get the UTC time
             except Exception as e:
-                print(( 'something\'s wrong with socket write. Exception type is %s' % (repr(e))))
+                print(( '>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))))
                 now = datetime.utcnow()	# get the UTC time
                 print("UTC time is now: ", now)
                 err += 1
                 if err > maxnerrs:
-                    print("Write returns an error code. Failure.  Orderly closeout")
+                    print(">>>>: Write returns an error code. Failure.  Orderly closeout")
                     date = datetime.now()
                     break
                 else:
@@ -282,7 +282,11 @@ try:
             if prt:
                 print(packet_str)
         except socket.error:
-            print("Socket error on readline")
+            print(">>>>: Socket error on readline")
+            continue
+        except :
+            print("Error on readline")
+            print(">>>>: ", packet_str)
             continue
         if prt:
             print(packet_str)
@@ -291,7 +295,7 @@ try:
         if len(packet_str) == 0:
             err += 1
             if err > maxnerrs:
-                print("Read returns zero length string. Failure.  Orderly closeout")
+                print(">>>>: Read returns zero length string. Failure.  Orderly closeout")
                 date = datetime.now()
                 print("UTC now is: ", date)
                 break
@@ -316,7 +320,7 @@ try:
             if 'id' in msg:
                 ident = msg['id']                      	# id
             else:
-                print(">>>Missing ID:>>>", data)
+                print(">>>>: Missing ID:>>>", data)
                 continue
             aprstype    = msg['aprstype']		# APRS msg type
             longitude   = msg['longitude']
@@ -408,11 +412,11 @@ try:
                     curs.execute(inscmd)
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
+                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>MySQL2 Error: %s" % str(e))
-                    print(">>>MySQL3 error:",  cout, inscmd)
-                    print(">>>MySQL4 data :",  data)
+                        print(">>>>: MySQL2 Error: %s" % str(e))
+                    print(">>>>: MySQL3 error:",  cout, inscmd)
+                    print(">>>>: MySQL4 data :",  data)
                 cout += 1			# number of records saved
                 conn.commit()			# commit to the DB
                 continue
@@ -430,12 +434,12 @@ try:
                     curs.execute(inscmd)
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>MySQL1 Error [%d]: %s" % (
+                        print(">>>>: MySQL1 Error [%d]: %s" % (
                             e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>MySQL2 Error: %s" % str(e))
-                    print(">>>MySQL3 error:",  cout, inscmd)
-                    print(">>>MySQL4 data :",  data)
+                        print(">>>>: MySQL2 Error: %s" % str(e))
+                    print(">>>>: MySQL3 error:",  cout, inscmd)
+                    print(">>>>: MySQL4 data :",  data)
                 cout += 1			# number of records saved
             if path == 'qAC':			# the case of a qAC message that is not a TCPIP*
                 print(">>>qAC>>>:", data)
@@ -505,11 +509,11 @@ try:
                     curs.execute(addcmd)
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                        print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>MySQL Error: %s" % str(e))
-                    print(">>>MySQL error:", cout, addcmd)
-                    print(">>>MySQL data :",  data)
+                        print(">>>>: MySQL Error: %s" % str(e))
+                    print(">>>>: MySQL error:", cout, addcmd)
+                    print(">>>>: MySQL data :",  data)
                 
                 cout += 1			# number of records saved
                 conn.commit()                   # commit the DB updates
@@ -518,7 +522,7 @@ try:
 except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
-print ("end of loop ... error detected\n\n")
+print (">>>>: end of loop ... error detected or SIGTERM \n\n")
 shutdown(sock, datafile)
 print("Exit now ...", err)
 exit(1)
