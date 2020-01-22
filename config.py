@@ -113,9 +113,17 @@ except:
 
 try:
     ADSBtext = cfg.get('location', 'ADSB').strip("'").strip('"')
-    ADSBhost = cfg.get('location', 'ADSBHOST').strip("'").strip('"')
 except:
     ADSBtext = 'False'
+try:
+    ADSBhost = cfg.get('location', 'ADSBHOST').strip("'").strip('"')
+except:
+    ADSBhost = 'localhost'
+try:
+    ADSBfile = cfg.get('location', 'ADSBfile').strip("'").strip('"')
+except:
+    ADSBfile = '/tmp/aircraft.json'
+    
 
 
 DBpath = cfg.get('server', 'DBpath').strip("'").strip('"')

@@ -107,6 +107,7 @@ INREACH     = True
 CAPTURS     = True
 SKYLINE     = True
 LT24        = True
+ADSB        = True
 OGNT        = True
 # --------------------------------------#
 
@@ -127,6 +128,9 @@ if CAPTURS:
 
 if SKYLINE:
     from skylfuncs import *
+
+if ADSB:
+    from adsbfuncs import *
 
 if LT24:
     from lt24funcs import *
@@ -207,6 +211,7 @@ ttspid = 0				# time between spid request
 ttcapt = 0				# time between capturs request
 ttltsk = 0				# time between lt24/skyl request
 lt24ts = ts                             # the same
+adsbts = ts                             # the same
 spispotcount = 0			# loop counter
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
@@ -315,17 +320,25 @@ try:
                     lt24ts = int(td.total_seconds())
                 ttltsk = tt
 
+            if ADSB:					# if we have the ADSB according with the configuration
+                                                        # find the position and add it to the DDBB
+                    func='ADSB'
+                    adsbts = adsbfindpos(adsbts, conn, prt=prt, store=False, aprspush=True)
+            else:
+                                                        # number of second until beginning of the day
+                    td = now-datetime(1970, 1, 1)
+                                                        # Unix time - seconds from the epoch
+                    adsbts = int(td.total_seconds())
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS:
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
 
                 print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
-                    tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "UTC Now:", datetime.utcnow().isoformat())
+                    tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
 
         except Exception as e:
-            print((
-                'Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS:
+            print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
 
                 print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat())
             nerrors += 1
