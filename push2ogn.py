@@ -216,7 +216,7 @@ spispotcount = 0			# loop counter
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
 day = now.day				# day of the month
-print ("Time between call for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "\n\n")
+print ("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "\n\n")
 if LT24:
     # login into the LiveTrack24 server
     lt24login(LT24path, lt24username, lt24password)
@@ -224,7 +224,7 @@ if LT24:
     LT24firsttime = True
 
 
-if SPIDER or SPOT or INREACH or CAPTURS or LT24:
+if SPIDER or SPOT or INREACH or CAPTURS or LT24i or ADSB:
     print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
 
 date = datetime.now()
@@ -275,16 +275,14 @@ try:
                     ts = spotfindpos(ts, conn, prt=prt, store=False, aprspush=True)
                 else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ts = int(td.total_seconds())
                 if INREACH:			        # if we have the INREACH according with the configuration
                     func='INREACH'
                     tr = inreachfindpos(tr, conn, prt=prt, store=False, aprspush=True)
                 else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tr = int(td.total_seconds())
                 ttspid = tt
 
@@ -294,8 +292,7 @@ try:
                     tc = captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
                 else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tc = int(td.total_seconds())
                 ttcapt = tt
 
@@ -305,8 +302,7 @@ try:
                     ty = skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
                 else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ty = int(td.total_seconds())
                 if LT24:				# if we have the LT24 according with the configuration
                                                         # find the position and add it to the DDBB
@@ -315,8 +311,7 @@ try:
                     LT24firsttime = False		# only once the addpos
                 else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     lt24ts = int(td.total_seconds())
                 ttltsk = tt
 
@@ -326,9 +321,9 @@ try:
                     adsbts = adsbfindpos(adsbts, conn, prt=prt, store=False, aprspush=True)
             else:
                                                         # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1)
-                                                        # Unix time - seconds from the epoch
+                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     adsbts = int(td.total_seconds())
+
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
             if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:

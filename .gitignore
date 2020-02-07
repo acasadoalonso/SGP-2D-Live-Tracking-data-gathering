@@ -3,7 +3,9 @@
 *.lock
 *.alive
 ogndecode/
-DecKey.py
+Keys.py
+dlym2ogn.py
+keyfile.encrypt
 utils/
 log/
 tmp/
@@ -11,5 +13,6 @@ ogn-aprs-protocol/
 __pycache__
 doc/FLARM*
 config/
+.idea/
 ss*
 sh/mailnames.txt

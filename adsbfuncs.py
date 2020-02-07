@@ -61,9 +61,16 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
             continue
         gps = "NO"
         extpos = "NO"
-        roc = msg['vert_rate']
-        dir = msg['track']
-        spd = msg['speed']
+        roc=0
+        dir=0
+        spd=0
+        if "vert_rate" in msg:
+                roc = msg['vert_rate']
+        if "track" in msg:
+                dir = msg['track']
+        if "speed" in msg:
+                spd = msg['speed']
+
         date = t.strftime("%y%m%d")
         tme  = t.strftime("%H%M%S")
         foundone = True
@@ -195,8 +202,6 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
         adsbaprspush(adsbpos, conn, prt=prt)	# and push it into the OGN APRS
     now = datetime.utcnow()
                                         # number of second until beginning of the day of 1-1-1970
-    td = now-datetime(1970, 1, 1)
-    sync = int(td.total_seconds())      # as an integer
-    return (sync+1)			# return TTIME for next call
+    return (int(adsbnow))			# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#

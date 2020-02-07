@@ -87,7 +87,7 @@ def getognmodel(flarmid):                   # get the ogn aircraft model from th
         _ogninfo_ = getddbdata()
     devices = _ogninfo_["devices"]          # access to the ddbdata
     for dev in devices:                     # loop into the registrations
-        if dev["aircraft_model"] == flarmid:     # if matches ??
+        if dev["device_id"] == flarmid:     # if matches ??
             return dev["aircraft_model"]    #return the aircraft model
 
     return "NoModel"                        # if not found !!!

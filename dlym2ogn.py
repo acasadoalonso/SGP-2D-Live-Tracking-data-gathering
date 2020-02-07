@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+
 #
 # Python code to push into the OGN APRS the delayed unencrypted PARS messages
 #
@@ -9,22 +9,26 @@ import sys
 import os
 import time
 import os.path
+import psutil
 import signal
 import atexit
 import MySQLdb                          # the SQL data base routines^M
 import json
 import ogndecode
+import argparse
 from ctypes import *
 from time import sleep                  # use the sleep function
 from datetime import datetime, timedelta
 from ogn.parser import parse
 from parserfuncs import deg2dmslat, deg2dmslon, dao, alive
+from ogntfuncs import *
 
 #########################################################################
 
 
-def shutdown(sock):		        # shutdown routine, close files and report on activity
+def shutdown(sock, prt=False):          # shutdown routine, close files and report on activity
                                         # shutdown before exit
+    global numaprsmsg
     try:
         sock.shutdown(0)                # shutdown the connection
         sock.close()                    # close the connection file
@@ -36,13 +40,21 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
     now = datetime.utcnow()    		# get the date
     print("\n\n=================================================\nQueue: ", len(queue), now, "\n\n")
     i=1
-    for e in queue:
+    for e in queue:			# dump the entries on the queue
           etime=e['TIME']
           print (i, now-etime, "==>", etime, e['ID'], e['station'], e['hora'], e['rest'])
-          print(json.dumps(e['DECODE'], skipkeys=True, indent=4))
-          i +=1
+          if (prt):
+          	print(json.dumps(e['DECODE'], skipkeys=True, indent=4))
+          aprsmsg=genaprsmsg(e)	# gen the APRS message
+          aprsmsg += " %ddly \n"%delta.seconds	# include information about the delay
+          print("APRSMSG: ", e["NumDec"], aprsmsg)	# print for debugging
+          rtn = config.SOCK_FILE.write(aprsmsg)	# send it to the APRS server
+          i += 1			# one more to delete from table
+          numaprsmsg += 1		# counter of published APRS msgs
     print("Shutdown now, Time now:", local_time, " Local time.")
-    print("Number of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d \n" % (inputrec, numtrksta, numdecodes, numaprsmsg))
+    print("Number of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d Num Err Decodes %d \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco))
+    mem =  process.memory_info().rss  	# in bytes
+    print("Memory available:", mem)
     if os.path.exists(config.DBpath+"DLYM2OGN.alive"):
                                         # delete the mark of being alive
         os.remove(config.DBpath+"DLYM2OGN.alive")
@@ -78,7 +90,7 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
             ID                 =entry["ID"]
             station            =entry["station"]
             hora               =entry["hora"]
-            rest               =entry["rest"]
+            resto               =entry["rest"]
             latitude           =decode["Lat"]
             longitude          =decode["Lon"]
             altitude           =decode["Alt"]
@@ -87,6 +99,11 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
             roclimb            =decode["RoC"]*3.28084
             RoT                =decode["RoT"]
             DOP                =decode["DOP"]
+                                                        # swap 2nd and 3rd words in rest of message
+            sp1=resto.find(' ')				# find the end of first word
+            sp2=resto[sp1+1:].find(' ')+1+sp1  
+            rest=resto[0:sp1]+' '+resto[sp2+1:]+' '+resto[sp1+1:sp2]
+
                                                         # build the APRS message
             lat = deg2dmslat(abs(latitude))
             if latitude > 0:
@@ -104,18 +121,19 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
             daotxt="!W"+dao(latitude)+dao(longitude)+"!"	# the extended precision
 
             DOP=10+DOP
-            HorPrec=(DOP*2+5)/10 
+            HorPrec=int((DOP*2+5)/10 )
             if(HorPrec>63):
                 HorPrec=63
-            VerPrec=(DOP*3+5)/10 
+            VerPrec=int((DOP*3+5)/10 )
             if(VerPrec>63): 
                 VerPrec=63
             gpstxt="gps"+str(HorPrec)+"x"+str(VerPrec)
 
-            aprsmsg = ID+">OGNDELAY,RELAY*,qAS,"+station+":/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
+            aprsmsg = ID+">OGNTRK,OGNDELAY*,"+station+":/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
             if altitude > 0:
-                        aprsmsg += "A=%06d" % int(altitude)
-            aprsmsg += daotxt+" id06"+ID[3:]+" %+04dfpm " % (int(roclimb))+" %+04.1frot " % (float(RoT)) +rest+" -7.4kHz "+gpstxt
+                        altitude=int(altitude*3.28084)		# convert ot feet
+                        aprsmsg += "A=%06d" % altitude
+            aprsmsg += " "+daotxt+" id06"+ID[3:]+" %+04dfpm " % (int(roclimb))+"%+04.1frot" % (float(RoT)) +rest+" "+gpstxt
 
             return(aprsmsg)
 #
@@ -131,7 +149,6 @@ date = datetime.utcnow()         		# get the date
 dte = date.strftime("%y%m%d")             # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
 date = datetime.now()                   # local time
-print("Time now is: ", date, " Local time")
 
 # --------------------------------------#
 #
@@ -156,8 +173,12 @@ numerr      = 0				# number of errors
 numtrksta   = 0 			# number of tracker status records
 numdecodes  = 0				# number of records decoded
 numaprsmsg  = 0				# number of APRS messages generated
+numerrdeco  = 0				# number of APRS messages generated
 maxnerrs    = 100
 queue       = []			# queue of pending messages
+trackers    = {}			# list of seems trackers encoding
+utrackers   = {}			# list of seems trackers non encoding
+ognttable   = {}			# init the instance of the table
 # --------------------------------------#
 DBpath      = config.DBpath
 DBhost      = config.DBhost
@@ -174,35 +195,59 @@ LT24        = False
 OGNT        = False
 # --------------------------------------#
 
+
+parser = argparse.ArgumentParser(description="OGN Push to the OGN APRS the delayed tracks")
+parser.add_argument('-p',  '--print',     required=False,
+                    dest='prt',   action='store', default=False)
+parser.add_argument('-dly', '--delay', required=False,
+                    dest='dly',       action='store', default=-1)
+parser.add_argument('-l', '--log', required=False,
+                    dest='log',       action='store', default='/tmp/DLY.log')
+args = parser.parse_args()
+prt = args.prt				# print on|off
+dly = args.dly				# delay in seconds, default config.DELAY
+log = args.log				# name of the logfile
+if (dly == -1):
+   DELAY=config.DELAY
+else:
+   DELAY=int(dly)
+
 # -----------------------------------------------------------------#
 conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
 curs = conn.cursor()               # set the cursor
 
+print("Time now is: ", date, " Local time, using DELAY: ", DELAY)
 print("MySQL: Database:", DBname, " at Host:", DBhost)
+# --------------------------------------#
+			# build the table from the TRKDEVICES DB table
+ogntbuildtable(conn, ognttable, prt)
+
+# --------------------------------------#
 
 #----------------------dlym2ogn.py start-----------------------#
 
-prtreq = sys.argv[1:]              # check if the prt arg is there
-if prtreq and prtreq[0] == 'prt':
-    prt = True
-else:
-    prt = False
 
-with open(config.DLYPIDfile, "w") as f:  # set the lock file  as the pid
+with open(config.DLYPIDfile, "w") as f:	# set the lock file  as the pid
     f.write(str(os.getpid()))
     f.close()
 atexit.register(lambda: os.remove(config.DLYPIDfile))
 
+logfile=open(log, "w")   	# set the log file
+logfile.write(str(os.getpid())+' '+str(date)+'\n')
+logfile.flush()
 # create socket & connect to server
+server=config.APRS_SERVER_HOST
+server="aprs.glidernet.org"
+server="glidern1.glidernet.org"
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
-print("Socket sock connected to: ", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT)
+sock.connect((server, config.APRS_SERVER_PORT))
+print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
 
 # logon to OGN APRS network
 config.APRS_USER='DLY2APRS'
 config.APRS_PASSCODE='32159'
 
-login = 'user %s pass %s vers DLY2APRS %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* \n")
 login=login.encode(encoding='utf-8', errors='strict')
 sock.send(login)
 
@@ -235,11 +280,34 @@ now = now-min5				# now less 5 minutes
 td = now-datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by 
-import DecKey
+# --------------------------------------#
+from Keys import *
+keyfile="keyfile.encrypt"		# name where it is the keys encrypted
+keypriv="utils/keypriv.PEM"		# name of the private key file (PEM)
+
+DK=[]					# decrypting keys 
+if os.path.exists(keyfile):		# check for the encrypted keyfile
+      privkey=getprivatekey(keypriv)	# get the private key
+      decKey=getkeyfromencryptedfile(keyfile,privkey).decode('utf-8')
+      if prt:
+         print ("DKfile", decKey)
+      DK=getkeys(DK,decKey)		# get the keys
+      if prt:
+         print (DK)
+else:
+      print ("ERROR: No key file found !!!")
+      exit (-1)
+# --------------------------------------#
 day = now.day				# day of the month
+process = psutil.Process(os.getpid())	# process info
+
+
+
+
 
 try:
 
+#----------------------dlym2ogn.py main loop-----------------------#
     while True:
         func='NONE'
         current_time = time.time()
@@ -247,7 +315,10 @@ try:
         elapsed_time = current_time - keepalive_time    # time since last keep_alive
         if (current_time - keepalive_time) > 180:      	# keepalives every 3 mins
                                                         # and mark that we are still alive
-            alive(config.DBpath+APP)
+            alive(config.DBpath+APP)			# mark that we are alive
+            mem =  process.memory_info().rss  		# in bytes
+            logfile.write(str(local_time)+' '+str(mem)+'\n')	# mark the time
+            logfile.flush()				# write the records
             run_time = time.time() - start_time
             keepalive_time = current_time
             keepalive_count = keepalive_count + 1       # just a control
@@ -269,17 +340,9 @@ try:
             shutdown(sock)				# recycle
             exit(0)
 
-        try:						# lets see if we have data from the interface functionns: 
 
-            loopcount += 1			        # we report a counter of calls to the interfaces
+        loopcount += 1			        	# we report a counter of calls to the interfaces
 
-        except Exception as e:
-            print(( 'Something\'s wrong with interface function  Exception type is %s' % (repr(e))))
-            print(loopcount, "ERROR ---> TTime:UTC Now:", datetime.utcnow().isoformat())
-            nerrors += 1
-            if nerrors > maxnerrs:
-                shutdown(sock)		                # way to many errors
-                sys.exit(-1)		                # and bye ...
 
         sys.stdout.flush()				# flush the print messages
         if prt:
@@ -300,47 +363,50 @@ try:
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
-            numerr += 1					# increase error counter
-            if numerr > maxnerrs:
+            numerr += 1				# increase error counter
+            if numerr > maxnerrs:		# if too mane errors
                 print("Read returns zero length string. Failure.  Orderly closeout", err)
                 date = datetime.now()
                 print("UTC now is: ", date)
                 break
             else:
-                sleep(5) 				# wait 5 seconds
+                sleep(5) 			# wait 5 seconds
                 continue
 
         ix = packet_str.find('>')
         cc = packet_str[0:ix]
-        packet_str = cc.upper()+packet_str[ix:]		# convert the ID to uppercase
+        packet_str = cc.upper()+packet_str[ix:]	# convert the ID to uppercase
         msg = {}
-        # if not a heartbeat from the server
+
+        					# if not a heartbeat from the server
         if len(packet_str) > 0 and packet_str[0] != "#":
 #########################################################################################
+						# deal with a normal APRS message
             s=packet_str
             ph=s.find(":>")
             hora=s[ph+2:ph+9]
             try:
-               beacon=parse(s)  
-            except:
-               #print("parseverror >>>>", s)
+               beacon=parse(s)  		# parse the APRS message
+            except Exception as e:
+               print("DLY: parse error >>>>", e, s, "<<<<\n")
                continue
+						# check if is a OGN tracker status message
             if beacon["aprs_type"] == "status" and beacon["beacon_type"] == "tracker" and beacon["dstcall"] == "OGNTRK" and "comment" in beacon:
-               comment=beacon['comment']
+               comment=beacon['comment']	# get the comment where it is the data
             else:
-               continue
+               continue				# otherwise ignore it	
             #print("ORIGMSG: ", s)
             #print (beacon)
-            sp=comment.find(' ')
-            txt=comment[0:sp]
-            rest=comment[sp:]
+            sp=comment.find(' ')		# look for the first space
+            txt=comment[0:sp]			# that is the text to decode
+            rest=comment[sp:]			# save the rest: freq deviation, error bits, ... 
+            ident = beacon['name']		# tracker ID
+            station = beacon['receiver_name'] 	# station
             #print ("Txt:>>>", len(txt), txt, ":::>", sp, rest, ":::>", s, "\n")
             jstring="                   "
-            if (len(txt) != 20):		# those are stad tracker status messages 
-                status = beacon['comment']	# get the status message
+            if (len(txt) != 20):		# those are encoded tracker messages 
+                status = beacon['comment']	# NO ... get the status message
                                                 # and the station receiving that status report
-                station = beacon['receiver_name'] # station
-                ident = beacon['name']		# tracker ID
                 otime = beacon['reference_timestamp']	# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
@@ -355,61 +421,108 @@ try:
                     except IndexError:
                         print(">>>MySQL2 Error: %s" % str(e))
                     print(">>>MySQL3 error:",  numtrksta, inscmd)
-                    print(">>>MySQL4 data :",  data)
+                    print(">>>MySQL4 data :",  s)
                 numtrksta += 1			# number of records saved
+                ID = ident
+                if not ID in utrackers:   	# did we see this tracker
+                          utrackers[ID] = 1    	# init the counter
+                else:
+                          utrackers[ID] += 1   	# increase the counter
 
                 continue			# nothing else to do
 
 						# deal with the decoding
+            if ident not in ognttable:		# if is not on the table that we are working on ???
+               if prt:
+               	  print("TRK:", ident, station, "<<<")
+               continue				# nothing to do
+            flarmid=ognttable[ident]		# just in case
             jstring=" " 
-            #print ("Decoding >>>>", jstring, txt, decKey)
-            try:
-                   jstring=ogndecode.ogn_decode_func(txt, decKey)
-                   if len(jstring) > 0:
+            if prt:
+               print ("Decoding >>>>", jstring, ">>", txt, "<<", len(txt), ident, station, "<<<<")
+            try:				# decode the encrypted message
+                   #print(">>>:", DK, txt)
+                   jstring=ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3])
+                   if len(jstring) > 0:		# if valid ???
+                      numdecodes += 1		# increase the counter
                       jstring=jstring[0:jstring.find('}')+1]
                       #print ("Return:>>>>", len(jstring), jstring)
-                      decode=json.loads(jstring)
-                      #print (decode)
-                      ID=beacon["name"]
-                      station=beacon["receiver_name"]
+                      decode=json.loads(jstring) # get the dict from the JSON string
+                      #print ("DDD", decode)
+                      ID=beacon["name"]		# tracker ID
+                      station=beacon["receiver_name"] # station
 
-                      now = datetime.utcnow()	# get the UTC timea
-                      qentry= { "TIME": now, "ID":ID, "station": station, "hora": hora, "rest": rest, "DECODE": decode}
+                      now = datetime.utcnow()	# get the UTC time
+     						# place it on the queue
+                      qentry= { "NumDec": numdecodes, "TIME": now, "ID":ID, "station": station, "hora": hora, "rest": rest, "DECODE": decode}
                       queue.append(qentry)	# add the entry to the queue
-                      numdecodes += 1		# increase the counter
-                      print(qentry)
-            except Exception as e:
-                   print ("DECODE Error:", e, ID, station, hora, jstring, txt)
-                   continue
-            nqueue=[]				# the new queue if we need to delete entries
-            i=0
-            for e in queue:
-                etime=e["TIME"]
-                delta=(now - etime)
-                #print("Delta>>>", delta)
-                if (delta.total_seconds() > DELAY):
-                    aprsmsg=genaprsmsg(e)
-                    aprsmsg += " %ddly \n"%delta.seconds
-                    print("APRSMSG: ", aprsmsg)
-                    rtn = config.SOCK_FILE.write(aprsmsg)
-                    i += 1
-                    numaprsmsg += 1
-                else:
-                    nqueue.append(e)
-            if (i > 0):
-                queue=nqueue
-            #print ("NEXT---->")
+                      if prt:
+                         print("N#", numdecodes, len(queue), qentry, "<<<<")
+                      if not ID in trackers:   	# did we see this tracker
+                          trackers[ID] = 1    	# init the counter
+                      else:
+                          trackers[ID] += 1    	# increase the counter
 
+            except Exception as e:		# catch the exception
+                   errordet=""			# error messages
+                   ee="%s"%e			# convert to string
+                   p1=ee.find("(char ")		# find the (char xxx) string
+                   if p1 != -1:			# if found ???
+                        p2=ee.find(')') 	# look end of string
+                        pos=ee[p1+6:p2] 	# get the char position
+                        p=int(pos)		# convert to integeer
+                        errordet=jstring[p-3:p+3] # extract the position
+                   print ("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, txt)
+                   numerrdeco += 1		# increse the counter
+                   continue			# nothing else to do
+
+						# check now if we need to publish delayed entries 
+        nqueue=[]				# the new queue if we need to delete entries
+        idx=0					# index to rebuild the table
+        ddd=0
+        for e in queue: 			# scan the queue for entries to push to the APRS
+                etime=e["TIME"]			# get the time
+                delta=(now - etime)		# get the time difference
+                #print("Delta>>>", delta)
+                dts=int(delta.total_seconds())	# time difference in seconds
+                if (dts > DELAY): 		# if higher that DELAY ??
+                    aprsmsg=genaprsmsg(e)	# gen the APRS message
+                    aprsmsg += " %ddly \n"%delta.seconds	# include information about the delay
+                    if prt:
+                       print("APRSMSG: ", e["NumDec"], aprsmsg)	# print for debugginga
+                    logfile.write(aprsmsg)	# log into file
+                    rtn = config.SOCK_FILE.write(aprsmsg)	# send it to the APRS server
+                    config.SOCK_FILE.flush()		        # Make sure gets sent. If not flushed then buffered
+                    idx += 1			# one more to delete from table
+                    numaprsmsg += 1		# counter of published APRS msgs
+                else:
+                    nqueue.append(e)		# keep that entry on the table
+                    if ddd == 0:		# if first on the queue
+                       ddd =dts			# remember that
+                				# end of for loop
+        if (idx > 0):				# if we found at least one entry
+                queue=nqueue			# this is the new queue
+                del nqueue 			# delete the old queue
+        mem =  process.memory_info().rss  	# in bytes
+        
+        if prt or mem < 2*1024*1024 or (loopcount - int(loopcount/1000)*1000) == 0:        	# if less that 2 Mb 
+               print("##MEM##>>>", numdecodes, len(queue), ddd, "<<<", process.memory_info().rss, ">>>")  # in bytes
+
+
+
+ 
+#       sleep(SLEEP)				# sleep n seconds
+
+#----------------------dlym2ogn.py end of main loop-----------------------#
 
 #########################################################################################
- 
-#        sleep(SLEEP)					# sleep n seconds
-
-
 except KeyboardInterrupt:
-    print("Keyboard input received, ignore")
+    print("Keyboard input received, end of program, shutdown")
     pass
 
-shutdown(sock)
+shutdown(sock)					# shotdown tasks
+logfile.close()
+print ("   Encrypted messages",   trackers)	# report the encrypted messages
+print ("NO Encrypted messages:", utrackers)	# report the non encrypte message, like trackers status or from non encrypting trackers
 print("Exit now ...", nerrors)
 exit(0)

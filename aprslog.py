@@ -343,6 +343,9 @@ try:
             # handle the TCPIP only for position or status reports
             if source == 'FANE':
                 continue
+            if source == 'ODLY':
+                print ("ODLY>>>>:", msg, "<<<<")
+                path = "tracker"
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
                 status = msg['status']		# get the full status message
                 if len(status) > 254:
