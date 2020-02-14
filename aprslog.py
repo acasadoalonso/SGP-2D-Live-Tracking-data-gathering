@@ -431,8 +431,8 @@ try:
                 if len(status) > 254:
                     status = status[0:254]
                 #print ("Status report:", ident, station, otime, status)
-                inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' )" %\
-                    (ident, station, otime, status)
+                inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' ,'%s' )" %\
+                    (ident, station, otime, status, 'OGN')
                 try:
                     curs.execute(inscmd)
                 except MySQLdb.Error as e:

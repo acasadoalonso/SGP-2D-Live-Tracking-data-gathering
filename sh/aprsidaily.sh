@@ -58,7 +58,8 @@ echo "clean OGNDATA in APRSLOG"							                                     >>APR
 echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
 echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"')-3; " | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                   | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null

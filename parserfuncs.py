@@ -32,7 +32,7 @@ aprssources = {
     "OGNAVI": "NAVI",
     "OGNXCG": "XCG",
     "OGNMAV": "NMAV",
-    "OGNDELAY": "ODLY"
+    "OGNDELAY": "DLYM"
 }
 
 
@@ -508,6 +508,16 @@ def parseraprs(packet_str, msg):
             msg['status'] = status
         else:
             msg['status'] = "NOSTATUS"
+        if station == "DLY2APRS":
+           ix = data.find('>')
+           if data[ix+1:ix+7] == "OGNTRK":
+              idx=data[ix+8:].find(',')
+              nsta=data[ix+8:ix+idx+8] 
+              #print("SSS:", nsta, ix, idx, data)
+              msg['station']=nsta
+              msg['source']="DLYM"
+              msg['relay']="OGNDELAY*"
+                      
 
         return(msg)
     else:
@@ -549,12 +559,15 @@ def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
 #########################################################################
 
 
-def alive(app, first='no'):
+def alive(app, first='no', register=False):
 
     alivename = app+".alive"
     if (first == 'yes'):
         # create a file just to mark that we are alive
         alivefile = open(alivename, 'w')
+        if register:
+        	atexit.register(lambda: os.remove(alivename))
+
     else:
         # append a file just to mark that we are alive
         alivefile = open(alivename, 'a')
