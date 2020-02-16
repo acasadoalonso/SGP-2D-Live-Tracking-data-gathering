@@ -34,7 +34,8 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         sock.close()                    # close the connection file
     except:
         print("Ignore SOCK errors at this time -- shutdown")
-    datafile.close()                    # close the data file
+    if datafile:
+       datafile.close()                    # close the data file
     print("Sources: ", fsour)           # print the data about the different sources
                                         # report number of records read and IDs discovered
     print('Records read:', cin, ' DB records created: ', cout)
@@ -134,6 +135,7 @@ if prtreq and prtreq[0] == 'DATA':
     DATA = True
 if prtreq and prtreq[0] == 'NODATA':
     DATA = False
+    datafile=False
 
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))		# to avoid running the same program twice 
@@ -202,7 +204,8 @@ local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
 print("APRS data file is: ", OGN_DATA, DATA)
-datafile = open(OGN_DATA, 'a')		# data file for loggin if requested
+if DATA:
+   datafile = open(OGN_DATA, 'a')		# data file for loggin if requested
 keepalive_count = 1
 keepalive_time = time.time()
 alive(config.APP, first='yes')		# create the ALIVE file/lock

@@ -1,6 +1,7 @@
 import socket
 import string
 import time
+import sys
 import os.path
 import psutil
 import signal
@@ -15,7 +16,7 @@ from datetime import datetime, timedelta
 
 def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
-    shutdown(sock) 			# shutdown orderly
+    shutdown(cond) 			# shutdown orderly
     sys.exit(0)
 
 
@@ -32,10 +33,12 @@ def prttime(unixtime):
 
 #
 ########################################################################
-def shutdown(sock, prt=False):          # shutdown routine, close files and report on activity
+def shutdown(cond, prt=False):          # shutdown routine, close files and report on activity
                                         # shutdown before exit
-	if os.path.exists("/tmp/TRKS.pid"):	# check if another process running
-		os.remove("/tmp/TRKS.pid")	# remove it
+	cond.commit()
+	cond.close()
+	date = datetime.utcnow()        # get the date
+	print ("Shutdown now:", date)
 	return
 ########################################################################
 def storedb(curs, data, prt=False):
@@ -66,8 +69,9 @@ def storedb(curs, data, prt=False):
 ########################################################################
 #
 programver = 'V1.0'
+pidfile="/tmp/TRKS.pid"
 print("\n\nStart TRKSTATUS  "+programver)
-print("===================")
+print("=====================")
 
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
@@ -87,7 +91,7 @@ prt   = args.prt			# print on|off
 #
 # --------------------------------------#
 import config                           # get the configuration data
-if os.path.exists("/tmp/TRKS.pid"):	# check if another process running
+if os.path.exists(pidfile):		# check if another process running
     raise RuntimeError("TRKSTATUS already running !!!")
     exit(-1)
 #
@@ -109,37 +113,44 @@ print("Time now is: ", date, " Local time")
 print("MySQL: Database:", DBname, " at Host:", DBhost)
 # --------------------------------------#
 
-count = 0
-HOST=""
-PORT = 50000              # Arbitrary non-privileged port
-hostname = socket.gethostname()
+count = 0				# counter of received messages
+HOST=""					# localhost
+PORT = 50000              		# Arbitrary non-privileged port
+hostname = socket.gethostname()		# the hostname to send it back to the client
+with open(pidfile, "w") as f:		# set the lock file  as the pid
+    f.write(str(os.getpid()))
+    f.close()
+atexit.register(lambda: os.remove(pidfile))
 
-try:
+#########################################################################################
+try:					# server process receive the TRKSTATUS messages and store it on the DDBB
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen(1)
     socket=s
     conn, addr = s.accept()
+    sock=conn
     with conn:
         print('Connected by', addr)
         while True:
-            data = conn.recv(1024)
+            data = conn.recv(1024)	# receive the TRKSTATUS message
+            if not data: break		# if cancel the client
             count += 1
-            dd=data.decode('utf-8')
+            dd=data.decode('utf-8')	# convert it to an stream
             if prt:
                print("D:", dd)
+					# build the reply msg
             msg="OK "+str(count)+" "+hostname+' '+programver
-            if not data: break
-            conn.sendall(msg.encode('utf-8'))
-            storedb(curs, dd, prt)
-            cond.commit()
+            conn.sendall(msg.encode('utf-8')) # send it back to the client
+            storedb(curs, dd, prt)	# store on the DDBB
+            cond.commit()		# and commit it
         print ("Counter:", count)
 #########################################################################################
 except KeyboardInterrupt:
     print("Keyboard input received, end of program, shutdown")
     pass
 
-shutdown(socket)					# shotdown tasks
+shutdown(cond)				# shutdown tasks
 print ("Exit now ...          ", count)
 exit(0)
 
