@@ -287,6 +287,13 @@ try:
         except socket.error:
             print(">>>>: Socket error on readline")
             continue
+        except KeyboardInterrupt:
+                print("Keyboard input received, ignore")
+                print("End of Day...\n\n\n", day)	# end of UTC day
+                shutdown(sock, datafile)	# recycle
+                print("Bye ...\n\n\n", day)	# end of UTC day
+                exit(0)
+    		
         except :
             print("Error on readline")
             print(">>>>: ", packet_str)
