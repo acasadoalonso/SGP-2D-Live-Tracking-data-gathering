@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+#########################################################################
+# This program receives the tracker status message from the OGN station and stores them on the MySQL DB
+#########################################################################
 import socket
 import string
 import time
@@ -41,11 +45,11 @@ def shutdown(cond, prt=False):          # shutdown routine, close files and repo
 	print ("Shutdown now:", date)
 	return
 ########################################################################
-def storedb(curs, data, prt=False):
-	if data[0:2] != 'M:':
-		return
-	otime = datetime.utcnow()
-	sc1=data[2:].find(':')
+def storedb(curs, data, prt=False):	# store the data on the MySQL DB
+	if data[0:2] != 'M:':		# if is is not an status msg, nothing to do
+		return False
+	otime = datetime.utcnow()	# grab the time
+	sc1=data[2:].find(':')		# parser the message
 	sc2=data[sc1+3:].find(':')
 	station=data[2:sc1+2]
 	ident="OGN"+data[sc1+3:sc1+sc2+3]
@@ -54,9 +58,10 @@ def storedb(curs, data, prt=False):
 		status=staus[0:254]
 	if prt:
 		print ("S-->", ident, station, otime, status)
+					# prepare the SQL command
 	inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s', '%s')" % (ident, station, otime, status, 'STAT')
 	try:
-		curs.execute(inscmd)
+		curs.execute(inscmd)	# store the data on the MySQL DB
 	except MySQLdb.Error as e:
 		try:
 			print(">>>MySQL1 Error [%d]: %s" % ( e.args[0], e.args[1]))
@@ -64,10 +69,11 @@ def storedb(curs, data, prt=False):
 			print(">>>MySQL2 Error: %s" % str(e))
 			print(">>>MySQL3 error:",  numtrksta, inscmd)
 			print(">>>MySQL4 data :",  s)
-	return
+	return True
 #
 ########################################################################
 #
+
 programver = 'V1.0'
 pidfile="/tmp/TRKS.pid"
 print("\n\nStart TRKSTATUS  "+programver)
@@ -132,7 +138,7 @@ try:					# server process receive the TRKSTATUS messages and store it on the DDB
     sock=conn
     with conn:
         print('Connected by', addr)
-        while True:
+        while True:			# for ever while connected
             data = conn.recv(1024)	# receive the TRKSTATUS message
             if not data: break		# if cancel the client
             count += 1
