@@ -16,3 +16,4 @@ config/
 .idea/
 ss*
 sh/mailnames.txt
+kglid.py
