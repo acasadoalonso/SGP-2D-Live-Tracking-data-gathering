@@ -33,6 +33,7 @@ cd /var/www/html/main						#
 sudo apt-get install -y mysql-server mysql-client sqlite3	#
 sudo apt-get install -y python3-dev python3-pip 		#
 sudo apt-get install -y python-mysqld  				#
+sudo apt-get install -y figlet  				#
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt npm nodejs vim	# 
 git config --global user.email "acasadoalonso@gmail.com"        #
