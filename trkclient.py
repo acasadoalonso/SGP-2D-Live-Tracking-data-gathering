@@ -89,7 +89,7 @@ while True:						# for ever
 	body=rr[sc+2:]
 	msg="M:"+station+':'+ident+':'+body		# prepare the message to be sent
 	msg=msg.encode('utf-8')				# convert to bytes
-	if station != ':'				# if the station is already identified ??
+	if station != ':' :				# if the station is already identified ??
 		try:
 			print ("<--", msg)
 			sock.sendall(msg)		# send it to the management server
