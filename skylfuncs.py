@@ -9,7 +9,7 @@ import string
 import sys
 import os
 import signal
-from geopy.distance import vincenty       # use the Vincenty algorithm^M
+from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
 from pprint import pprint
 import hashlib
@@ -73,7 +73,7 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):
 
         vitlat = config.FLOGGER_LATITUDE
         vitlon = config.FLOGGER_LONGITUDE
-        distance = vincenty((lat, lon), (vitlat, vitlon)
+        distance = geodesic((lat, lon), (vitlat, vitlon)
                             ).km            # distance to the station
         pos = {"pilotname": pilotname, "date": date, "time": time, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": id,
                "dist": distance, "course": dir, "speed": spd, "roc": roc, "GPS": gps, "extpos": extpos, "gliderreg": gliderreg}

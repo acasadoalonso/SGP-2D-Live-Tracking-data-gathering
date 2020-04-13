@@ -9,7 +9,7 @@ import string
 import sys
 import os
 import signal
-from geopy.distance import vincenty       # use the Vincenty algorithm^M
+from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
 from pprint import pprint
 import hashlib
@@ -134,7 +134,7 @@ def lt24addpos(msg, lt24pos, ttime, regis, flarmid):
 
     vitlat = config.FLOGGER_LATITUDE
     vitlon = config.FLOGGER_LONGITUDE
-    distance = vincenty((lat, lon), (vitlat, vitlon)).km    # distance to the station
+    distance = geodesic((lat, lon), (vitlat, vitlon)).km    # distance to the station
     pos = {"registration": flarmid, "date": date, "time": time, "Lat": lat, "Long": lon, "altitude": alt,
            "UnitID": id, "dist": distance, "course": wdir, "speed": wspd, "roc": roc, "GPS": gps, "extpos": extpos}
     lt24pos['lt24pos'].append(pos)		# and store it on the dict
@@ -206,7 +206,7 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
             vitlat = config.FLOGGER_LATITUDE
             vitlon = config.FLOGGER_LONGITUDE
                                                 # distance to the central location
-            distance = vincenty((lat, lon), (vitlat, vitlon)).km
+            distance = geodesic((lat, lon), (vitlat, vitlon)).km
                                                 # get the data/time for the timestamp
             dte = datetime.utcfromtimestamp(TMs[i])
             date = dte.strftime("%y%m%d")	# date format

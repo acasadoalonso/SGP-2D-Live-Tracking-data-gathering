@@ -17,7 +17,7 @@ import os.path
 import signal
 import atexit
 from parserfuncs import *               # the ogn/ham parser functions
-from geopy.distance import vincenty     # use the Vincenty algorithm^M
+#from geopy.distance import vincenty     # use the Vincenty algorithm^M
 from geopy.distance import geodesic     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M

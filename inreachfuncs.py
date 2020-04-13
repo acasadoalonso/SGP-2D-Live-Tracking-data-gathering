@@ -10,7 +10,7 @@ import string
 import sys
 import os
 import signal
-from geopy.distance import vincenty         # use the Vincenty algorithm^M
+from geopy.distance import geodesic         # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
 from flarmfuncs import *
@@ -103,7 +103,7 @@ def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
                                             # get the coordinates of the BASE station
     vitlon = config.FLOGGER_LONGITUDE
                                             # distance to the station
-    distance = vincenty((lat, lon), (vitlat, vitlon)).km
+    distance = geodesic((lat, lon), (vitlat, vitlon)).km
     pos = {"registration": flarmid, "date": date, "time": time, "Lat": lat, "Long": lon, "altitude": altitude,
            "UnitID": id, "GPS": mid, "speed": speed, "course": course, "dist": distance, "extpos": extpos, "PilotName": name}
     inreachpos['inreachpos'].append(pos)		# and store it on the dict

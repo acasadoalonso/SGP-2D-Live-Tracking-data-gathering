@@ -9,7 +9,7 @@ import string
 import sys
 import os
 import signal
-from geopy.distance import vincenty       # use the Vincenty algorithm^M
+from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
 import config
 from flarmfuncs import *
@@ -51,7 +51,7 @@ def captaddpos(msg, captpos, ttime, captID, flarmid):  # extract the data from t
     time = tme.strftime("%H%M%S")	# the time
     vitlat = config.FLOGGER_LATITUDE    # the lat/long of the base station
     vitlon = config.FLOGGER_LONGITUDE
-    distance = vincenty((lat, lon), (vitlat, vitlon)).km    # distance to the station
+    distance = geodesic((lat, lon), (vitlat, vitlon)).km    # distance to the station
     pos = {"registration": flarmid, "date": date, "time": time, "Lat": lat,
            "Long": lon, "altitude": alt, "speed": speed, "dist": distance, "device": captID}
     captpos['captpos'].append(pos)	# and store it on the dict

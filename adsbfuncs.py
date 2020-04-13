@@ -9,7 +9,7 @@ import string
 import sys
 import os
 import signal
-from geopy.distance import vincenty       # use the Vincenty algorithm^M
+from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
 from pprint import pprint
 import hashlib
@@ -77,7 +77,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
 
         vitlat = config.FLOGGER_LATITUDE
         vitlon = config.FLOGGER_LONGITUDE
-        distance = vincenty((lat, lon), (vitlat, vitlon)).km            # distance to the station
+        distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
         pos = {"ICAOID": aid,  "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
                "dist": distance, "course": dir, "speed": spd, "roc": roc, "GPS": gps, "extpos": extpos , "flight": flg }
         #print "SSS:", ts, ttime, pos

@@ -11,7 +11,7 @@ import sys
 import os
 import signal
 import base64
-from geopy.distance import vincenty         # use the Vincenty algorithm
+from geopy.distance import geodesic         # use the Vincenty algorithm
 import MySQLdb                              # the SQL data base routines
 # ---------------- #
 import config
@@ -93,7 +93,7 @@ def spigetaircraftpos(html, spipos):
             vitlat = config.FLOGGER_LATITUDE
             vitlon = config.FLOGGER_LONGITUDE
                                             # distance to the station VITACURA
-            distance = vincenty((lat, lon), (vitlat, vitlon)).km
+            distance = geodesic((lat, lon), (vitlat, vitlon)).km
             pos["dist"] = distance
             if pos['registration'] == 'HBEAT':
                 print("SPIDPOS : HBEAT", ttime)

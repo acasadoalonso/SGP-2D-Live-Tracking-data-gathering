@@ -16,7 +16,6 @@ import signal
 import atexit
 import MySQLdb                          # the SQL data base routines^M
 from parserfuncs import *               # the ogn/ham parser functions
-from geopy.distance import vincenty     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
 #########################################################################
