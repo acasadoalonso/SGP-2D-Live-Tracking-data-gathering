@@ -236,7 +236,7 @@ try:
         if now.day != day:	        # check if day has changed
             print("End of Day...\n\n\n", day)	# end of UTC day
             shutdown(sock, datafile)	# recycle
-            print("Bye ...\n\n\n", day)	# end of UTC day
+            print("Bye ...", day,"\n\n\n")	# end of UTC day
             exit(0)
 
                                         # get the time since last keep-alive
