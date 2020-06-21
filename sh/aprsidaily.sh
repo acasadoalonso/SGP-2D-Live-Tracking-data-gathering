@@ -65,6 +65,7 @@ echo "DELETE FROM GLIDERS ; "                                  | mysql --login-p
 echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS_POSITIONS where lastFixTx <'"$date"'  ; " | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 if [ -d /var/www/html/files ]
 then

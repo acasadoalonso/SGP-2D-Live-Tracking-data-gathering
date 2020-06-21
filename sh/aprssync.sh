@@ -15,4 +15,5 @@ then
 	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files/ 
 	ls -lart                                                                    /var/www/html/files/									
 fi
-
+mysql --login-path=SARsql -h $server -e "select count(*) from OGNTRKSTATUS" APRSLOG
+mysql --login-path=SARsql -h $server -e "delete          from OGNTRKSTATUS" APRSLOG

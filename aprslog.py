@@ -67,10 +67,10 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.00'			# manually set the program version !!!
+programver = 'V2.01'			# manually set the program version !!!
 
-print("\n\nStart APRS, SPIDER, SPOT, CAPTURS, and LT24 logging "+programver)
-print("====================================================================")
+print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
+print("============================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 date = datetime.utcnow()                # get the date
@@ -136,6 +136,10 @@ if prtreq and prtreq[0] == 'DATA':
 if prtreq and prtreq[0] == 'NODATA':
     DATA = False
     datafile=False
+LASTFIX=False
+if prtreq and prtreq[0] == 'LASTFIX':
+    LASTFIX = True
+    print("Option: LASTFIX\n\n")
 
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))		# to avoid running the same program twice 
@@ -143,7 +147,7 @@ with open(config.PIDfile, "w") as f:    # create the lock file
 atexit.register(lambda: os.remove(config.PIDfile)) # remove it at exit
 
 
-if OGNT:                        	# if we need aggregation of FLARM and OGN trackers data
+if OGNT and not LASTFIX:                        	# if we need aggregation of FLARM and OGN trackers data
     ognttable = {}            	        # init the instance of the table
     # build the table from the TRKDEVICES DB table
     ogntbuildtable(conn, ognttable, prt)
@@ -151,14 +155,18 @@ if OGNT:                        	# if we need aggregation of FLARM and OGN track
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
+if LASTFIX:
+   #sock.connect(("aprs.glidernet.org", 10152))
+   sock.connect((config.APRS_SERVER_HOST, 10152))
+else:
+   sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
 print("Socket sock connected")
 
 # logon to OGN APRS network
 
 compfile = config.cucFileLocation + "competitiongliders.lst"
 
-if os.path.isfile(compfile):		# if we are in competition mode
+if os.path.isfile(compfile) and not LASTFIX:		# if we are in competition mode
     print("Competition file:", compfile)# we restrict only to the flamrs of the competition gliders
     fd = open(compfile, 'r')
     j = fd.read()
@@ -183,6 +191,9 @@ if os.path.isfile(compfile):		# if we are in competition mode
 else:
 
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+
+if LASTFIX:
+    login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
@@ -234,9 +245,9 @@ try:
         local_time = datetime.now()
         now = datetime.utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
-            print("End of Day...\n\n\n", day)	# end of UTC day
+            print("End of Day...Day:\n\n\n", day)	# end of UTC day
             shutdown(sock, datafile)	# recycle
-            print("Bye ...", day,"\n\n\n")	# end of UTC day
+            print("Bye ... day:", day,"\n\n\n")	# end of UTC day
             exit(0)
 
                                         # get the time since last keep-alive
@@ -268,7 +279,7 @@ try:
                 else:
                     sleep(5) 		# wait 5 seconds
                     continue
-            if OGNT:                   	# if we need aggregation of FLARM and OGN trackers data
+            if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                                         # rebuild the table from the TRKDEVICES DB table
                 ogntbuildtable(conn, ognttable, prt)
 
@@ -289,9 +300,8 @@ try:
             continue
         except KeyboardInterrupt:
                 print("Keyboard input received, ignore")
-                print("End of Day...\n\n\n", day)	# end of UTC day
-                shutdown(sock, datafile)	# recycle
-                print("Bye ...\n\n\n", day)	# end of UTC day
+                shutdown(sock, datafile)# recycle
+                print("Bye ...\n\n\n")	# end of UTC day
                 exit(0)
     		
         except :
@@ -304,6 +314,8 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
+            if prt:
+                print("Packet_str empty\n")
             if err > maxnerrs:
                 print(">>>>: Read returns zero length string. Failure.  Orderly closeout")
                 date = datetime.now()
@@ -498,9 +510,9 @@ try:
 
                                                 # write the DB record
 
-            if (DATA):                          # if we need to store on the database
+            if (DATA or LASTFIX):               # if we need to store on the database
                                                 # if we have OGN tracker aggregation and is an OGN tracker
-                if OGNT and ident[0:3] == 'OGN':
+                if OGNT and ident[0:3] == 'OGN' and not LASTFIX:
 
                     if ident in ognttable:	# if the device is on the list
                                                 # substitude the OGN tracker ID for the related FLARMID
@@ -511,22 +523,68 @@ try:
                 dte = date.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
                     source = source[0:3]	# restrict the length to 4 chars
-                addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
+                if LASTFIX:
+
+                    cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
+                    cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
+                         (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                    cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
+                         (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
+                    
+                    if prt:
+                       print ("CMD1", cmd1)
+                    try:
+                        curs.execute(cmd1)
+                    except MySQLdb.Error as e:
+                        try:
+                            print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                        except IndexError:
+                            print(">>>>: MySQL Error: %s" % str(e))
+                        print(">>>>: MySQL error:", cout, cmd1)
+                        print(">>>>: MySQL data :",  data)
+                    row=curs.fetchone()
+                    if row[0] == 0:
+                       if prt:
+                          print ("CMD2", cmd2)
+                       try:
+                           curs.execute(cmd2)
+                       except MySQLdb.Error as e:
+                           try:
+                               print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                           except IndexError:
+                               print(">>>>: MySQL Error: %s" % str(e))
+                           print(">>>>: MySQL error:", cout, cmd2)
+                           print(">>>>: MySQL data :",  data)
+                    else:
+                       if prt:
+                          print ("CMD3", cmd3)
+                       try:
+                           curs.execute(cmd3)
+                       except MySQLdb.Error as e:
+                           try:
+                               print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                           except IndexError:
+                               print(">>>>: MySQL Error: %s" % str(e))
+                           print(">>>>: MySQL error:", cout, cmd3)
+                           print(">>>>: MySQL data :",  data)
+                else:
+                    addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',", \
+                    str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                     str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
                     ",'" + gps + "','" + uniqueid + "'," + \
                     str(dist) + ",'" + extpos + "', '"+source + \
                     "' ) ON DUPLICATE KEY UPDATE extpos = '!ZZZ!' "
-                if prt:
-                    print(addcmd)
-                try:
-                    curs.execute(addcmd)
-                except MySQLdb.Error as e:
+                    if prt:
+                       print(addcmd)
                     try:
-                        print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
-                    except IndexError:
-                        print(">>>>: MySQL Error: %s" % str(e))
-                    print(">>>>: MySQL error:", cout, addcmd)
-                    print(">>>>: MySQL data :",  data)
+                        curs.execute(addcmd)
+                    except MySQLdb.Error as e:
+                        try:
+                            print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                        except IndexError:
+                            print(">>>>: MySQL Error: %s" % str(e))
+                        print(">>>>: MySQL error:", cout, addcmd)
+                        print(">>>>: MySQL data :",  data)
                 
                 cout += 1			# number of records saved
                 conn.commit()                   # commit the DB updates
