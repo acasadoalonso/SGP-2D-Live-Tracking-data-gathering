@@ -23,6 +23,7 @@ from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
 from flarmfuncs import *                # import the functions relating with the Flarm ID
+import argparse
 
 #########################################################################
 
@@ -35,10 +36,11 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
     except:
         print("Ignore SOCK errors at this time -- shutdown")
     if datafile:
-       datafile.close()                    # close the data file
+       datafile.close()                 # close the data file
     print("Sources: ", fsour)           # print the data about the different sources
                                         # report number of records read and IDs discovered
     print('Records read:', cin, ' DB records created: ', cout)
+    print('Devices type:', fdtcnt)
     try:
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
@@ -94,6 +96,7 @@ i = 0                                   # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 maxnerrs = 50                           # max number of error before quiting
+SLEEPTIME = 1				# time to sleep in case of errors
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -102,6 +105,7 @@ fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
 fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
+fdtcnt= {}			 	# device type counter
 
 # --------------------------------------#
 DATA = True				# use the configuration values
@@ -124,21 +128,20 @@ curs = conn.cursor()                    # set the cursor
 print("MySQL: Database:", DBname, " at Host:", DBhost)
 
 #----------------------aprslog.py start-----------------------#
+parser = argparse.ArgumentParser(description="OGN isend to the management server the OGN tracker status")
+parser.add_argument('-p',  '--print',     required=False,
+                    dest='prt',   action='store', default=False)
+parser.add_argument('-d',  '--DATA',     required=False,
+                    dest='DATA',   action='store', default=False)
+parser.add_argument('-l',  '--LASTFIX',     required=False,
+                    dest='LASTFIX',   action='store', default=False)
+args = parser.parse_args()
+prt      = args.prt			# print on|off
+DATA     = args.DATA			# data store on|off
+LASTFIX  = args.LASTFIX			# LASTFIX on|off
 
-prtreq = sys.argv[1:]			# check the arguments
-if prtreq and prtreq[0] == 'prt':
-    prt = True
-else:
-    prt = False
 
-if prtreq and prtreq[0] == 'DATA':
-    DATA = True
-if prtreq and prtreq[0] == 'NODATA':
-    DATA = False
-    datafile=False
-LASTFIX=False
-if prtreq and prtreq[0] == 'LASTFIX':
-    LASTFIX = True
+if LASTFIX:
     print("Option: LASTFIX\n\n")
 
 with open(config.PIDfile, "w") as f:    # create the lock file
@@ -157,7 +160,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 if LASTFIX:
    #sock.connect(("aprs.glidernet.org", 10152))
-   sock.connect((config.APRS_SERVER_HOST, 10152))
+   sock.connect((config.APRS_SERVER_HOST, 14580))
 else:
    sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
 print("Socket sock connected")
@@ -193,7 +196,7 @@ else:
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
 if LASTFIX:
-    login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* b/FLR*/ICA*/OGN* \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
@@ -213,10 +216,12 @@ print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
 start_time = time.time()
 local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
-OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
-print("APRS data file is: ", OGN_DATA, DATA)
 if DATA:
-   datafile = open(OGN_DATA, 'a')		# data file for loggin if requested
+   OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
+   print("APRS data file is: ", OGN_DATA, DATA)
+   datafile = open(OGN_DATA, 'a')	# data file for loggin if requested
+else:
+   datafile=False
 keepalive_count = 1
 keepalive_time = time.time()
 alive(config.APP, first='yes')		# create the ALIVE file/lock
@@ -259,7 +264,8 @@ try:
                 rtn = sock_file.write("#Python ognES App\n\n")
                                         # Make sure keepalive gets sent. If not flushed then buffered
                 sock_file.flush()
-                datafile.flush()
+                if DATA:
+                   datafile.flush()
                 run_time = time.time() - start_time
                 if prt:
                     print("Send keepalive number: ", keepalive_count, " After elapsed_time: ", int(
@@ -277,7 +283,7 @@ try:
                     date = datetime.now()
                     break
                 else:
-                    sleep(5) 		# wait 5 seconds
+                    sleep(SLEEPTIME) 		# wait 5 seconds
                     continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                                         # rebuild the table from the TRKDEVICES DB table
@@ -287,16 +293,16 @@ try:
 
         if prt:
             print("In main loop. Count= ", i)
-            i += 1
+        i += 1
         try:
             packet_str = sock_file.readline() 		# Read packet string from socket
 
-            if len(packet_str) > 0 and packet_str[0] != "#" and config.LogData:
+            if DATA and len(packet_str) > 0 and packet_str[0] != "#" and config.LogData:
                 datafile.write(packet_str)		# log the data if requested
             if prt:
                 print(packet_str)
         except socket.error:
-            print(">>>>: Socket error on readline")
+            print(">>>>: Socket error on readline: ", packet_str)
             continue
         except KeyboardInterrupt:
                 print("Keyboard input received, ignore")
@@ -307,6 +313,7 @@ try:
         except :
             print("Error on readline")
             print(">>>>: ", packet_str)
+            rtn = sock_file.write("#Python ognES App\n")
             continue
         if prt:
             print(packet_str)
@@ -314,6 +321,7 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
+            print("packet_str empty, loop count:", i, keepalive_count)
             if prt:
                 print("Packet_str empty\n")
             if err > maxnerrs:
@@ -322,7 +330,7 @@ try:
                 print("UTC now is: ", date)
                 break
             else:
-                sleep(5) 		# wait 5 seconds
+                sleep(SLEEPTIME) 		# wait 5 seconds
                 continue
 
         ix = packet_str.find('>')
@@ -519,10 +527,15 @@ try:
                         ident = ognttable[ident]
 
                                                 # get the date from the system as the APRS packet does not contain the date
-                date = datetime.utcnow()
+                                                # get the date from the system as the APRS packet does not contain the date
                 dte = date.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
                     source = source[0:3]	# restrict the length to 4 chars
+                dtype=ident[0:3]
+                if dtype in fdtcnt:
+                   fdtcnt[dtype] += 1		# increase the counter 
+                else:
+                   fdtcnt[dtype]  = 1 		# init the counter
                 if LASTFIX:
 
                     cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
