@@ -69,7 +69,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.01'			# manually set the program version !!!
+programver = 'V2.02'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("============================================================================================")
@@ -92,7 +92,7 @@ if os.path.exists(config.PIDfile):	# check if this program is aleady running !!!
 APP = "APRS"				# the application name
 cin = 0                                 # input record counter
 cout = 0                                # output file counter
-i = 0                                   # loop counter
+loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 maxnerrs = 50                           # max number of error before quiting
@@ -189,13 +189,13 @@ if os.path.isfile(compfile) and not LASTFIX:		# if we are in competition mode
             filter += f  # add the flarm id/tracker id associated
             filter += "/"  # separated by an slash
     filter += "\n"
-
+					# in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
-
+					# normal case
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
-if LASTFIX:
+if LASTFIX:				# if we want just status or receivers and glider LASTFIX
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* b/FLR*/ICA*/OGN* \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
@@ -207,26 +207,26 @@ sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the
 
 
 print("APRS Version:", sock_file.readline())	# report the APRS version
-sleep(2)
+sleep(2)				# just wait to receive the login command
 # for control print the login sent and get the response
-print("APRS Login request:", login)
+print("APRS Login request:", login)	# print the login command for control
 print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
 
 
+#-----------------------------------------------------------------
 start_time = time.time()
 local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
-if DATA:
+if DATA:				# if we want to record the data on a file
    OGN_DATA = config.DBpath + "APRS" + fl_date_time+'.log'
    print("APRS data file is: ", OGN_DATA, DATA)
    datafile = open(OGN_DATA, 'a')	# data file for loggin if requested
 else:
    datafile=False
-keepalive_count = 1
+keepalive_count = 1			# init the counter
 keepalive_time = time.time()
 alive(config.APP, first='yes')		# create the ALIVE file/lock
 #
-#-----------------------------------------------------------------
 #-----------------------------------------------------------------
 #
 now = datetime.utcnow()			# get the UTC time
@@ -243,9 +243,12 @@ day = now.day				# day of the month
 
 date = datetime.now()
 
+#
+#-----------------------------------------------------------------
+#
 try:
 
-    while True:
+    while True:				# forever
         current_time = time.time()
         local_time = datetime.now()
         now = datetime.utcnow()		# get the UTC time
@@ -257,14 +260,13 @@ try:
 
                                         # get the time since last keep-alive
         elapsed_time = current_time - keepalive_time
-        if (current_time - keepalive_time) > 180:        	# keepalives every 3 mins
+        if (current_time - keepalive_time) > 180: # keepalives every 3 mins
                                         # and mark that we are still alive
-            alive(config.APP)
-            try:
-                rtn = sock_file.write("#Python ognES App\n\n")
-                                        # Make sure keepalive gets sent. If not flushed then buffered
-                sock_file.flush()
-                if DATA:
+            alive(config.APP)		# set the mark on the aliave file
+            try:			# send a comment to the APRS server
+                rtn = sock_file.write("#Python APRSLOG App\n\n")
+                sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
+                if DATA:		# if we need to record on a file. flush it as well
                    datafile.flush()
                 run_time = time.time() - start_time
                 if prt:
@@ -283,7 +285,7 @@ try:
                     date = datetime.now()
                     break
                 else:
-                    sleep(SLEEPTIME) 		# wait 5 seconds
+                    sleep(SLEEPTIME) 	# wait X seconds
                     continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                                         # rebuild the table from the TRKDEVICES DB table
@@ -292,8 +294,8 @@ try:
             sys.stdout.flush()		# flush the print messages
 
         if prt:
-            print("In main loop. Count= ", i)
-        i += 1
+            print("In main loop. Count= ", loopcnt)
+        loopcnt += 1			# just keep a count of number of request to the APRS server
         try:
             packet_str = sock_file.readline() 		# Read packet string from socket
 
@@ -313,7 +315,7 @@ try:
         except :
             print("Error on readline")
             print(">>>>: ", packet_str)
-            rtn = sock_file.write("#Python ognES App\n")
+            rtn = sock_file.write("#Python APRSLOG App\n")
             continue
         if prt:
             print(packet_str)
@@ -321,7 +323,7 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
-            print("packet_str empty, loop count:", i, keepalive_count)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count)
             if prt:
                 print("Packet_str empty\n")
             if err > maxnerrs:
@@ -536,17 +538,10 @@ try:
                    fdtcnt[dtype] += 1		# increase the counter 
                 else:
                    fdtcnt[dtype]  = 1 		# init the counter
-                if LASTFIX:
+                if LASTFIX:			# we we need just to store LASTFIX of the glider
 
-                    cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
-                    cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
-                         (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
-                    cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
-                         (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
-                    
-                    if prt:
-                       print ("CMD1", cmd1)
-                    try:
+                    try:			# first try to see if we have that device on the GLIDER_POSITION table
+                        cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
                         curs.execute(cmd1)
                     except MySQLdb.Error as e:
                         try:
@@ -556,9 +551,11 @@ try:
                         print(">>>>: MySQL error:", cout, cmd1)
                         print(">>>>: MySQL data :",  data)
                     row=curs.fetchone()
-                    if row[0] == 0:
+                    if row[0] == 0:		# if not add the entry to the table
+                       cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
+                         (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        if prt:
-                          print ("CMD2", cmd2)
+                          print ("CMD2>>>", cmd2)
                        try:
                            curs.execute(cmd2)
                        except MySQLdb.Error as e:
@@ -568,9 +565,11 @@ try:
                                print(">>>>: MySQL Error: %s" % str(e))
                            print(">>>>: MySQL error:", cout, cmd2)
                            print(">>>>: MySQL data :",  data)
-                    else:
+                    else:			# if found just update the entry on the table
+                       cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
+                         (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
                        if prt:
-                          print ("CMD3", cmd3)
+                          print ("CMD3>>>", cmd3)
                        try:
                            curs.execute(cmd3)
                        except MySQLdb.Error as e:
@@ -580,7 +579,7 @@ try:
                                print(">>>>: MySQL Error: %s" % str(e))
                            print(">>>>: MySQL error:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
-                else:
+                else:				# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',", \
                     str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                     str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
