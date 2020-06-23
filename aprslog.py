@@ -271,7 +271,7 @@ try:
 
                                         # get the time since last keep-alive
         elapsed_time = current_time - keepalive_time
-        if (current_time - keepalive_time) > 180: # keepalives every 3 mins
+        if (current_time - keepalive_time) > 360: # keepalives every 6 mins
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
