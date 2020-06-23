@@ -27,6 +27,35 @@ import argparse
 
 #########################################################################
 
+def aprsconnect(sock, login, firsttime=False):
+    if not firsttime:
+       try:
+        sock.shutdown(0)                # shutdown the connection
+        sock.close()                    # close the connection file
+       except:
+        print("Ignore SOCK errors at this time -- connect")
+
+
+# create socket & connect to server
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    if LASTFIX:
+       #sock.connect(("aprs.glidernet.org", 10152))
+       sock.connect((config.APRS_SERVER_HOST, 14580))
+    else:
+       sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
+    print("Socket sock connected")
+    sock.send(login)			# send the login to the APRS server
+
+# Make the connection to the server
+    sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
+    print("APRS Version:", sock_file.readline())	# report the APRS version
+    sleep(2)				# just wait to receive the login command
+# for control print the login sent and get the response
+    print("APRS Login request:", login)	# print the login command for control
+    print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
+    return (sock,sock_file)
+
 
 def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
                                         # shutdown before exit
@@ -106,7 +135,7 @@ fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
 fdtcnt= {}			 	# device type counter
-
+flastfix={}				# table with the LAST FIXES
 # --------------------------------------#
 DATA = True				# use the configuration values
 DBpath      = config.DBpath
@@ -155,17 +184,6 @@ if OGNT and not LASTFIX:                        	# if we need aggregation of FLA
     # build the table from the TRKDEVICES DB table
     ogntbuildtable(conn, ognttable, prt)
 
-# create socket & connect to server
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-if LASTFIX:
-   #sock.connect(("aprs.glidernet.org", 10152))
-   sock.connect((config.APRS_SERVER_HOST, 14580))
-else:
-   sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
-print("Socket sock connected")
-
-# logon to OGN APRS network
 
 compfile = config.cucFileLocation + "competitiongliders.lst"
 
@@ -200,17 +218,10 @@ if LASTFIX:				# if we want just status or receivers and glider LASTFIX
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
-sock.send(login)			# send the login to the APRS server
+# logon to OGN APRS network
+sock=False
+(sock,sock_file) = aprsconnect(sock, login, firsttime=True)
 
-# Make the connection to the server
-sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
-
-
-print("APRS Version:", sock_file.readline())	# report the APRS version
-sleep(2)				# just wait to receive the login command
-# for control print the login sent and get the response
-print("APRS Login request:", login)	# print the login command for control
-print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
 
 
 #-----------------------------------------------------------------
@@ -253,7 +264,7 @@ try:
         local_time = datetime.now()
         now = datetime.utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
-            print("End of Day...Day:\n\n\n", day)	# end of UTC day
+            print("End of Day...Day: ", day,"\n\n")	# end of UTC day
             shutdown(sock, datafile)	# recycle
             print("Bye ... day:", day,"\n\n\n")	# end of UTC day
             exit(0)
@@ -269,8 +280,8 @@ try:
                 if DATA:		# if we need to record on a file. flush it as well
                    datafile.flush()
                 run_time = time.time() - start_time
-                if prt:
-                    print("Send keepalive number: ", keepalive_count, " After elapsed_time: ", int(
+                #if prt:
+                print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ", int(
                         (current_time - keepalive_time)), " After runtime: ", int(run_time), " secs")
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
@@ -292,24 +303,29 @@ try:
                 ogntbuildtable(conn, ognttable, prt)
 
             sys.stdout.flush()		# flush the print messages
+            continue			# next APRSMSG
 
         if prt:
             print("In main loop. Count= ", loopcnt)
         loopcnt += 1			# just keep a count of number of request to the APRS server
         try:
+            packet_str=''
             packet_str = sock_file.readline() 		# Read packet string from socket
 
             if DATA and len(packet_str) > 0 and packet_str[0] != "#" and config.LogData:
                 datafile.write(packet_str)		# log the data if requested
             if prt:
                 print(packet_str)
-        except socket.error:
-            print(">>>>: Socket error on readline: ", packet_str)
+        except socket.error as e:
+            err += 1
+            print(">>>>: Socket error on readline: ", loopcnt, packet_str)
+            print(( '>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))))
+            (sock,sock_file) = aprsconnect(sock, login)
             continue
         except KeyboardInterrupt:
                 print("Keyboard input received, ignore")
-                shutdown(sock, datafile)# recycle
-                print("Bye ...\n\n\n")	# end of UTC day
+                shutdown(sock, datafile)
+                print("Bye ...\n\n\n")	# 
                 exit(0)
     		
         except :
@@ -324,10 +340,11 @@ try:
         if len(packet_str) == 0:
             err += 1
             print("packet_str empty, loop count:", loopcnt, keepalive_count)
+            (sock,sock_file) = aprsconnect(sock, login)
             if prt:
                 print("Packet_str empty\n")
             if err > maxnerrs:
-                print(">>>>: Read returns zero length string. Failure.  Orderly closeout")
+                print(">>>>: Too many errors reading APRS messages.  Orderly closeout")
                 date = datetime.now()
                 print("UTC now is: ", date)
                 break
@@ -379,6 +396,7 @@ try:
                 print ("ODLY>>>>:", msg, "<<<<")
                 path = "tracker"
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
+#           RECEIVER CASE ------------------------------------------------------#
                 status = msg['status']		# get the full status message
                 if len(status) > 254:
                     status = status[0:254]
@@ -456,6 +474,7 @@ try:
                 conn.commit()			# commit to the DB
                 continue
             if aprstype == 'status':		# if status report
+#           TRACKER STATUS CASE ------------------------------------------------------#
                 status = msg['status']		# get the status message
                                                 # and the station receiving that status report
                 station = msg['station']
@@ -481,6 +500,7 @@ try:
                 continue                        # the case of the TCP IP as well
             if longitude == -1 or latitude == -1:  # if no position like in the status report
                 continue			# that is the case of the ogn trackers status reports
+#           FLARM OR OGN FIXES  CASE ------------------------------------------------------#
             # if std records FLARM or OGN
             #
             if 'speed' in msg:
@@ -539,6 +559,8 @@ try:
                 else:
                    fdtcnt[dtype]  = 1 		# init the counter
                 if LASTFIX:			# we we need just to store LASTFIX of the glider
+#                   LASTFIX   CASE ------------------------------------------------------#
+                    flastfix[ident]=msg		# save it in memory
 
                     try:			# first try to see if we have that device on the GLIDER_POSITION table
                         cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
@@ -579,6 +601,7 @@ try:
                                print(">>>>: MySQL Error: %s" % str(e))
                            print(">>>>: MySQL error:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
+#               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',", \
                     str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
