@@ -124,8 +124,8 @@ cout = 0                                # output file counter
 loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
-maxnerrs = 50                           # max number of error before quiting
-SLEEPTIME = 1				# time to sleep in case of errors
+maxnerrs = 255                          # max number of error before quiting
+SLEEPTIME = 2				# time to sleep in case of errors
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
