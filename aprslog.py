@@ -27,7 +27,7 @@ import argparse
 
 #########################################################################
 
-def aprsconnect(sock, login, firsttime=False):
+def aprsconnect(sock, login, firsttime=False, prt=False):
     if not firsttime:
        try:
         sock.shutdown(0)                # shutdown the connection
@@ -49,11 +49,12 @@ def aprsconnect(sock, login, firsttime=False):
 
 # Make the connection to the server
     sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
-    print("APRS Version:", sock_file.readline())	# report the APRS version
-    sleep(2)				# just wait to receive the login command
+    if prt or firsttime:
+       print("APRS Version:", sock_file.readline())	# report the APRS version
 # for control print the login sent and get the response
-    print("APRS Login request:", login)	# print the login command for control
-    print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
+       print("APRS Login request:", login)	# print the login command for control
+       print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
+    sleep(2)				# just wait to receive the login command
     return (sock,sock_file)
 
 
@@ -69,7 +70,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
     print("Sources: ", fsour)           # print the data about the different sources
                                         # report number of records read and IDs discovered
     print('Records read:', cin, ' DB records created: ', cout)
-    print('Devices type:', fdtcnt)
+    print('Devices type:', fdtcnt, "Unique Ids:", len(flastfix))
     try:
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
@@ -101,7 +102,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 programver = 'V2.02'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
-print("============================================================================================")
+print("========================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 date = datetime.utcnow()                # get the date
@@ -126,6 +127,7 @@ err = 0				        # number of read errors
 day = 0				        # day of running
 maxnerrs = 255                          # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
+comment = False				# comment line from APRS server
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -136,6 +138,7 @@ fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
 fdtcnt= {}			 	# device type counter
 flastfix={}				# table with the LAST FIXES
+fdistcheck={}				# table with device with distance more than 400 kms
 # --------------------------------------#
 DATA = True				# use the configuration values
 DBpath      = config.DBpath
@@ -220,7 +223,7 @@ login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 
 # logon to OGN APRS network
 sock=False
-(sock,sock_file) = aprsconnect(sock, login, firsttime=True)
+(sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
 
 
 
@@ -275,14 +278,15 @@ try:
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
-                rtn = sock_file.write("#Python APRSLOG App\n\n")
-                sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
+                if comment == True:	# if last message was a comment
+                   rtn = sock_file.write("#Python APRSLOG App\n\n")
+                   sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
+                   if prt:
+                      print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ",
+                                                       int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs", now)
                 if DATA:		# if we need to record on a file. flush it as well
                    datafile.flush()
                 run_time = time.time() - start_time
-                #if prt:
-                print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ", int(
-                        (current_time - keepalive_time)), " After runtime: ", int(run_time), " secs")
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
                 now = datetime.utcnow()	# get the UTC time
@@ -318,9 +322,9 @@ try:
                 print(packet_str)
         except socket.error as e:
             err += 1
-            print(">>>>: Socket error on readline: ", loopcnt, packet_str)
+            print(">>>>: Socket error on readline: ", loopcnt, packet_str, current_time)
             print(( '>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))))
-            (sock,sock_file) = aprsconnect(sock, login)
+            (sock,sock_file) = aprsconnect(sock, login, prt=prt)
             continue
         except KeyboardInterrupt:
                 print("Keyboard input received, ignore")
@@ -329,18 +333,23 @@ try:
                 exit(0)
     		
         except :
-            print("Error on readline")
+            print("Error on readline", now)
             print(">>>>: ", packet_str)
             rtn = sock_file.write("#Python APRSLOG App\n")
             continue
+        if len(packet_str) > 0 and packet_str[0] == '#':
+           comment = True
+           continue
+        else:
+           comment = False
         if prt:
             print(packet_str)
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
-            print("packet_str empty, loop count:", loopcnt, keepalive_count)
-            (sock,sock_file) = aprsconnect(sock, login)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count, now)
+            (sock,sock_file) = aprsconnect(sock, login, prt=prt)
             if prt:
                 print("Packet_str empty\n")
             if err > maxnerrs:
@@ -522,22 +531,25 @@ try:
                 altim = 0
                 alti = '%05d' % altim           # convert it to an string
             dist = -1				# the case of when did not receive the station YET
-            if station in fslod and source == 'OGN':  # if we have the station yet
+            if station in fslod and source == 'OGN':  # if we have the station coordinates yet
                                                 # distance to the station
                 distance = geodesic((latitude, longitude), fslod[station]).km
                 dist = distance
-                if distance > 300.0:
-                    print("distcheck: ", distance, data)
+                if distance > 400.0:		# if nore than 400 kms
+                    if ident not in fdistcheck:
+                       print("distcheck: ", distance, data) # report it only once
+                    fdistcheck[ident] = distance
             if source != 'OGN':			# in the case of a NON OGN we use the base as reference point
                 vitlat = config.location_latitude
                 vitlon = config.location_longitude
                                                 # distance to the BASE
                 dist = geodesic((latitude, longitude), (vitlat, vitlon)).km
-
+#           -----------------------------------------------------------------
             if prt:
                 print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
                 print("RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, source, ":::")
 
+#           -----------------------------------------------------------------
                                                 # write the DB record
 
             if (DATA or LASTFIX):               # if we need to store on the database
@@ -552,15 +564,16 @@ try:
                                                 # get the date from the system as the APRS packet does not contain the date
                 dte = date.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
-                    source = source[0:3]	# restrict the length to 4 chars
-                dtype=ident[0:3]
-                if dtype in fdtcnt:
+                    source = source[0:4]	# restrict the length to 4 chars
+                dtype=ident[0:3]		# device type: ICAO, FLARM, OGNT
+                if dtype in fdtcnt:		# set the counters by device type
                    fdtcnt[dtype] += 1		# increase the counter 
                 else:
                    fdtcnt[dtype]  = 1 		# init the counter
+
                 if LASTFIX:			# we we need just to store LASTFIX of the glider
 #                   LASTFIX   CASE ------------------------------------------------------#
-                    flastfix[ident]=msg		# save it in memory
+                    flastfix[ident]=msg		# save it in memory for the time being
 
                     try:			# first try to see if we have that device on the GLIDER_POSITION table
                         cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
@@ -572,14 +585,14 @@ try:
                             print(">>>>: MySQL Error: %s" % str(e))
                         print(">>>>: MySQL error:", cout, cmd1)
                         print(">>>>: MySQL data :",  data)
-                    row=curs.fetchone()
+                    row=curs.fetchone()		# get the counter 0 or 1 ???
                     if row[0] == 0:		# if not add the entry to the table
                        cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                          (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        if prt:
                           print ("CMD2>>>", cmd2)
                        try:
-                           curs.execute(cmd2)
+                           curs.execute(cmd2)	# insert the data on the DB
                        except MySQLdb.Error as e:
                            try:
                                print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
@@ -593,7 +606,7 @@ try:
                        if prt:
                           print ("CMD3>>>", cmd3)
                        try:
-                           curs.execute(cmd3)
+                           curs.execute(cmd3)	# update the data on the DB
                        except MySQLdb.Error as e:
                            try:
                                print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
@@ -601,6 +614,7 @@ try:
                                print(">>>>: MySQL Error: %s" % str(e))
                            print(">>>>: MySQL error:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
+
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',", \
@@ -623,12 +637,13 @@ try:
                 
                 cout += 1			# number of records saved
                 conn.commit()                   # commit the DB updates
-
+# end of infinity while 
+# --------------------------------------------------------------------------------------
 
 except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
-print (">>>>: end of loop ... error detected or SIGTERM \n\n")
+print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)
 print("Exit now ...", err)
 exit(1)
