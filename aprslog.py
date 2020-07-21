@@ -279,10 +279,9 @@ try:
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
-                if comment == True:	# if last message was a comment
-                   rtn = sock_file.write("#Python APRSLOG App\n\n")
-                   sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
-                   if prt:
+                rtn = sock_file.write("# Python APRSLOG App\n\n")
+                sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
+                if prt:
                       print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ",
                                                        int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs", now)
                 if DATA:		# if we need to record on a file. flush it as well
@@ -479,7 +478,7 @@ try:
                     try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>>: MySQL2 Error: %s" % str(e))
+                        print(">>>>: MySQL2 Error: [%s]"    % str(e))
                     print(">>>>: MySQL3 error:",  cout, inscmd)
                     print(">>>>: MySQL4 data :",  data)
                 cout += 1			# number of records saved
@@ -583,10 +582,10 @@ try:
                         curs.execute(cmd1)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
                         except IndexError:
-                            print(">>>>: MySQL Error: %s" % str(e))
-                        print(">>>>: MySQL error:", cout, cmd1)
+                            print(">>>>: MySQL Error2: [%s]"    % str(e))
+                        print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1)
                         print(">>>>: MySQL data :",  data)
                     row=curs.fetchone()		# get the counter 0 or 1 ???
                     if row[0] == 0 and source != "UNKW":	# if not add the entry to the table
@@ -601,10 +600,10 @@ try:
                            curs.execute(cmd2)	# insert the data on the DB
                        except MySQLdb.Error as e:
                            try:
-                               print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                               print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
                            except IndexError:
-                               print(">>>>: MySQL Error: %s" % str(e))
-                           print(">>>>: MySQL error:", cout, cmd2)
+                               print(">>>>: MySQL Error2: %s"      % str(e))
+                           print(">>>>: MySQL error3:", cout, cmd2)
                            print(">>>>: MySQL data :",  data)
                     else:			# if found just update the entry on the table
                        try:
@@ -618,10 +617,10 @@ try:
                            curs.execute(cmd3)	# update the data on the DB
                        except MySQLdb.Error as e:
                            try:
-                               print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                               print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
                            except IndexError:
-                               print(">>>>: MySQL Error: %s" % str(e))
-                           print(">>>>: MySQL error:", cout, cmd3)
+                               print(">>>>: MySQL Error2: %s"      % str(e))
+                           print(">>>>: MySQL error3:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
@@ -638,10 +637,10 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
                         except IndexError:
-                            print(">>>>: MySQL Error: %s" % str(e))
-                        print(">>>>: MySQL error:", cout, addcmd)
+                            print(">>>>: MySQL Error2: %s"      % str(e))
+                        print(">>>>: MySQL error3:", cout, addcmd)
                         print(">>>>: MySQL data :",  data)
                 
                 cout += 1			# number of records saved
