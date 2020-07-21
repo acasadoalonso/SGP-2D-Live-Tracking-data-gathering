@@ -398,12 +398,14 @@ try:
             else:
                 fsour[source] += 1	    	# increase the counter
 
-            # handle the TCPIP only for position or status reports
             if source == 'FANE':
                 continue
             if source == 'ODLY':
                 print ("ODLY>>>>:", msg, "<<<<")
                 path = "tracker"
+            if not DATA and source == "UNKW":	# we handle non OGN data only in case of DATA
+                continue
+            # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
 #           RECEIVER CASE ------------------------------------------------------#
                 status = msg['status']		# get the full status message
