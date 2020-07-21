@@ -586,12 +586,12 @@ try:
                         print(">>>>: MySQL error:", cout, cmd1)
                         print(">>>>: MySQL data :",  data)
                     row=curs.fetchone()		# get the counter 0 or 1 ???
-                    if row[0] == 0:		# if not add the entry to the table
+                    if row[0] == 0 and source != "UNKW":	# if not add the entry to the table
                        try:
                           cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                          (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        except TypeError:
-                          print  (">>>>:", ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                          print  (">>>>cmd2:", ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        if prt:
                           print ("CMD2>>>", cmd2)
                        try:
@@ -604,8 +604,11 @@ try:
                            print(">>>>: MySQL error:", cout, cmd2)
                            print(">>>>: MySQL data :",  data)
                     else:			# if found just update the entry on the table
-                       cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
+                       try:
+                           cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
                          (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
+                       except TypeError:
+                          print  (">>>>cmd3:", ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        if prt:
                           print ("CMD3>>>", cmd3)
                        try:
