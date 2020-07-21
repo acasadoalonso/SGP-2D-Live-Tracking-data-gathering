@@ -313,7 +313,7 @@ try:
             print("In main loop. Count= ", loopcnt)
         loopcnt += 1			# just keep a count of number of request to the APRS server
         try:
-            packet_str=''
+            packet_str = ''
             packet_str = sock_file.readline() 		# Read packet string from socket
 
             if DATA and len(packet_str) > 0 and packet_str[0] != "#" and config.LogData:
@@ -331,12 +331,13 @@ try:
                 shutdown(sock, datafile)
                 print("Bye ...\n\n\n")	# 
                 exit(0)
-    		
         except :
             print("Error on readline", now)
             print(">>>>: ", packet_str)
             rtn = sock_file.write("#Python APRSLOG App\n")
             continue
+
+
         if len(packet_str) > 0 and packet_str[0] == '#':
            comment = True
            continue
@@ -348,7 +349,7 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:
             err += 1
-            print("packet_str empty, loop count:", loopcnt, keepalive_count, now)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err)
             (sock,sock_file) = aprsconnect(sock, login, prt=prt)
             if prt:
                 print("Packet_str empty\n")
@@ -398,13 +399,12 @@ try:
             else:
                 fsour[source] += 1	    	# increase the counter
 
-            if source == 'FANE':
+            if source == 'FANE' or source == 'UNKW':	# ignore those messages
                 continue
             if source == 'ODLY':
                 print ("ODLY>>>>:", msg, "<<<<")
                 path = "tracker"
-            if not DATA and source == "UNKW":	# we handle non OGN data only in case of DATA
-                continue
+
             # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
 #           RECEIVER CASE ------------------------------------------------------#
