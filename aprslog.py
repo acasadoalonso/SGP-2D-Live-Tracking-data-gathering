@@ -587,8 +587,11 @@ try:
                         print(">>>>: MySQL data :",  data)
                     row=curs.fetchone()		# get the counter 0 or 1 ???
                     if row[0] == 0:		# if not add the entry to the table
-                       cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
+                       try:
+                          cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                          (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                       except TypeError:
+                          print  (">>>>:", ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                        if prt:
                           print ("CMD2>>>", cmd2)
                        try:
