@@ -17,7 +17,6 @@ import os.path
 import signal
 import atexit
 from parserfuncs import *               # the ogn/ham parser functions
-#from geopy.distance import vincenty     # use the Vincenty algorithm^M
 from geopy.distance import geodesic     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
@@ -57,6 +56,7 @@ def aprsconnect(sock, login, firsttime=False, prt=False):
     sleep(2)				# just wait to receive the login command
     return (sock,sock_file)
 
+#########################################################################
 
 def shutdown(sock, datafile):           # shutdown routine, close files and report on activity
                                         # shutdown before exit
@@ -99,7 +99,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.02'			# manually set the program version !!!
+programver = 'V2.03'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("========================================================================================")
@@ -160,7 +160,7 @@ curs = conn.cursor()                    # set the cursor
 print("MySQL: Database:", DBname, " at Host:", DBhost)
 
 #----------------------aprslog.py start-----------------------#
-parser = argparse.ArgumentParser(description="OGN isend to the management server the OGN tracker status")
+parser = argparse.ArgumentParser(description="OGN receive the messages from the APRS network and store it on the MySQL database")
 parser.add_argument('-p',  '--print',     required=False,
                     dest='prt',   action='store', default=False)
 parser.add_argument('-d',  '--DATA',     required=False,

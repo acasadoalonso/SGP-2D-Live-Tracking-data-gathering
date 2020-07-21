@@ -62,10 +62,10 @@ echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | my
 echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                   | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS_POSITIONS ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS_POSITIONS where lastFixTx <'"$date"'  ; " | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "Report number of GLIDERS with the LAST FIX POSITION"			                                     >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 if [ -d /var/www/html/files ]
 then
