@@ -39,8 +39,8 @@ def aprsconnect(sock, login, firsttime=False, prt=False):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     if LASTFIX:
-       #sock.connect(("aprs.glidernet.org", 10152))
-       sock.connect((config.APRS_SERVER_HOST, 14580))
+       #sock.connect((config.APRS_SERVER_HOST, 14580))
+       sock.connect(("aprs.glidernet.org", 10152))
     else:
        sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
@@ -218,6 +218,7 @@ else:
 
 if LASTFIX:				# if we want just status or receivers and glider LASTFIX
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* b/FLR*/ICA*/OGN* \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
+    login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
@@ -274,7 +275,7 @@ try:
 
                                         # get the time since last keep-alive
         elapsed_time = current_time - keepalive_time
-        if (current_time - keepalive_time) > 360: # keepalives every 6 mins
+        if (current_time - keepalive_time) > 60: # keepalives every 1 mins
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
@@ -533,7 +534,7 @@ try:
                 altim = 0
                 alti = '%05d' % altim           # convert it to an string
             dist = -1				# the case of when did not receive the station YET
-            if station in fslod and source == 'OGN':  # if we have the station coordinates yet
+            if station in fslod and source == 'OGN' and not LASTFIX:  # if we have the station coordinates yet
                                                 # distance to the station
                 distance = geodesic((latitude, longitude), fslod[station]).km
                 dist = distance
