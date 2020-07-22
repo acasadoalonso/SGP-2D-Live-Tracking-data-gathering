@@ -275,7 +275,7 @@ try:
 
                                         # get the time since last keep-alive
         elapsed_time = current_time - keepalive_time
-        if (current_time - keepalive_time) > 60: # keepalives every 1 mins
+        if (current_time - keepalive_time) > 5*60 : # keepalives every 5 mins
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
@@ -307,7 +307,7 @@ try:
                 ogntbuildtable(conn, ognttable, prt)
 
             sys.stdout.flush()		# flush the print messages
-            conn.commit()		# commit to the DB
+            conn.commit()		# commit to the DB every 5 minutes
             continue			# next APRSMSG
 
         if prt:
