@@ -245,6 +245,7 @@ alive(config.APP, first='yes')		# create the ALIVE file/lock
 #-----------------------------------------------------------------
 #
 now = datetime.utcnow()			# get the UTC time
+day = now.day				# day of the month
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
@@ -254,7 +255,6 @@ tc = ts					# init the variables
 ty = ts
 lt24ts = ts
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
-day = now.day				# day of the month
 
 date = datetime.now()
 
