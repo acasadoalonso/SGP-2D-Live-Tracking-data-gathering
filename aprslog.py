@@ -527,6 +527,8 @@ try:
             rot         = msg['rot']
             sensitivity = msg['sensitivity']
             gps         = msg['gps']
+            if len(gps) > 6:
+               gps=gps[0:6]
             hora        = msg['time']		# timestamp
             altim = altitude                    # the altitude in meters
             if altim > 15000 or altim < 0:

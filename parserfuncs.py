@@ -467,15 +467,22 @@ def parseraprs(packet_str, msg):
         sensitivity = gdatal(data, "dB ")       # get the sensitivity
         if sensitivity == ' ':			# if no sensitivity provided
             sensitivity = 0
-        p6 = data.find('gps')                     # scan for gps info
+        p6 = data.find('gps')                   # scan for gps info
         if p6 != -1:
             gps = gdatar(data, "gps")  # get the gpsdata
         else:
-            p6 = data.find(' GPS')            # scan for gps info
+            p6 = data.find(' GPS')            	# scan for gps info
             if p6 != -1:
-                gps = "GPS"  # generic GPS mark
+                gps = "GPS"  			# generic GPS mark
             else:
-                gps = "NO"		# no GPS data
+                gps = "NO"			# no GPS data
+        if len(gps) > 6:
+                gps=gps[0:6]			# max 6 chars
+        if len(station) > 9:
+                station=station[0:9]		# max 9 chars
+        if len(source) > 8:
+                source=source[0:8]		# max 8 chars
+
         dte = date.strftime("%y%m%d")		# the aprs msgs has not date
 
         msg['path'] = path			# return the data parsed in the dict
