@@ -99,7 +99,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.03'			# manually set the program version !!!
+programver = 'V2.04'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("========================================================================================")
@@ -279,7 +279,7 @@ try:
                                         # and mark that we are still alive
             alive(config.APP)		# set the mark on the aliave file
             try:			# send a comment to the APRS server
-                rtn = sock_file.write("# Python APRSLOG App\n\n")
+                rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
                 if prt:
                       print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ",
@@ -307,6 +307,7 @@ try:
                 ogntbuildtable(conn, ognttable, prt)
 
             sys.stdout.flush()		# flush the print messages
+            conn.commit()		# commit to the DB
             continue			# next APRSMSG
 
         if prt:
@@ -482,7 +483,6 @@ try:
                     print(">>>>: MySQL3 error:",  cout, inscmd)
                     print(">>>>: MySQL4 data :",  data)
                 cout += 1			# number of records saved
-                conn.commit()			# commit to the DB
                 continue
             if aprstype == 'status':		# if status report
 #           TRACKER STATUS CASE ------------------------------------------------------#
@@ -643,8 +643,7 @@ try:
                         print(">>>>: MySQL error3:", cout, addcmd)
                         print(">>>>: MySQL data :",  data)
                 
-                cout += 1			# number of records saved
-                conn.commit()                   # commit the DB updates
+                cout += 1	# number of records saved
 # end of infinity while 
 # --------------------------------------------------------------------------------------
 
@@ -652,6 +651,7 @@ except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
+conn.commit()                   # commit the DB updates
 shutdown(sock, datafile)
 print("Exit now ...", err)
 exit(1)
