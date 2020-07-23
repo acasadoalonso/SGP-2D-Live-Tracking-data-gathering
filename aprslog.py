@@ -130,6 +130,7 @@ commentcnt=0				# counter of comment lines
 maxnerrs = 255                          # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment = False				# comment line from APRS server
+datafile = False
 COMMIT=True
 DATA = True				# use the configuration values
 
@@ -174,7 +175,6 @@ args = parser.parse_args()
 prt      = args.prt			# print on|off
 DATA     = args.DATA			# data store on|off
 LASTFIX  = args.LASTFIX			# LASTFIX on|off
-
 
 if LASTFIX:
     print("Option: LASTFIX\n\n")
@@ -263,8 +263,7 @@ date = datetime.now()
 #
 #-----------------------------------------------------------------
 #
-try:
-
+try: 
     while True:				# forever
         current_time = time.time()
         local_time = datetime.now()
@@ -331,7 +330,7 @@ try:
             (sock,sock_file) = aprsconnect(sock, login, prt=prt)
             continue
         except KeyboardInterrupt:
-                print("Keyboard input received, ignore")
+                print("Keyboard input received, Bye Bye")
                 shutdown(sock, datafile)
                 print("Bye ...\n\n\n")	# 
                 exit(0)
@@ -654,10 +653,8 @@ try:
 # --------------------------------------------------------------------------------------
 
 except KeyboardInterrupt:
-    print("Keyboard input received, ignore")
-    pass
+       print (">>>>: Keyboard Interupt <<<<<<\n\n")
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
-conn.commit()                   # commit the DB updates
 shutdown(sock, datafile)
-print("Exit now ...", err)
+print("Exit now ... Number of errors: ", err)
 exit(1)
