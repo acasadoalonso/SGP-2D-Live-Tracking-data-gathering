@@ -37,6 +37,8 @@ def aprsconnect(sock, login, firsttime=False, prt=False):
 
 # create socket & connect to server
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)
+    print("RCVBUF:",sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
 
     if LASTFIX:
        sock.connect((config.APRS_SERVER_HOST, 10152))	# use the non filtered port
