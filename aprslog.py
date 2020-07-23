@@ -39,8 +39,8 @@ def aprsconnect(sock, login, firsttime=False, prt=False):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     if LASTFIX:
-       #sock.connect((config.APRS_SERVER_HOST, 14580))
-       sock.connect(("aprs.glidernet.org", 10152))
+       sock.connect((config.APRS_SERVER_HOST, 10152))	# use the non filtered port
+       #sock.connect(("aprs.glidernet.org", 10152))
     else:
        sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
@@ -90,6 +90,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
 def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
     shutdown(sock, datafile)            # shutdown orderly
+    print('Bye...')
     sys.exit(0)
 
 
@@ -99,10 +100,10 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.04'			# manually set the program version !!!
+programver = 'V2.05'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
-print("========================================================================================")
+print("=====================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 date = datetime.utcnow()                # get the date
@@ -125,9 +126,12 @@ cout = 0                                # output file counter
 loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
+commentcnt=0				# counter of comment lines
 maxnerrs = 255                          # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment = False				# comment line from APRS server
+COMMIT=True
+DATA = True				# use the configuration values
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -140,7 +144,6 @@ fdtcnt= {}			 	# device type counter
 flastfix={}				# table with the LAST FIXES
 fdistcheck={}				# table with device with distance more than 400 kms
 # --------------------------------------#
-DATA = True				# use the configuration values
 DBpath      = config.DBpath
 DBhost      = config.DBhost
 DBuser      = config.DBuser
@@ -217,7 +220,6 @@ else:
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
 if LASTFIX:				# if we want just status or receivers and glider LASTFIX
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* b/FLR*/ICA*/OGN* \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
@@ -307,7 +309,8 @@ try:
                 ogntbuildtable(conn, ognttable, prt)
 
             sys.stdout.flush()		# flush the print messages
-            conn.commit()		# commit to the DB every 5 minutes
+            if COMMIT:
+               conn.commit()		# commit to the DB every 5 minutes
             continue			# next APRSMSG
 
         if prt:
@@ -333,14 +336,15 @@ try:
                 print("Bye ...\n\n\n")	# 
                 exit(0)
         except :
-            print("Error on readline", now)
+            print(">>>>: Error on readline", now)
             print(">>>>: ", packet_str)
-            rtn = sock_file.write("#Python APRSLOG App\n")
+            rtn = sock_file.write("# Python APRSLOG App\n")
             continue
 
 
         if len(packet_str) > 0 and packet_str[0] == '#':
            comment = True
+           commentcnt += 1
            continue
         else:
            comment = False

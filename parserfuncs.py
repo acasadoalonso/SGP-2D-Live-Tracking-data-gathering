@@ -546,16 +546,16 @@ def SRSSgetapidata(url):                    # get the data from the API server
 
 def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
 
-    ts = 0                                    # init the return time since epoch
+    ts = 0                                    	# init the return time since epoch
     url = "http://api.sunrise-sunset.org/json?lat="+lat+"&lng="+lon+"&formatted=0"
-    jsondata = SRSSgetapidata(url)            # get the data from the web
+    jsondata = SRSSgetapidata(url)             	# get the data from the web
     #print jsondata
-    if prt:                                 # if print requested
+    if prt:                                 	# if print requested
         print(json.dumps(jsondata, indent=4))
-    if jsondata['status'] == "OK":          # only if results are OK
-        results = jsondata["results"]     # get the reults part
-        timeref = results[object]         # get the object that we need
-        #print timeref
+    if jsondata['status'] == "OK":          	# only if results are OK
+        results = jsondata["results"]     	# get the reults part
+        timeref = results[object]         	# get the object that we need
+        print(jsondata['status'], object, timeref)
         # convert to time format
         ttt = datetime.strptime(timeref, "%Y-%m-%dT%H:%M:%S+00:00")
         # number of second until beginning of the day
