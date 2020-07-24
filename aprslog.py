@@ -26,37 +26,38 @@ import argparse
 
 #########################################################################
 
-def aprsconnect(sock, login, firsttime=False, prt=False):
+def aprsconnect(sock, login, firsttime=False, prt=False): # connect to the APRS server
     if not firsttime:
-       try:
+       try:				# reconnect
         sock.shutdown(0)                # shutdown the connection
         sock.close()                    # close the connection file
        except:
-        print("Ignore SOCK errors at this time -- connect")
-
-
-# create socket & connect to server
+        print("Ignore SOCK errors at this time -- reconnect")
+					# create socket & connect to server
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)
-    print("RCVBUF:",sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
+    if prt or firsttime:
+       print("Default RCVBUF:",sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)) # get the size of the receiving buffer
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
+    if prt or firsttime:
+       print("New     RCVBUF:",sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
 
-    if LASTFIX:
+    if LASTFIX:				# if LASTFIX use the non filtered port 
        sock.connect((config.APRS_SERVER_HOST, 10152))	# use the non filtered port
        #sock.connect(("aprs.glidernet.org", 10152))
-    else:
+    else:				# if not use the use from the configuration file
        sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
     sock.send(login)			# send the login to the APRS server
 
-# Make the connection to the server
-    sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
+					# Make the connection to the server	
+    sock_file = sock.makefile(mode='rw')# make read/write as we need to send the keep_alive
     if prt or firsttime:
        print("APRS Version:", sock_file.readline())	# report the APRS version
-# for control print the login sent and get the response
+					# for control print the login sent and get the response
        print("APRS Login request:", login)	# print the login command for control
        print("APRS Login reply:  ", sock_file.readline())	# report the APRS reply
     sleep(2)				# just wait to receive the login command
-    return (sock,sock_file)
+    return (sock,sock_file)		# return sock and sockfile
 
 #########################################################################
 
@@ -105,7 +106,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 programver = 'V2.05'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
-print("=====================================================================================")
+print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 date = datetime.utcnow()                # get the date
