@@ -130,7 +130,7 @@ loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 commentcnt=0				# counter of comment lines
-maxnerrs = 255                          # max number of error before quiting
+maxnerrs = 99                           # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment = False				# comment line from APRS server
 datafile = False
@@ -660,4 +660,10 @@ except KeyboardInterrupt:
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)
 print("Exit now ... Number of errors: ", err)
+if err > maxnerrs:
+   print("Restarting python program ...")
+   sys.stdout.flush()		# flush the print messages
+   os.execv(__file__, sys.argv) 	# restart the program
+   # python = sys.executable
+   #os.execl(python, python, * sys.argv)
 exit(1)
