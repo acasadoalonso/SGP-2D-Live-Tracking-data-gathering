@@ -136,7 +136,7 @@ comment = False				# comment line from APRS server
 datafile = False
 COMMIT=True
 DATA = True				# use the configuration values
-
+MEM=False
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
 fslal = {'NONE  ': 0.0}                 # station location altitude
@@ -146,6 +146,7 @@ fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
 fdtcnt= {}			 	# device type counter
 flastfix={}				# table with the LAST FIXES
+lastfix=[]				# list of last fix from DB 
 fdistcheck={}				# table with device with distance more than 400 kms
 # --------------------------------------#
 DBpath      = config.DBpath
@@ -174,13 +175,28 @@ parser.add_argument('-d',  '--DATA',     required=False,
                     dest='DATA',   action='store', default=False)
 parser.add_argument('-l',  '--LASTFIX',     required=False,
                     dest='LASTFIX',   action='store', default=False)
+parser.add_argument('-m',  '--MEM',     required=False,
+                    dest='MEM',   action='store', default=False)
 args = parser.parse_args()
 prt      = args.prt			# print on|off
 DATA     = args.DATA			# data store on|off
 LASTFIX  = args.LASTFIX			# LASTFIX on|off
+MEM      = args.MEM			# MEM on|off
 
 if LASTFIX:
     print("Option: LASTFIX\n\n")
+    if MEM:
+       try:
+          curs.execute("select flarmId from GLIDERS_POSITIONS;")
+          l=curs.fetchall()
+          for e in l:
+              lastfix.append(e[0])
+       except MySQLdb.Error as e:
+           try:
+              print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+           except IndexError:
+              print(">>>>: MySQL Error2: [%s]"    % str(e))
+       print ("Number of IDs on the DB: ", len(lastfix))
 
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))		# to avoid running the same program twice 
@@ -585,18 +601,36 @@ try:
 #                   LASTFIX   CASE ------------------------------------------------------#
                     flastfix[ident]=msg		# save it in memory for the time being
 
-                    try:			# first try to see if we have that device on the GLIDER_POSITION table
-                        cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
-                        curs.execute(cmd1)
-                    except MySQLdb.Error as e:
-                        try:
-                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
-                        except IndexError:
-                            print(">>>>: MySQL Error2: [%s]"    % str(e))
-                        print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1)
-                        print(">>>>: MySQL data :",  data)
-                    row=curs.fetchone()		# get the counter 0 or 1 ???
-                    if row[0] == 0 and source != "UNKW":	# if not add the entry to the table
+                    if MEM:			# if we use the memory option
+                       if ident in lastfix:
+                          recfound=True		# mark as found
+                       else:
+                          recfound=False
+                          if prt:
+                             print("New ID: ", ident)
+                          lastfix.append(ident)	# add it to the list
+
+                    else:
+                       try:			# first try to see if we have that device on the GLIDER_POSITION table
+                           cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
+                           curs.execute(cmd1)
+                       except MySQLdb.Error as e:
+                           try:
+                               print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                           except IndexError:
+                               print(">>>>: MySQL Error2: [%s]"    % str(e))
+                           print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1)
+                           print(">>>>: MySQL data :",  data)
+                       except SystemExit:
+                           exit()
+
+                       row=curs.fetchone()		# get the counter 0 or 1 ???
+                       if row[0] == 0 and source != "UNKW":	# if not add the entry to the tablea
+                          recfound=False		# ark it as not found
+                       else:
+                          recfound=True
+
+                    if not recfound:
                        try:
                           cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                          (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
@@ -613,6 +647,8 @@ try:
                                print(">>>>: MySQL Error2: %s"      % str(e))
                            print(">>>>: MySQL error3:", cout, cmd2)
                            print(">>>>: MySQL data :",  data)
+                       except SystemExit:
+                           exit()
                     else:			# if found just update the entry on the table
                        try:
                            cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
@@ -630,6 +666,8 @@ try:
                                print(">>>>: MySQL Error2: %s"      % str(e))
                            print(">>>>: MySQL error3:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
+                       except SystemExit:
+                           exit()
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
@@ -650,13 +688,18 @@ try:
                             print(">>>>: MySQL Error2: %s"      % str(e))
                         print(">>>>: MySQL error3:", cout, addcmd)
                         print(">>>>: MySQL data :",  data)
+                    except SystemExit:
+                        exit()
                 
                 cout += 1	# number of records saved
 # end of infinity while 
 # --------------------------------------------------------------------------------------
-
+except SystemExit:
+   print (">>>>: System Exit <<<<<<\n\n")
+   exit(1)
 except KeyboardInterrupt:
-       print (">>>>: Keyboard Interupt <<<<<<\n\n")
+   print (">>>>: Keyboard Interupt <<<<<<\n\n")
+
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)
 print("Exit now ... Number of errors: ", err)
