@@ -70,6 +70,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         print("Ignore SOCK errors at this time -- shutdown")
     if datafile:
        datafile.close()                 # close the data file
+    print("=====================================")
     print("Sources: ", fsour)           # print the data about the different sources
                                         # report number of records read and IDs discovered
     print('Records read:', cin, ' DB records created: ', cout)
@@ -85,6 +86,9 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
     print("=====================================")
     if os.path.exists(config.APP+".alive"):
         os.remove(config.APP+".alive")  # delete the mark of being alive
+    if os.path.exists(config.PIDfile):
+        os.remove(config.PIDfile)	# remove it at exit
+    atexit.unregister(lambda: os.remove(config.PIDfile)) # remove it at exit
     return                              # job done
 
 #######################################################################
@@ -94,7 +98,7 @@ def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
     shutdown(sock, datafile)            # shutdown orderly
     print('Bye...')
-    sys.exit(0)
+    os._exit(0)
 
 
 # .....................................................................#
