@@ -107,7 +107,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.05'			# manually set the program version !!!
+programver = 'V2.06'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("==================================================================================")
@@ -137,10 +137,13 @@ commentcnt=0				# counter of comment lines
 maxnerrs = 99                           # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment = False				# comment line from APRS server
-datafile = False
-COMMIT=True
+datafile = False			# use the datafile on|off
+COMMIT=True				# coomit every keep lives
+prt = False				# use the configuration values
 DATA = True				# use the configuration values
-MEM=False
+MEM=False				# built the lastfix flarmId table in memory
+STATIONS=False				# get the stations info
+
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
 fslal = {'NONE  ': 0.0}                 # station location altitude
@@ -181,14 +184,17 @@ parser.add_argument('-l',  '--LASTFIX',     required=False,
                     dest='LASTFIX',   action='store', default=False)
 parser.add_argument('-m',  '--MEM',     required=False,
                     dest='MEM',   action='store', default=False)
+parser.add_argument('-s',  '--STATIONS',     required=False,
+                    dest='STATIONS',   action='store', default=True)
 args = parser.parse_args()
 prt      = args.prt			# print on|off
 DATA     = args.DATA			# data store on|off
 LASTFIX  = args.LASTFIX			# LASTFIX on|off
 MEM      = args.MEM			# MEM on|off
+STATIONS = args.STATIONS		# stations on|off
+print ("Options: prt:", prt, "DATA:", DATA, "MEM:", MEM, "LASTFIX:", LASTFIX, "STATIONS:", STATIONS)
 
 if LASTFIX:
-    print("Option: LASTFIX\n\n")
     if MEM:
        try:
           curs.execute("select flarmId from GLIDERS_POSITIONS;")
@@ -201,6 +207,8 @@ if LASTFIX:
            except IndexError:
               print(">>>>: MySQL Error2: [%s]"    % str(e))
        print ("Number of IDs on the DB: ", len(lastfix))
+if DATA:
+    config.LogData=True
 
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))		# to avoid running the same program twice 
@@ -216,7 +224,7 @@ if OGNT and not LASTFIX:                        	# if we need aggregation of FLA
 
 compfile = config.cucFileLocation + "competitiongliders.lst"
 
-if os.path.isfile(compfile) and not LASTFIX:		# if we are in competition mode
+if os.path.isfile(compfile) and not LASTFIX and not STATIONS:		# if we are in competition mode
     print("Competition file:", compfile)# we restrict only to the flamrs of the competition gliders
     fd = open(compfile, 'r')
     j = fd.read()
@@ -239,19 +247,22 @@ if os.path.isfile(compfile) and not LASTFIX:		# if we are in competition mode
 					# in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
+    if STATIONS:
+        login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
+    else:
 					# normal case
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+        login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
-if LASTFIX:				# if we want just status or receivers and glider LASTFIX
+if LASTFIX:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 
 login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8 
 
+#-----------------------------------------------------------------
 # logon to OGN APRS network
+
 sock=False
 (sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
-
-
 
 #-----------------------------------------------------------------
 start_time = time.time()
@@ -372,14 +383,13 @@ try:
            comment = False
         if prt:
             print(packet_str)
+
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
-        if len(packet_str) == 0:
+        if len(packet_str) == 0:	# socket error ?
             err += 1
             print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err)
             (sock,sock_file) = aprsconnect(sock, login, prt=prt)
-            if prt:
-                print("Packet_str empty\n")
             if err > maxnerrs:
                 print(">>>>: Too many errors reading APRS messages.  Orderly closeout")
                 date = datetime.now()
@@ -510,6 +520,7 @@ try:
                     print(">>>>: MySQL4 data :",  data)
                 cout += 1			# number of records saved
                 continue
+
             if aprstype == 'status':		# if status report
 #           TRACKER STATUS CASE ------------------------------------------------------#
                 status = msg['status']		# get the status message
@@ -537,6 +548,7 @@ try:
                 continue                        # the case of the TCP IP as well
             if longitude == -1 or latitude == -1:  # if no position like in the status report
                 continue			# that is the case of the ogn trackers status reports
+
 #           FLARM OR OGN FIXES  CASE ------------------------------------------------------#
             # if std records FLARM or OGN
             #
@@ -675,7 +687,7 @@ try:
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
-                    addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',", \
+                    addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "',"+ \
                     str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                     str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
                     ",'" + gps + "','" + uniqueid + "'," + \
@@ -696,21 +708,25 @@ try:
                         exit()
                 
                 cout += 1	# number of records saved
+
+#
 # end of infinity while 
 # --------------------------------------------------------------------------------------
 except SystemExit:
    print (">>>>: System Exit <<<<<<\n\n")
-   exit(1)
+   os._exit(1)
 except KeyboardInterrupt:
    print (">>>>: Keyboard Interupt <<<<<<\n\n")
 
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
-shutdown(sock, datafile)
+shutdown(sock, datafile)	# close down everything
 print("Exit now ... Number of errors: ", err)
 if err > maxnerrs:
-   print("Restarting python program ...")
+   now = datetime.utcnow()			# get the UTC time
+   print("Restarting python program ...", now, sys.executable, "\n\n")
    sys.stdout.flush()		# flush the print messages
-   os.execv(__file__, sys.argv) 	# restart the program
+   os.execv(__file__, sys.argv)	# restart the program
+   # we should not reach here !!!!
    # python = sys.executable
    #os.execl(python, python, * sys.argv)
-exit(1)
+os._exit(0)
