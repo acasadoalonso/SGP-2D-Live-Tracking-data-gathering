@@ -367,7 +367,7 @@ try:
                 print("Keyboard input received, Bye Bye")
                 shutdown(sock, datafile)
                 print("Bye ...\n\n\n")	# 
-                exit(0)
+                os._exit(0)
         except :
             print(">>>>: Error on readline", now)
             print(">>>>: ", packet_str)
@@ -509,8 +509,9 @@ try:
                     (cc, latitude, longitude, altitude, otime, version, cpu, temp, rf, status)
                 except:
                     print ("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu,"T:",  temp, "R:", rf, status, "\nMGS:", msg)
+                
                 try:
-                    curs.execute(inscmd)
+                    curs.execute(inscmd)	# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
@@ -533,7 +534,7 @@ try:
                 inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' ,'%s' )" %\
                     (ident, station, otime, status, 'APRS')
                 try:
-                    curs.execute(inscmd)
+                    curs.execute(inscmd)	# insert data into trackstatus table
                 except MySQLdb.Error as e:
                     try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (
@@ -542,7 +543,9 @@ try:
                         print(">>>>: MySQL2 Error: %s" % str(e))
                     print(">>>>: MySQL3 error:",  cout, inscmd)
                     print(">>>>: MySQL4 data :",  data)
+
                 cout += 1			# number of records saved
+
             if path == 'qAC':			# the case of a qAC message that is not a TCPIP*
                 print(">>>qAC>>>:", data)
                 continue                        # the case of the TCP IP as well
@@ -573,11 +576,11 @@ try:
                 altim = 0
                 alti = '%05d' % altim           # convert it to an string
             dist = -1				# the case of when did not receive the station YET
-            if station in fslod and source == 'OGN' and not LASTFIX:  # if we have the station coordinates yet
+            if station in fslod and source == 'OGN' :  # if we have the station coordinates yet
                                                 # distance to the station
                 distance = geodesic((latitude, longitude), fslod[station]).km
                 dist = distance
-                if distance > 400.0:		# if nore than 400 kms
+                if distance > 400.0 and not LASTFIX:	# if nore than 400 kms
                     if ident not in fdistcheck:
                        print("distcheck: ", distance, data) # report it only once
                     fdistcheck[ident] = distance
@@ -588,7 +591,7 @@ try:
                 dist = geodesic((latitude, longitude), (vitlat, vitlon)).km
 #           -----------------------------------------------------------------
             if prt:
-                print('Parsed data: POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
+                print('Parsed data: :::', ident, ' POS: ', longitude, latitude, altitude, ' Speed:', speed, ' Course: ', course, ' Path: ', path, ' Type:', type)
                 print("RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, source, ":::")
 
 #           -----------------------------------------------------------------
@@ -626,7 +629,7 @@ try:
                              print("New ID: ", ident)
                           lastfix.append(ident)	# add it to the list
 
-                    else:
+                    else:			# if we use the DB option
                        try:			# first try to see if we have that device on the GLIDER_POSITION table
                            cmd1="SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='"+ident+"'; "
                            curs.execute(cmd1)
@@ -637,8 +640,6 @@ try:
                                print(">>>>: MySQL Error2: [%s]"    % str(e))
                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1)
                            print(">>>>: MySQL data :",  data)
-                       except SystemExit:
-                           exit()
 
                        row=curs.fetchone()		# get the counter 0 or 1 ???
                        if row[0] == 0 and source != "UNKW":	# if not add the entry to the tablea
@@ -646,7 +647,7 @@ try:
                        else:
                           recfound=True
 
-                    if not recfound:
+                    if not recfound:		# if we never saw this ID ... insert it on the DB
                        try:
                           cmd2="INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                          (ident, latitude, longitude, altim,  course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
@@ -663,8 +664,7 @@ try:
                                print(">>>>: MySQL Error2: %s"      % str(e))
                            print(">>>>: MySQL error3:", cout, cmd2)
                            print(">>>>: MySQL data :",  data)
-                       except SystemExit:
-                           exit()
+
                     else:			# if found just update the entry on the table
                        try:
                            cmd3="UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
@@ -682,8 +682,6 @@ try:
                                print(">>>>: MySQL Error2: %s"      % str(e))
                            print(">>>>: MySQL error3:", cout, cmd3)
                            print(">>>>: MySQL data :",  data)
-                       except SystemExit:
-                           exit()
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
@@ -704,8 +702,6 @@ try:
                             print(">>>>: MySQL Error2: %s"      % str(e))
                         print(">>>>: MySQL error3:", cout, addcmd)
                         print(">>>>: MySQL data :",  data)
-                    except SystemExit:
-                        exit()
                 
                 cout += 1	# number of records saved
 
