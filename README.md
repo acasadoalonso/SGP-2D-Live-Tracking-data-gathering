@@ -13,7 +13,7 @@ aprslog.py		The main data collector, collect the data and store it on the DB
 push2ogn.sh		The program that collects the positions from the SPOT/SPIDER/INREACH/ ... servers and push it to the OGN APRS servers
 config.py		The routine that reads the configuration file on /etc/local/APRSconfig.ini and set the configuration parameters
 install.sh		The script of installation
-kglid.py		The table with all the flarms ID and its registration ID
+ognddbfuncs.py		The table with all the flarms ID and its registration ID
 libfap.py		The APRS parser routine
 flarmfuncs.py		The Flarm utility functions
 ongtfuncs.py		The OGN tracker data gathering functions
