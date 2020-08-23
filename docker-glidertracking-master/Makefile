@@ -1,0 +1,15 @@
+#!make
+
+IMAGE_NAME := glidertracking_debian
+FULL_VERSION := 0.2.0
+MINOR_VERSION := 0.2
+MAJOR_VERSION := 0
+
+dev:
+	docker build --no-cache=false -t ${IMAGE_NAME} .
+
+build :
+	docker build --no-cache=false -t ${IMAGE_NAME}:$(FULL_VERSION)  .
+	docker tag ${IMAGE_NAME}:$(FULL_VERSION) ${IMAGE_NAME}:$(MINOR_VERSION)
+	docker tag ${IMAGE_NAME}:$(FULL_VERSION) ${IMAGE_NAME}:$(MAJOR_VERSION)
+	docker tag ${IMAGE_NAME}:$(FULL_VERSION) ${IMAGE_NAME}
