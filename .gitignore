@@ -17,3 +17,4 @@ config/
 ss*
 sh/mailnames.txt
 kglid.py
+main/

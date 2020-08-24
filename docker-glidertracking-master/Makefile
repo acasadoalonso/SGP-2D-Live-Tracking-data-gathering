@@ -1,6 +1,6 @@
 #!make
 
-IMAGE_NAME := glidertracking_debian
+IMAGE_NAME := acasado/aprslog
 FULL_VERSION := 0.2.0
 MINOR_VERSION := 0.2
 MAJOR_VERSION := 0

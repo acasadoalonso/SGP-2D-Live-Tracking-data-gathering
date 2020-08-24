@@ -1,0 +1,6 @@
+# Install aprslog
+-e .
+
+# Install development requirements
+-e .[dev]
+

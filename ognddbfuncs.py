@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import json
+import requests
 import urllib.request, urllib.error, urllib.parse
 global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
@@ -93,3 +94,14 @@ def getognmodel(devid):                     # get the ogn aircraft model from th
     return "NoModel"                        # if not found !!!
 
 ###################################################################
+
+DDB_URL = "http://ddb.glidernet.org/download/?j=1"
+
+
+def get_ddb_devices():
+    r = requests.get(DDB_URL)
+    for device in r.json()['devices']:
+        device.update({'identified': device['identified'] == 'Y',
+                       'tracked': device['tracked'] == 'Y'})
+        yield device
+

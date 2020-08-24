@@ -1,0 +1,24 @@
+ExecStart=/usr/bin/docker run \
+ -h 'glidertracking.fai.org' \
+ --net fai_glidertracking \
+ -m 1g \
+ --link fai-mysql-fai-glidertracking:mysql \
+ -e PUBLIC_DIR="public" \
+ -e ROOT_PASSWORD='$6$ZULF….cjS1ey0/' \
+ -p 8019:8019 \
+ -p 10019:80 \
+ -p 20019:22 \
+ -v …./fai/web/web_glidertracking/config/root:/root \
+ -v …./fai/web/web_glidertracking/www/:/var/www \
+ -v …./fai/web/web_glidertracking/config/etc/ssh:/var/config/etc/ssh \
+ -v …./fai/web/web_glidertracking/config/cron:/var/spool/cron/crontabs \
+ -v …./fai/web/web_glidertracking/config/php/conf.d:/usr/local/etc/php/conf.d \
+ -v /etc/localtime:/etc/localtime:ro \
+ -v …./log/containers/fai-web-web-glidertracking:/var/log/container:ro \
+ --restart=always \
+ --log-opt tag="{{.Name}}/{{.ID}}" \
+ --log-driver syslog \
+ --log-opt syslog-address=udp://….:514 \
+ --log-opt syslog-facility=local0 \
+ --name fai-web-web-glidertracking \
+   glidertracking_debian \
