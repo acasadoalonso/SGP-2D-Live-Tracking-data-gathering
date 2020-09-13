@@ -21,17 +21,28 @@ def getddbdata():                           # get the data from the API server
     _ogninfo_ = j_obj                       # save the data on the global storage
     return j_obj                            # return the JSON objecta
 
+def getogninfo(devid):			    # return the OGN DDB infor for this device
+
+    global _ogninfo_   		            # the OGN info data
+    if len(_ogninfo_) == 0:
+            _ogninfo_=getddbdata()
+    devices=_ogninfo_["devices"]            # access to the ddbdata
+    for dev in devices:                     # loop into the registrations
+            if dev["device_id"] == devid:   # if matches ??
+                return dev  		    # return the information
+    return "NOInfo "                        #if not found !!!
+
+
 def getognreg(devid):                       # get the ogn registration from the flarmID
 
-        global _ogninfo_                    # the OGN info data
-        if len(_ogninfo_) == 0:
+    global _ogninfo_                        # the OGN info data
+    if len(_ogninfo_) == 0:
             _ogninfo_=getddbdata()
-        devices=_ogninfo_["devices"]        # access to the ddbdata
-        for dev in devices:                 # loop into the registrations
+    devices=_ogninfo_["devices"]            # access to the ddbdata
+    for dev in devices:                     # loop into the registrations
             if dev["device_id"] == devid:   # if matches ??
                 return dev["registration"]  # return the registration
-
-        return "NOReg  "                    #if not found !!!
+    return "NOReg  "                        #if not found !!!
 
 
 def getognchk(devid):                       # Check if the FlarmID exist or NOT

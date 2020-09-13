@@ -72,6 +72,7 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
        datafile.close()                 # close the data file
     print("=====================================")
     print("Sources: ", fsour)           # print the data about the different sources
+    print("Aircraft types: ", acfttype) # print the aircraft types
                                         # report number of records read and IDs discovered
     print('Records read:', cin, ' DB records created: ', cout)
     print('Devices type:', fdtcnt, "Unique Ids:", len(flastfix))
@@ -107,7 +108,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.06'			# manually set the program version !!!
+programver = 'V2.07'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("==================================================================================")
@@ -151,6 +152,7 @@ fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
 fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
 fsour = {}			 	# sources
+acfttype = []			 	# aircraft types
 fdtcnt= {}			 	# device type counter
 flastfix={}				# table with the LAST FIXES
 lastfix=[]				# list of last fix from DB 
@@ -441,6 +443,10 @@ try:
             if source == 'ODLY':
                 print ("ODLY>>>>:", msg, "<<<<")
                 path = "tracker"
+            if 'acfttype' in msg:
+               acftt=msg['acfttype']
+               if not acftt in acfttype:
+                  acfttype.append(acftt)
 
             # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):

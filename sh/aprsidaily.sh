@@ -66,13 +66,15 @@ echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-p
 echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "Report number of GLIDERS with the LAST FIX POSITION"			                                     >>APRSproc.log 2>/dev/null
 echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE from GLIDERS_POSITIONS WHERE length(flarmId) < 6;"| mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE from GLIDERS_POSITIONS WHERE flarmId like '%RND%' ;"| mysql --login-path=SARogn -v -h $server APRSLOG   >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 if [ -d /var/www/html/files ]
 then
 	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
 	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
 	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump    2>/dev/null
-	cp /nfs/OGN/src/kglid.py                                                    /var/www/html/files 		2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
@@ -82,7 +84,7 @@ then
         sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>APRSproc.log 2>/dev/null
 	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        	     >>APRSproc.log 2>/dev/null
 
-	rm TRKDEVICES.sql
+	rm /tmp/TRKDEVICES.sql
 else
         ~/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
 fi
