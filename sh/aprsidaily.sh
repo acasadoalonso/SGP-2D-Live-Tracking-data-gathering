@@ -86,7 +86,7 @@ then
 
 	rm /tmp/TRKDEVICES.sql
 else
-        ~/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
+        pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>APRSproc.log 2>/dev/null
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
