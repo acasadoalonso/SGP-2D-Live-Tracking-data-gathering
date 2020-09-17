@@ -77,7 +77,12 @@ then
 	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump    2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
-wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
+if [[ $(hostname) == 'CHILEOGN' ]]
+then
+   mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG TRKDEVICES  >/var/www/html/files/TRKDEVICES.sql     2>/dev/null
+else
+   wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
+fi
 if [[ -f TRKDEVICES.sql && $(hostname) != 'CHILEOGN' ]]
 then
        	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
