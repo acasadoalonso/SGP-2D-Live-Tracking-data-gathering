@@ -9,7 +9,6 @@ if ( $_SERVER['HTTP_X_GITHUB_EVENT'] == 'push') {
         passthru("touch UPDATED.by.GIT");
         ob_end_clean(); 
         echo "RC=".$var."\n";
-        //echo "git pull done\n\n";
 }
 //echo var_dump($_SERVER);
-?>hi git pull done
+?>Hi ... git pull done !!!
