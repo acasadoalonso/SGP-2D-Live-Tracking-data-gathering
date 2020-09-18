@@ -1,13 +1,14 @@
 #!/bin/bash
 alive=$"/nfs/OGN/SWdata/DLYM2OGN.alive"
+pid=$"/tmp/DLY.pid"
 if [ ! -f $alive ]
 then
                 logger  -t $0 "DLYM2OGN Log is not alive"
-                pnum=$(pgrep -x -f "python3 ~/src/APRSsrc/main/dlym2ogn.py")
-                if [ $? -eq 0 ] # if OGN repo interface is  not running
+                if [ -f $pid ] # if OGN repo interface is  not running
                 then
-                        sudo kill $pnum
+                        sudo kill $(cat /tmp/DLY.pid)
                 fi
+
 #               restart OGN data collector
                 bash ~/src/APRSsrc/main/sh/dlym2ogn.sh 
                 logger -t $0 "DLYM2OGN Log seems down, restarting"

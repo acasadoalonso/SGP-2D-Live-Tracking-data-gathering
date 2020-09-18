@@ -12,4 +12,4 @@ if ( $_SERVER['HTTP_X_GITHUB_EVENT'] == 'push') {
         //echo "git pull done\n\n";
 }
 //echo var_dump($_SERVER);
-?>hi
+?>hi git pull done
