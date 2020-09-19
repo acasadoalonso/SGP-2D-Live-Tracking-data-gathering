@@ -249,11 +249,8 @@ if os.path.isfile(compfile) and not LASTFIX and not STATIONS:		# if we are in co
 					# in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
-    if STATIONS:
-        login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP*  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
-    else:
 					# normal case
-        login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
 if LASTFIX:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
