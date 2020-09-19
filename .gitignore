@@ -4,7 +4,6 @@
 *.alive
 ogndecode/
 Keys.py
-dlym2ogn.py
 keyfile.encrypt
 utils/
 log/
