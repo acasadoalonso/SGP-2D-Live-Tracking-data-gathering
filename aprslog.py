@@ -139,7 +139,7 @@ maxnerrs = 99                           # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment  = False			# comment line from APRS server
 datafile = False			# use the datafile on|off
-COMMIT   = True				# coomit every keep lives
+COMMIT   = True				# commit every keep lives
 prt      = False			# use the configuration values
 DATA     = True				# use the configuration values
 MEM      = False			# built the lastfix flarmId table in memory
@@ -708,6 +708,7 @@ try:
                             print(">>>>: MySQL Error2: %s"      % str(e))
                         print(">>>>: MySQL error3:", cout, addcmd)
                         print(">>>>: MySQL data :",  data)
+                    conn.commit()		# commit to the DB  right away
                 
                 cout += 1	# number of records saved
 
