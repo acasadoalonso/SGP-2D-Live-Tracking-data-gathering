@@ -204,7 +204,7 @@ def genreport(curs, DK):
 #
 ########################################################################
 #
-programver = 'V1.0'
+programver = 'V1.1'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
