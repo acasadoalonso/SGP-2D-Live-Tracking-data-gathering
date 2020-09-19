@@ -108,7 +108,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.07'			# manually set the program version !!!
+programver = 'V2.08'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: "+programver)
 print("==================================================================================")
@@ -137,13 +137,14 @@ day = 0				        # day of running
 commentcnt=0				# counter of comment lines
 maxnerrs = 99                           # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
-comment = False				# comment line from APRS server
+comment  = False			# comment line from APRS server
 datafile = False			# use the datafile on|off
-COMMIT=True				# coomit every keep lives
-prt = False				# use the configuration values
-DATA = True				# use the configuration values
-MEM=False				# built the lastfix flarmId table in memory
-STATIONS=False				# get the stations info
+COMMIT   = True				# coomit every keep lives
+prt      = False			# use the configuration values
+DATA     = True				# use the configuration values
+MEM      = False			# built the lastfix flarmId table in memory
+STATIONS = False			# get the stations info
+STD      = True				# Std case
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -187,14 +188,16 @@ parser.add_argument('-l',  '--LASTFIX',     required=False,
 parser.add_argument('-m',  '--MEM',     required=False,
                     dest='MEM',   action='store', default=False)
 parser.add_argument('-s',  '--STATIONS',     required=False,
-                    dest='STATIONS',   action='store', default=True)
+                    dest='STATIONS',   action='store', default=False)
 args = parser.parse_args()
 prt      = args.prt			# print on|off
 DATA     = args.DATA			# data store on|off
 LASTFIX  = args.LASTFIX			# LASTFIX on|off
 MEM      = args.MEM			# MEM on|off
 STATIONS = args.STATIONS		# stations on|off
-print ("Options: prt:", prt, "DATA:", DATA, "MEM:", MEM, "LASTFIX:", LASTFIX, "STATIONS:", STATIONS)
+if STATIONS:
+   STD = False				# not need to record DATA
+print ("Options: prt:", prt, "DATA:", DATA, "MEM:", MEM, "LASTFIX:", LASTFIX, "STATIONS:", STATIONS, "STD", STD)
 
 if LASTFIX:
     if MEM:
@@ -218,7 +221,7 @@ with open(config.PIDfile, "w") as f:    # create the lock file
 atexit.register(lambda: os.remove(config.PIDfile)) # remove it at exit
 
 
-if OGNT and not LASTFIX:                        	# if we need aggregation of FLARM and OGN trackers data
+if OGNT and not LASTFIX:                # if we need aggregation of FLARM and OGN trackers data
     ognttable = {}            	        # init the instance of the table
     # build the table from the TRKDEVICES DB table
     ogntbuildtable(conn, ognttable, prt)
@@ -249,7 +252,7 @@ if os.path.isfile(compfile) and not LASTFIX and not STATIONS:		# if we are in co
 					# in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
 else:
-					# normal case
+					# normal case either STD or STATIONS
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
 if LASTFIX:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
@@ -600,7 +603,7 @@ try:
 #           -----------------------------------------------------------------
                                                 # write the DB record
 
-            if (DATA or LASTFIX):               # if we need to store on the database
+            if (DATA or LASTFIX or STD):        # if we need to store on the database
                                                 # if we have OGN tracker aggregation and is an OGN tracker
                 if OGNT and ident[0:3] == 'OGN' and not LASTFIX:
 
