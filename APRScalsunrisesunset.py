@@ -4,6 +4,7 @@ import socket
 sys.path.insert(0, '/nfs/OGN/src/funcs')
 hostname = socket.gethostname()
 from parserfuncs import SRSSgetjsondata
+prt=False
 import config
 #
 #	get the sunrise/sunset data

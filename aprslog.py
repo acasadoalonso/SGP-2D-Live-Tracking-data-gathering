@@ -70,6 +70,9 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
         print("Ignore SOCK errors at this time -- shutdown")
     if datafile:
        datafile.close()                 # close the data file
+       if (os.stat(OGN_DATA).st_size == 0):
+           os.system("rm "+OGN_DATA)
+
     print("=====================================")
     print("Sources: ", fsour)           # print the data about the different sources
     print("Aircraft types: ", acfttype) # print the aircraft types
@@ -145,6 +148,7 @@ DATA     = True				# use the configuration values
 MEM      = False			# built the lastfix flarmId table in memory
 STATIONS = False			# get the stations info
 STD      = True				# Std case
+OGN_DATA = ''
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
 fslla = {'NONE  ': 0.0}                 # station location latitude
@@ -724,6 +728,9 @@ except KeyboardInterrupt:
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)	# close down everything
 print("Exit now ... Number of errors: ", err)
+if (OGN_DATA != '' and os.stat(OGN_DATA).st_size == 0):
+    os.system("rm "+OGN_DATA)
+
 if err > maxnerrs:
    now = datetime.utcnow()			# get the UTC time
    print("Restarting python program ...", now, sys.executable, "\n\n")

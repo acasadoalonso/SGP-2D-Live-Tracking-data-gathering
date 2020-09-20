@@ -124,6 +124,14 @@ try:
 except:
     ADSBfile = '/tmp/aircraft.json'
     
+try:
+        prttext     = cfg.get('server', 'prt').strip("'")
+        if     (prttext == 'False'):
+                prt = False
+        else:
+                prt = True
+except:
+        prt         = True
 
 
 DBpath = cfg.get('server', 'DBpath').strip("'").strip('"')
@@ -195,7 +203,8 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 # report the configuration paramenters
 LogData = False
 APP = "APRSLOG"					# the application name
-if 'USER' in os.environ:
+if 'USER' in os.environ and prt:
+
     user = os.environ['USER']
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
