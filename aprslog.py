@@ -728,8 +728,6 @@ except KeyboardInterrupt:
 print (">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)	# close down everything
 print("Exit now ... Number of errors: ", err)
-if (OGN_DATA != '' and os.stat(OGN_DATA).st_size == 0):
-    os.system("rm "+OGN_DATA)
 
 if err > maxnerrs:
    now = datetime.utcnow()			# get the UTC time
