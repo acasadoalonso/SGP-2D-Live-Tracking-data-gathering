@@ -51,8 +51,8 @@ mv cuc/*lst  cuc/archive	2>/dev/null
 cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
-sudo wget "http://localhost/node/heatmap.php" -o tempfile 							     >/dev/null     2>/dev/null
-sudo rm tempfile* heatmap.php.*  										     >/dev/null     2>/dev/null
+sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 							     >/dev/null     2>/dev/null
+sudo rm /tmp/tempfile* heatmap.php.*  										     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
@@ -72,16 +72,20 @@ echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-p
 date														     >>APRSproc.log 2>/dev/null
 if [ -d /var/www/html/files ]
 then
-	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql     2>/dev/null
-	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql    2>/dev/null
-	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump    2>/dev/null
+	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql  2>/dev/null
+	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql 2>/dev/null
+	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump 2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 if [[ $(hostname) == 'CHILEOGN' ]]
 then
-   mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG TRKDEVICES  >/var/www/html/files/TRKDEVICES.sql     2>/dev/null
+   mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG TRKDEVICES  >/var/www/html/files/TRKDEVICES.sql 2>/dev/null
 else
-   wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
+   if [[ -f TRKDEVICES.sql ]]
+   then
+      rm TRKDEVICES.sql												     >/dev/null 2>/dev/null
+   fi
+   wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql						     >/dev/null 2>/dev/null
 fi
 if [[ -f TRKDEVICES.sql && $(hostname) != 'CHILEOGN' ]]
 then
@@ -96,12 +100,12 @@ fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat ~/src/APRSsrc/sh/mailnames.txt)
-mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 	2>/dev/null
-mv aprs.log  archive/APRSlog$(date +%y%m%d).log      	2>/dev/null
-mv DATA*.log archive					2>/dev/null
-mv APRS*.log archive  					2>/dev/null
-rm APRS.alive  						2>/dev/null
+mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 								     2>/dev/null
+mv aprs.log  archive/APRSlog$(date +%y%m%d).log      								     2>/dev/null
+mv DATA*.log archive												     2>/dev/null
+mv APRS*.log archive  												     2>/dev/null
+rm APRS.alive  													     2>/dev/null
 cd ~/src/APRSsrc
-sudo  rm   /var/www/html/node/nohup.out	     >/dev/null 2>/dev/null
+sudo  rm   /var/www/html/node/nohup.out	     							    		     >/dev/null 2>/dev/null
 cd
 
