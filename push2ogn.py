@@ -86,9 +86,8 @@ if os.path.exists(config.PIDfile+"PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 #
-APP = "PUSH2OGN"			# the application name
+APP         = "PUSH2OGN"		# the application name
 SLEEP       = 10			# sleep 10 seconds in between calls to the APRS
-i           = 0                         # loop counter
 nerrors     = 0				# number of errors in *funcs found
 day         = 0				# day of running
 TimeSPOTSPIDERINREACH   = 300           # time in second from each run
