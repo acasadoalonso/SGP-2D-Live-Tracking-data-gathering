@@ -234,6 +234,7 @@ def spiaprspush(data, conn, prt=False):
             aprsmsg += "A=%06d" % int(altitude*3.28084)
         aprsmsg += " id"+uniqueid+" +"+sensitivity+"dB "+id+" "+extpos + "\n"
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
         print("APRSMSG : ", aprsmsg)
 
     return(True)

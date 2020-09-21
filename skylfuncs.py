@@ -174,6 +174,7 @@ def skylaprspush(datafix, conn, prt=False):
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" \n"
         print("APRSMSG: ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
 
     return (True)
 

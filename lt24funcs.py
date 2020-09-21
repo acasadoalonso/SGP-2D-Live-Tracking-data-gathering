@@ -311,6 +311,7 @@ def lt24aprspush(datafix, prt=False):		# push the data to the OGN APRS
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roc))+gps+" \n"
         print("APRSMSG : ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
 
     return True
 #-------------------------------------------------------------------------------------------------------------------#

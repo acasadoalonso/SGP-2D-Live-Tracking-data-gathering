@@ -150,7 +150,7 @@ def adsbaprspush(datafix, conn, prt=False):
         sensitivity = 0
         gps = fix['GPS']
         uniqueid = fix["UnitID"]
-        uniqueid = '06'+uniqueid[3:]
+        uniqueid = '0D'+uniqueid[3:]
         dist = fix['dist']
         extpos = fix['extpos']
         flight = fix['flight']
@@ -169,12 +169,15 @@ def adsbaprspush(datafix, conn, prt=False):
         ccc = "%03d" % int(course)
         sss = "%03d" % int(speed)
         aprsmsg = id+">OGADSB,qAS,ADSB:/" + \
-            hora+'h'+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
+            hora+'h'+lat+"\\"+lon+"^"+ccc+"/"+sss+"/"
         if altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+flight+" \n"
         print("APRSMSG: ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
+        if rtn == 0:
+           print ("Error writing msg:", aprsmsg)
 
     return (True)
 

@@ -152,6 +152,7 @@ def captaprspush(datafix, prt=False):	# push the data into the OGN APRS
             aprsmsg += "A=%06d" % int(altitude*3.28084)
         aprsmsg += " id"+uniqueid+" \n"
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
         print("APRSMSG : ", aprsmsg)
     return(True)
 

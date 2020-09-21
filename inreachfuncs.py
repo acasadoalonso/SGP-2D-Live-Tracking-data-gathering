@@ -224,6 +224,7 @@ def inreachaprspush(datafix, prt=False):    # push the data into the OGN APRS
         aprsmsg += " id"+uniqueid+" "+gps+" "+extpos+" "+pilotname+" \n"
         print("APRSMSG : ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.flush()
     return(True)
 
 

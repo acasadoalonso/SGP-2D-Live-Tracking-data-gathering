@@ -18,6 +18,8 @@ import MySQLdb                          # the SQL data base routines^M
 from parserfuncs import *               # the ogn/ham parser functions
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
+import argparse
+
 #########################################################################
 
 
@@ -62,7 +64,7 @@ def prttime(unixtime):
 
 #
 ########################################################################
-programver = 'V2.0'
+programver = 'V2.1'
 print("\n\nStart PUSH2OGN "+programver)
 print("===================")
 
@@ -80,7 +82,7 @@ print("Time now is: ", date, " Local time")
 #
 # --------------------------------------#
 import config                           # get the configuration data
-if os.path.exists(config.PIDfile):
+if os.path.exists(config.PIDfile+"PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 #
@@ -100,14 +102,35 @@ DBuser      = config.DBuser
 DBpasswd    = config.DBpasswd
 DBname      = config.DBname
 # we force everything TRUE as we try to push to the APRS
-SPIDER      = True
-SPOT        = True
-INREACH     = True
-CAPTURS     = True
-SKYLINE     = True
-LT24        = True
-ADSB        = True
 OGNT        = True
+parser = argparse.ArgumentParser(description="OGN push to the APRS network and store it on the MySQL database")
+parser.add_argument('-p',  '--print',     required=False,
+                    dest='prt',   action='store', default=False)
+parser.add_argument('-r',  '--SPIDER',     required=False,
+                    dest='SPIDER',   action='store', default=False)
+parser.add_argument('-s',  '--SPOT',     required=False,
+                    dest='SPOT',   action='store', default=False)
+parser.add_argument('-i',  '--INREACH',     required=False,
+                    dest='INREACH',   action='store', default=False)
+parser.add_argument('-k',  '--SKYLINE',     required=False,
+                    dest='SKYLINE',   action='store', default=False)
+parser.add_argument('-c',  '--CAPTURS',     required=False,
+                    dest='CAPTURS',   action='store', default=False)
+parser.add_argument('-l',  '--LT24',     required=False,
+                    dest='LT24',   action='store', default=False)
+parser.add_argument('-a',  '--ADSB',     required=False,
+                    dest='ADSB',   action='store', default=False)
+
+args = parser.parse_args()
+prt        = args.prt			# print on|off
+SPIDER     = args.SPIDER
+SPOT       = args.SPOT
+INREACH    = args.INREACH
+CAPTURS    = args.CAPTURS
+SKYLINE    = args.SKYLINE
+LT24       = args.LT24	
+ADSB       = args.ADSB
+print ("Setup: SPIDER:", SPIDER, "SPOT:",SPOT,"INREACH:",INREACH,"CAPTURS:", CAPTURS,"SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -151,7 +174,7 @@ curs = conn.cursor()               # set the cursor
 
 print("MySQL: Database:", DBname, " at Host:", DBhost)
 
-#----------------------ogn_aprspush.py start-----------------------#
+#----------------------pus2ogn.py start-----------------------#
 
 prtreq = sys.argv[1:]              # check if the prt arg is there
 if prtreq and prtreq[0] == 'prt':
@@ -159,10 +182,10 @@ if prtreq and prtreq[0] == 'prt':
 else:
     prt = False
 
-with open(config.PIDfile, "w") as f:  # set the lock file  as the pid
+with open(config.PIDfile+"PUSH2OGN", "w") as f:  # set the lock file  as the pid
     f.write(str(os.getpid()))
     f.close()
-atexit.register(lambda: os.remove(config.PIDfile))
+atexit.register(lambda: os.remove(config.PIDfile+"PUSH2OGN"))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -223,7 +246,7 @@ if LT24:
     LT24firsttime = True
 
 
-if SPIDER or SPOT or INREACH or CAPTURS or LT24i or ADSB:
+if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB:
     print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
 
 date = datetime.now()
