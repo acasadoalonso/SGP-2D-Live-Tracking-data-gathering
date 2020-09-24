@@ -6,12 +6,14 @@ global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
 ####################################################################
 
+DDB_URL = "http://ddb.glidernet.org/download/?j=2"
+#DDB_URL = "http://localhost:82/download/?j=2"  # the OGN DDB source
 
 def getddbdata():                           # get the data from the API server
 
     global _ogninfo_                        # the OGN info data
-    url = "http://ddb.glidernet.org/download/?j=1"  # the OGN DDB source
-    req = urllib.request.Request(url)
+    url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
+    req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")
     r = urllib.request.urlopen(req)         # open the url resource
@@ -106,7 +108,6 @@ def getognmodel(devid):                     # get the ogn aircraft model from th
 
 ###################################################################
 
-DDB_URL = "http://ddb.glidernet.org/download/?j=1"
 
 
 def get_ddb_devices():
@@ -115,4 +116,16 @@ def get_ddb_devices():
         device.update({'identified': device['identified'] == 'Y',
                        'tracked': device['tracked'] == 'Y'})
         yield device
+
+def get_by_dvt(devdvt,dvt):
+    global _ogninfo_                        # the OGN info dataa
+    cnt = 0
+    if len(_ogninfo_) == 0:
+        _ogninfo_ = getddbdata()
+    devices = _ogninfo_["devices"]          # access to the ddbdata
+    for device in devices:
+        if device['device_type'] == dvt:
+           devdvt.append(device)
+           cnt += 1
+    return (cnt)
 
