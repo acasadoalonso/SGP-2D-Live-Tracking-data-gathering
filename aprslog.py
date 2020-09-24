@@ -201,7 +201,7 @@ MEM      = args.MEM			# MEM on|off
 STATIONS = args.STATIONS		# stations on|off
 if STATIONS:
    STD = False				# not need to record DATA
-print ("Options: prt:", prt, "DATA:", DATA, "MEM:", MEM, "LASTFIX:", LASTFIX, "STATIONS:", STATIONS, "STD", STD)
+print ("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD", STD)
 
 if LASTFIX:
     if MEM:

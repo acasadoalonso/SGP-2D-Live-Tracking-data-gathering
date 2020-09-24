@@ -30,6 +30,8 @@ echo "=================================================="	#
 echo " "							#
 echo								#
 cd /var/www/html/main						#
+sudo apt-get install -y tasksel  				#
+sudo tasksel install lamp-server                                #
 sudo apt-get install -y mysql-server mysql-client sqlite3	#
 sudo apt-get install -y python3-dev python3-pip 		#
 sudo apt-get install -y python-mysqld  				#

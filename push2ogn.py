@@ -82,7 +82,7 @@ print("Time now is: ", date, " Local time")
 #
 # --------------------------------------#
 import config                           # get the configuration data
-if os.path.exists(config.PIDfile+"PUSH2OGN"):
+if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 #
@@ -181,10 +181,10 @@ if prtreq and prtreq[0] == 'prt':
 else:
     prt = False
 
-with open(config.PIDfile+"PUSH2OGN", "w") as f:  # set the lock file  as the pid
+with open(config.PIDfile+".PUSH2OGN", "w") as f:  # set the lock file  as the pid
     f.write(str(os.getpid()))
     f.close()
-atexit.register(lambda: os.remove(config.PIDfile+"PUSH2OGN"))
+atexit.register(lambda: os.remove(config.PIDfile+".PUSH2OGN"))
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
