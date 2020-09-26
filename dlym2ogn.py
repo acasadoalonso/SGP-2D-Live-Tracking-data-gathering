@@ -455,7 +455,7 @@ try:
         if len(packet_str) == 0:
             numerr += 1				# increase error counter
             if numerr > maxnerrs:		# if too mane errors
-                print("Read returns zero length string. Failure.  Orderly closeout", err)
+                print("Read returns zero length string. Failure.  Orderly closeout", numerr)
                 date = datetime.now()
                 print("UTC now is: ", date)
                 break
