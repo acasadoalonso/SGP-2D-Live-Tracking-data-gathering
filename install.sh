@@ -60,8 +60,10 @@ sudo apt-get install -y phpmyadmin 				#
 sudo service apache2 restart					#
 sudo -H python3 -m pip install --upgrade pip			#
 pip3 -V								#
-sudo -H python3 -m pip install ephem pytz geopy configparser pycountry	#
-sudo -H python3 -m pip install tqdm psutil rsa				#
+sudo -H python3 -m pip install ephem pytz geopy configparser 	#
+sudo -H python3 -m pip install pycountry			#
+sudo -H python3 -m pip install beeprint ogn.client		#
+sudo -H python3 -m pip install tqdm psutil rsa M2crypto		#
 sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 uninstall mysqlclient				#
 sudo -H pip3 install --no-binary mysqlclient mysqlclient	#

@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 from ognddbfuncs import getognchk
-import MySQLdb 
 unkglider = []
 
 
 def getflarmid(conn, registration): # get the FLARMID from the GLIDERS table on the database
 
+    import MySQLdb 
     cursG = conn.cursor()           # set the cursor for searching the devices
     try:
         cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")

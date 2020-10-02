@@ -14,7 +14,7 @@ then
 #               restart OGN data collector
                 bash ~/src/APRSsrc/main/sh/aprslog.sh 
                 logger -t $0 "APRS Log seems down, restarting"
-                echo $(date)" - "$(hostname)  >>/nfs/OGN/SWdata/.APRSrestart.log
+                echo $(date)" - "$(hostname)" - APRSLOG "  >>/nfs/OGN/SWdata/.APRSrestart.log
 else
                 logger -t $0 "APRS Log is alive"
 		rm $alive

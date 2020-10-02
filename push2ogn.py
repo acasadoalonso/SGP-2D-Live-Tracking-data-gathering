@@ -14,7 +14,6 @@ import os
 import os.path
 import signal
 import atexit
-import MySQLdb                          # the SQL data base routines^M
 from parserfuncs import *               # the ogn/ham parser functions
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
@@ -30,8 +29,9 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
         sock.close()                    # close the connection file
     except Exception as e:
         print("Socket error...")
-    conn.commit()                       # commit the DB updates
-    conn.close()                        # close the database
+    if conn:
+       conn.commit()                    # commit the DB updates
+       conn.close()                     # close the database
     local_time = datetime.now()         # report date and time now
     print("Shutdown now, Time now:", local_time, " Local time.")
     if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
@@ -119,6 +119,8 @@ parser.add_argument('-l',  '--LT24',     required=False,
                     dest='LT24',   action='store', default=False)
 parser.add_argument('-a',  '--ADSB',     required=False,
                     dest='ADSB',   action='store', default=False)
+parser.add_argument('-u',  '--USEDDB',     required=False,
+                    dest='USEDDB',   action='store', default=False)
 
 args = parser.parse_args()
 prt        = args.prt			# print on|off
@@ -129,6 +131,7 @@ CAPTURS    = args.CAPTURS
 SKYLINE    = args.SKYLINE
 LT24       = args.LT24	
 ADSB       = args.ADSB
+USEDDB     = args.USEDDB
 print ("Setup: SPIDER:", SPIDER, "SPOT:",SPOT,"INREACH:",INREACH,"CAPTURS:", CAPTURS,"SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
 # --------------------------------------#
 
@@ -152,6 +155,7 @@ if SKYLINE:
 
 if ADSB:
     from adsbfuncs import *
+    SLEEP = 5
 
 if LT24:
     from lt24funcs import *
@@ -168,10 +172,13 @@ if LT24:
 
 
 # -----------------------------------------------------------------#
-conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
-curs = conn.cursor()               # set the cursor
-
-print("MySQL: Database:", DBname, " at Host:", DBhost)
+if not USEDDB:
+   import MySQLdb                          # the SQL data base routines^M
+   conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
+   print("MySQL: Database:", DBname, " at Host:", DBhost)
+else:
+   print("Using the OGN DDB.")
+   conn = False
 
 #----------------------pus2ogn.py start-----------------------#
 

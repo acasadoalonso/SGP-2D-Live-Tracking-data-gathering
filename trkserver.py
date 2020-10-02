@@ -74,7 +74,7 @@ def storedb(curs, data, prt=False):	# store the data on the MySQL DB
 ########################################################################
 #
 
-programver = 'V1.0'
+programver = 'V1.1'
 pidfile="/tmp/TRKS.pid"
 print("\n\nStart TRKSTATUS  "+programver)
 print("=====================")
@@ -127,11 +127,16 @@ with open(pidfile, "w") as f:		# set the lock file  as the pid
     f.write(str(os.getpid()))
     f.close()
 atexit.register(lambda: os.remove(pidfile))
-
+now=datetime.utcnow()
+day=now.day
 #########################################################################################
 try:					# server process receive the TRKSTATUS messages and store it on the DDBB
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
+    try:
+       s.bind((HOST, PORT))
+    except:
+       time.sleep(30)
+       s.bind((HOST, PORT))
     s.listen(1)
     socket=s
     conn, addr = s.accept()
@@ -139,6 +144,13 @@ try:					# server process receive the TRKSTATUS messages and store it on the DDB
     with conn:
         print('Connected by', addr)
         while True:			# for ever while connected
+            now = datetime.utcnow()		# get the UTC time
+            if now.day != day:	        # check if day has changed
+                print("End of Day...Day: ", day,"\n\n")	# end of UTC day
+                shutdown(cond)		# recycle
+                print("Bye ... :", count,"\n\n\n")	# end of UTC day
+                exit(0)
+
             data = conn.recv(1024)	# receive the TRKSTATUS message
             if not data: break		# if cancel the client
             count += 1

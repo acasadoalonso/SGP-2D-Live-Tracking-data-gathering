@@ -6,8 +6,8 @@ global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
 ####################################################################
 
-DDB_URL = "http://ddb.glidernet.org/download/?j=2"
-#DDB_URL = "http://localhost:82/download/?j=2"  # the OGN DDB source
+#DDB_URL = "http://ddb.glidernet.org/download/?j=2"
+DDB_URL = "http://ubuntu:82/download/?j=2"  # the OGN DDB source
 
 def getddbdata():                           # get the data from the API server
 
@@ -75,8 +75,7 @@ def getognflarmid(registration):            # get the FlarmID based on the regis
             elif dev['device_type'] == "O":
                 dvce = "OGN"+dev['device_id']
             else:
-                dvce = "UNK"+dev['device_id']
-
+                continue	            # Registrion found, but is not a Flarm/tracker
             return dvce                     # return the flarmID
 
     return "NOFlarm"                        # if not found !!!

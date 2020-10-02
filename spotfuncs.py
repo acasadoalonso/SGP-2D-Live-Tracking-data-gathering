@@ -174,17 +174,32 @@ def spotaprspush(datafix, prt=False):       # push the data into the OGN APRS
         print("APRSMSG : ", aprsmsg)
     return(True)
 
+def spotgetdata(spotID, spotpasswd, prt):
+                                            # build the URL to call to the SPOT server
+     if spotpasswd == '' or spotpasswd == None:
+         url = "https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" + \
+             spotID+"/message.json"
+     else:
+         url = "https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" + \
+             spotID+"/message.json?feedPassword="+str(spotpasswd)
+     if prt:
+         print(url)
+                                            # get the JSON data from the SPOT server
+     jsondata = spotgetapidata(url)
+     if prt:				    # if we require printing the raw data
+         j = json.dumps(jsondata, indent=4)  # convert JSON to dictionary
+         print(j)
+     return(jsondata)
 
                                             # find all the fixes since TTIME
 def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):
-
     foundone = False			    # asume no found
-    curs = conn.cursor()                    # set the cursor for storing the fixes
-    cursG = conn.cursor()                   # set the cursor for searching the devices
+    if conn:
+      curs = conn.cursor()                    # set the cursor for storing the fixes
+      cursG = conn.cursor()                   # set the cursor for searching the devices
                                             # get all the devices with SPOT
-    cursG.execute(
-        "select id, spotid, spotpasswd, active, flarmid, registration from TRKDEVICES where devicetype = 'SPOT'; ")
-    for rowg in cursG.fetchall(): 	    # look for that registration on the OGN database
+      cursG.execute("select id, spotid, spotpasswd, active, flarmid, registration from TRKDEVICES where devicetype = 'SPOT'; ")
+      for rowg in cursG.fetchall(): 	    # look for that registration on the OGN database
 
         reg = rowg[0]		            # registration to report
         spotID = rowg[1]		    # SPOTID
@@ -201,28 +216,13 @@ def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             chkflarmid(flarmid)
         if flarmid == "NOREG":              # in case of no registration on the DDBa
             flarmid=getognflarmid(registration)
-        if flarmid == "NOREG":              # in case of no registration on the DDB
+        if flarmid == "NOFlarm":              # in case of no registration on the DDB
             print(">>>> Reg", reg, "spotID", spotID, "FlarmID", flarmid, "Registration", registration, "<<<<<<\n")
             flarmid = registration          # just print warning and use the registration
-
-                                            # build the URL to call to the SPOT server
-        if spotpasswd == '' or spotpasswd == None:
-            url = "https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" + \
-                spotID+"/message.json"
-        else:
-            url = "https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" + \
-                spotID+"/message.json?feedPassword="+str(spotpasswd)
-        if prt:
-            print(url)
-        spotpos = {"spotpos": []}	    # init the dict
-                                            # get the JSON data from the SPOT server
-        jsondata = spotgetapidata(url)
-        if prt:				    # if we require printing the raw data
-            j = json.dumps(jsondata, indent=4)  # convert JSON to dictionary
-            print(j)
+        jsondata=spotgetdata(spotID,spotpasswd,prt) 
                                             # find the gliders since TTIME
-        found = spotgetaircraftpos(
-            jsondata, spotpos, ttime, reg, flarmid, prt=False)
+        spotpos = {"spotpos": []}    	    # init the dict
+        found = spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid, prt=False)
         if found:
             foundone = True
         if prt:
@@ -231,7 +231,35 @@ def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             spotstoreitindb(spotpos, curs, conn)  # and store it on the DDBB
         if aprspush:
             spotaprspush(spotpos, prt)	    # and push the data into the APRS
-
+    else:
+      devdvt=[]
+      n=get_by_dvt(devdvt, "S")
+      if n > 0:
+         for dev in devdvt:
+             if (dev['tracked'] == 'N' or dev['identified'] == 'N' or dev['device_active'] == 'N' or dev['aircraft_active'] == 'N' ):
+                continue		# nothing to do
+             spotID = dev['device_id']
+             if 'device_password' in dev:
+                spotpasswd = dev['device_password']
+             else:
+                spotpasswd = ''		# no password support yet
+             registration=dev['registration']
+             aprsid=dev['device_aprsid'] # APRS ID assigned
+             reg=aprsid
+             flarmid=getognflarmid(registration)   # get the flarmid for ogn ddb in case of device match
+             if flarmid == "NOFlarm":              # in case of no registration on the DDB
+                 print(">>>> Reg", aprsid, "spotID", spotID, "FlarmID", flarmid, "Registration", registration, "<<<<<<\n")
+                 flarmid = aprsid                # just print warning and use the registration
+             
+             jsondata=spotgetdata(spotID,spotpasswd,prt) 
+             spotpos = {"spotpos": []}    	    # init the dict
+             found = spotgetaircraftpos(jsondata, spotpos, ttime, reg, flarmid, prt=False)
+             if found:
+                 foundone = True
+             if prt:
+                 print(spotpos)
+             if aprspush:
+                 spotaprspush(spotpos, prt)	    # and push the data into the APRS
     if foundone:
         now = datetime.utcnow()
                                             # number of second until beginning of the day of 1-1-1970

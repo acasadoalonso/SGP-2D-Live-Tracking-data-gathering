@@ -52,7 +52,7 @@ cd /nfs/OGN/SWdata
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
 sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 							     >/dev/null     2>/dev/null
-sudo rm /tmp/tempfile* heatmap.php.*  										     >/dev/null     2>/dev/null
+sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
@@ -94,6 +94,7 @@ then
 	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        	     >>APRSproc.log 2>/dev/null
 
 	rm /tmp/TRKDEVICES.sql
+        mv      TRKDEVICES.sql archive
 else
         pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server 		     >>APRSproc.log 2>/dev/null
 fi

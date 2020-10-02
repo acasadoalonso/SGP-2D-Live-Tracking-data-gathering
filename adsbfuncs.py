@@ -10,7 +10,6 @@ import sys
 import os
 import signal
 from geopy.distance import geodesic       # use the Vincenty algorithm^M
-import MySQLdb                            # the SQL data base routines^M
 from pprint import pprint
 import hashlib
 import hmac
@@ -95,6 +94,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
 
 def adsbstoreitindb(datafix, curs, conn):   # store the fix into the database
 
+    import MySQLdb                          # the SQL data base routines^M
     for fix in datafix['adsbpos']:	    # for each fix on the dict
         id = fix['ICAOID']		    # extract the information
         dte = fix['date']
