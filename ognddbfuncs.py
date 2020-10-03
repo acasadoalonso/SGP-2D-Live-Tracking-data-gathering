@@ -6,13 +6,13 @@ global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
 ####################################################################
 
-#DDB_URL = "http://ddb.glidernet.org/download/?j=2"
-DDB_URL = "http://ubuntu:82/download/?j=2"  # the OGN DDB source
+DDB_URL = "http://ddb.glidernet.org/download/?j=2"
+DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
 
 def getddbdata():                           # get the data from the API server
 
     global _ogninfo_                        # the OGN info data
-    url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
+    #url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
     req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")

@@ -44,7 +44,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
         ttt=adsbnow-msg['seen']		    # when the aircraft was seen
                                             # number of second until beginning of the day
         ts = int(ttt)       		    # Unix time - seconds from the epoch
-        t=datetime.fromtimestamp(ts)
+        t=datetime.utcfromtimestamp(ts)
         #print ("TTT:", t, ts, (adsbnow-ts) , adsbnow, msg)
         if "lon" in msg:
             lon = msg['lon']
@@ -168,11 +168,11 @@ def adsbaprspush(datafix, conn, prt=False):
 
         ccc = "%03d" % int(course)
         sss = "%03d" % int(speed)
-        aprsmsg = id+">OGADSB,qAS,ADSB:/" + \
+        aprsmsg = id+">OGADSB,qAS,"+config.ADSBname+":/" + \
             hora+'h'+lat+"\\"+lon+"^"+ccc+"/"+sss+"/"
         if altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
-        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+flight+" \n"
+        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" fn"+flight+" \n"
         print("APRSMSG: ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
