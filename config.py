@@ -123,6 +123,10 @@ try:
     ADSBfile = cfg.get('location', 'ADSBfile').strip("'").strip('"')
 except:
     ADSBfile = '/tmp/aircraft.json'
+try:
+    ADSBname = cfg.get('location', 'ADSBname').strip("'").strip('"')
+except:
+    ADSBname = 'ADSBrecvr'
     
 try:
         prttext     = cfg.get('server', 'prt').strip("'")
