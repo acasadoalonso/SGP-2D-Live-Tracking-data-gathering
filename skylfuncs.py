@@ -11,7 +11,6 @@ import os
 import signal
 from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
-from pprint import pprint
 import hashlib
 import hmac
 import urllib.request, urllib.parse, urllib.error

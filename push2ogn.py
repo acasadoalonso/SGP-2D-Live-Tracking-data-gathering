@@ -82,9 +82,6 @@ print("Time now is: ", date, " Local time")
 #
 # --------------------------------------#
 import config                           # get the configuration data
-if os.path.exists(config.PIDfile+".PUSH2OGN"):
-    raise RuntimeError("APRSpush already running !!!")
-    exit(-1)
 #
 APP         = "PUSH2OGN"		# the application name
 SLEEP       = 10			# sleep 10 seconds in between calls to the APRS
@@ -132,6 +129,10 @@ SKYLINE    = args.SKYLINE
 LT24       = args.LT24	
 ADSB       = args.ADSB
 USEDDB     = args.USEDDB
+# --------------------------------------#
+if os.path.exists(config.PIDfile+".PUSH2OGN"):
+    raise RuntimeError("APRSpush already running !!!")
+    exit(-1)
 print ("Setup: SPIDER:", SPIDER, "SPOT:",SPOT,"INREACH:",INREACH,"CAPTURS:", CAPTURS,"SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
 # --------------------------------------#
 
@@ -273,6 +274,9 @@ try:
 
             try:					# lets send a message to the APRS for keep alive
                 rtn = sock_file.write("#Python ogn aprspush App\n\n")
+                if ADSB:
+                    func='ADSB'
+                    adsbsetrec(sock_file, prt=prt, store=False, aprspush=True)
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
 
             except Exception as e:

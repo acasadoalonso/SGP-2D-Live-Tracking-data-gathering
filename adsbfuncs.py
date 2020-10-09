@@ -10,7 +10,6 @@ import sys
 import os
 import signal
 from geopy.distance import geodesic       # use the Vincenty algorithm^M
-from pprint import pprint
 import hashlib
 import hmac
 import urllib.request, urllib.parse, urllib.error
@@ -19,6 +18,8 @@ import config
 from flarmfuncs import *
 from parserfuncs import deg2dmslat, deg2dmslon
 
+import psutil
+MUT=False
 #-------------------------------------------------------------------------------------------------------------------#
 
 
@@ -54,22 +55,35 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
             lat = msg['lat'] 		    # extract the longitude and latitude
         else:
             continue
-        if "altitude" in msg:
-            alt = msg["altitude"] 		    # and the altitude
-        else:
-            continue
         gps = "NO"
         extpos = "NO"
         roc=0
+        rot=0
         dir=0
         spd=0
-        if "vert_rate" in msg:
+        if MUT:
+           if "vert_rate" in msg:
                 roc = msg['vert_rate']
+           if "speed" in msg:
+                spd = msg['speed']
+           if "altitude" in msg:
+                alt = msg["altitude"] 		# and the altitude
+           else:
+                continue
+        else:
+           if "baro_rate" in msg:		# rate of climb in fpm
+                roc = msg['baro_rate']
+           if "track_rate" in msg:
+                rot = msg['track_rate']		# rate of turn in degrees per second
+           if "gs" in msg:
+                spd = msg['gs']			# ground speed in knots
+           if "alt_baro" in msg:
+                alt = msg["alt_baro"] 		# and the altitude in feet
+           else:
+                continue
+
         if "track" in msg:
                 dir = msg['track']
-        if "speed" in msg:
-                spd = msg['speed']
-
         date = t.strftime("%y%m%d")
         tme  = t.strftime("%H%M%S")
         foundone = True
@@ -78,7 +92,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
         vitlon = config.FLOGGER_LONGITUDE
         distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
         pos = {"ICAOID": aid,  "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
-               "dist": distance, "course": dir, "speed": spd, "roc": roc, "GPS": gps, "extpos": extpos , "flight": flg }
+               "dist": distance, "course": dir, "speed": spd, "roc": roc, "rot":rot, "GPS": gps, "extpos": extpos , "flight": flg }
         #print "SSS:", ts, ttime, pos
         if ts < ttime+3:		    # check if the data is from before
             continue		            # in that case nothing to do
@@ -106,7 +120,7 @@ def adsbstoreitindb(datafix, curs, conn):   # store the fix into the database
         speed = fix['speed']
         course = fix['course']
         roclimb = fix['roc']
-        rot = 0
+        rot = fix['rot']
         sensitivity = 0
         gps = fix['GPS']
         uniqueid = str(fix["UnitID"])
@@ -146,11 +160,11 @@ def adsbaprspush(datafix, conn, prt=False):
         speed = fix['speed']
         course = fix['course']
         roclimb = fix['roc']
-        rot = 0
+        rot = fix['rot']
         sensitivity = 0
         gps = fix['GPS']
         uniqueid = fix["UnitID"]
-        uniqueid = '09'+uniqueid[3:]
+        uniqueid = '25'+uniqueid[3:]
         dist = fix['dist']
         extpos = fix['extpos']
         flight = fix['flight']
@@ -172,7 +186,7 @@ def adsbaprspush(datafix, conn, prt=False):
             hora+'h'+lat+"\\"+lon+"^"+ccc+"/"+sss+"/"
         if altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
-        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" fn"+flight+" \n"
+        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot fn"+flight+" \n"
         print("APRSMSG: ", aprsmsg)
         rtn = config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
@@ -182,7 +196,36 @@ def adsbaprspush(datafix, conn, prt=False):
     return (True)
 
 #-------------------------------------------------------------------------------------------------------------------#
+#LEMD>OGNSDR,TCPIP*,qAC,GLIDERN2:/141436h4030.49NI00338.59W&/A=002280
+#LEMD>OGNSDR,TCPIP*,qAC,GLIDERN2:>141436h v0.2.8.RPI-GPU CPU:0.6 RAM:710.8/972.2MB NTP:0.3ms/-5.5ppm +56.9C 2/2Acfts[1h] RF:+50-3.2ppm/+0.76dB/+47.4dB@10km[3859]
 
+RPI = True
+
+ 
+def adsbsetrec(sock, prt=False, store=False, aprspush=False):
+        t    = datetime.utcnow()       		# get the date
+        tme  = t.strftime("%H%M%S")
+        aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h4030.49NI00338.59W&/A=002280 \n"
+        print("APRSMSG: ", aprsmsg)
+        rtn = sock.write(aprsmsg)
+        sock.flush()
+        if rtn == 0:
+           print ("Error writing msg:", aprsmsg)
+        if RPI:
+           from gpiozero import CPUTemperature
+           tcpu   = CPUTemperature()
+           tempcpu= tcpu.temperature
+        else:
+           tempcpu = 0.0
+        cpuload =psutil.cpu_percent()/100
+        memavail=psutil.virtual_memory().available/(1024*1024)
+        memtot  =psutil.virtual_memory().total/(1024*1024)
+        aprsmsg =config.ADSBname+">OGNSDR,TCPIP*:>"+tme+"h v0.2.8.ADSB CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
+        print("APRSMSG: ", aprsmsg)
+        rtn = sock.write(aprsmsg)
+        sock.flush()
+
+        return
 
 # find all the fixes since TTIME . Scan all the adsb devices for new data
 def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
