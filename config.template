@@ -10,9 +10,9 @@ MySQL    =False
 ; server where the databse is hosted
 DBhost   =localhost
 DBuser   =ogn
-DBpasswd =ogn
+DBpasswd =psw
 DBuserread   =ognread
-DBpasswdread =ognread
+DBpasswdread =psw
 DBname   =APRSLOG
 OGNDB    =OGNDB
 LogData  =True
@@ -62,6 +62,15 @@ SPIDER             = False
 SPOT               = False
 ; if LiveTrack24 clients data is used ???
 LT24               = False
+ADSB		   = False
+ADSBHOST           = "localhost"
+ADSBfile           = "/nfs/tmp/aircraft.json"
+ADSBname           = "LEMDadsb"
+INREACH            = False
+LT24               = False
+SKYLINE            = False
+CAPTURS            = False
+OGNT               = True
 
 [filter]
 ; further filter to the data to be saved in order to improve the performance
