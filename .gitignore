@@ -19,3 +19,4 @@ kglid.py
 main/
 dockerfiles/BaseImage/.vagrant
 dockerfiles/.vagrant
+BasicAircraftLookup.sqb
