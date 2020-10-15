@@ -13,7 +13,7 @@ cd ~/src/APRSsrc
 wget http://www.virtualradarserver.co.uk/Files/BasicAircraftLookup.sqb.gz
 rm BasicAircraftLookup.sqb
 gunzip BasicAircraftLookup.sqb.gz
-python3 genadsbreg.py 
+python3 genadsbreg.py  -f true
 date										
 echo "DELETE FROM Aircraft ; "                      | mysql --login-path=SARogn -v APRSLOG -h $server	
 echo ".dump Aircraft " | sqlite3 *sqb  | sed -e '1,11d' | sed -n -e :a -e '1,4!{P;N;D;};N;ba'  | mysql --login-path=SARogn  APRSLOG -h $server		   

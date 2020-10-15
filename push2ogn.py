@@ -256,6 +256,8 @@ if LT24:
 if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB:
     print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
 
+
+
 date = datetime.now()
 
 try:
@@ -362,6 +364,9 @@ try:
 
                 print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
                     tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
+            if ADSB and spispotcount % 10 == 0:
+
+                print ("ADSB Cache size", getsizeadsbcache())
 
         except Exception as e:
             print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))

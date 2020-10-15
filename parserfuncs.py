@@ -464,7 +464,7 @@ def parseraprs(packet_str, msg):
             msg['status']           = status
             msg['source']           = source
             return (msg)
-
+# ===================================================================================================== #
         # if std records            aprs_aircraft or tracker
         station = destination
 
@@ -575,6 +575,17 @@ def parseraprs(packet_str, msg):
                       
         if 'symboltable' in packet and 'symbolcode' in packet:
               msg['acfttype']=get_aircraft_type(packet['symboltable'], packet['symbolcode'])
+        if source == "ADSB":
+              fn   =gdatar(data," fn")
+              reg  =gdatar(data," reg")
+              model=gdatar(data," model")
+              if fn != ' ':
+                 msg['fn']=fn
+              if reg != ' ':
+                 msg['reg']=reg
+              if model != ' ':
+                 msg['model']=model
+
         return(msg)
     else:
         return -1				# if length ZERO or just the keep alive
