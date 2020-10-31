@@ -23,6 +23,8 @@ export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 echo "export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8 " >>~/.profile #
 echo "export LD_LIBRARY_PATH=/usr/local/lib" >>~/.profile 	#
 sudo apt-get -y upgrade						#
+sudo apt install cifs-utils					#
+sudo apt install nfs-common					#
 echo								#
 echo " "							#
 echo "Installing the packages required . (LAMP stack)..."	#
@@ -63,8 +65,9 @@ pip3 -V								#
 sudo -H python3 -m pip install ephem pytz geopy configparser 	#
 sudo -H python3 -m pip install pycountry			#
 sudo -H python3 -m pip install beeprint ogn.client		#
-sudo -H python3 -m pip install tqdm psutil rsa M2crypto		#
-sudo -H python3 -m pip install ttn              		#
+sudo -H python3 -m pip install tqdm psutil 			#
+sudo -H python3 -m pip install ttn               		#
+sudo -H python3 -m pip install eciespy pycryptodome             #
 sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 uninstall mysqlclient				#
 sudo -H pip3 install --no-binary mysqlclient mysqlclient	#

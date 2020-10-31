@@ -19,6 +19,7 @@ aprssources = {
     "OGNFLR": "OGN",
     "OGNTRK": "OGN",
     "OGNDSX": "OGN",
+    "OGNTTN": "TTN",
     "OGADSB": "ADSB",
     "OGNFNT": "FANE",
     "OGNPAW": "PAW",
@@ -271,6 +272,8 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:4] == 'MORA'          or 	\
             station[0:4] == 'LUGO'          or 	\
             station[0:6] == 'MADRID'        or 	\
+            station[0:8] == 'LEMDadsb'      or 	\
+            station[0:7] == 'TTN2OGN'       or 	\
             station[0:5] == 'AVILA'         or	\
             station[0:9] == 'ALCAZAREN'     or	\
             station[0:7] == 'ANDORRA'       or	\
