@@ -127,6 +127,10 @@ try:
     ADSBname = cfg.get('location', 'ADSBname').strip("'").strip('"')
 except:
     ADSBname = 'ADSBrecvr'
+try:
+    ADSBloc = cfg.get('location', 'ADSBloc').strip("'").strip('"')
+except:
+    ADSBloc = ''
     
 try:
         prttext     = cfg.get('server', 'prt').strip("'")

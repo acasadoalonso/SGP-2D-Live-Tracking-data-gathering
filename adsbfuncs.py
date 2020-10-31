@@ -232,7 +232,7 @@ RPI = True
 def adsbsetrec(sock, prt=False, store=False, aprspush=False):
         t    = datetime.utcnow()       		# get the date
         tme  = t.strftime("%H%M%S")
-        aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h4030.49NI00338.59W&/A=002280 \n"
+        aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ADSBloc+" \n"
         print("APRSMSG: ", aprsmsg)
         rtn = sock.write(aprsmsg)
         sock.flush()
@@ -259,6 +259,11 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
 
     url = "http://"+config.ADSBhost+"/data.json"
     adsbfile = config.ADSBfile
+    if not os.path.exists(adsbfile):
+       now = datetime.utcnow()
+                                        # number of second until beginning of the day of 1-1-1970
+       return (int(adsbnow))		# return TTIME for next call
+
     adsbpos = {"adsbpos": []}		# init the dicta
     pos = adsbgetapidata(adsbfile)      # get the JSON data from the ADSB server
     if prt:
