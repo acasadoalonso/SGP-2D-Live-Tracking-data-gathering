@@ -262,7 +262,7 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
     if not os.path.exists(adsbfile):
        now = datetime.utcnow()
                                         # number of second until beginning of the day of 1-1-1970
-       return (int(adsbnow))		# return TTIME for next call
+       return (ttime+1)			# return TTIME for next call
 
     adsbpos = {"adsbpos": []}		# init the dicta
     pos = adsbgetapidata(adsbfile)      # get the JSON data from the ADSB server
