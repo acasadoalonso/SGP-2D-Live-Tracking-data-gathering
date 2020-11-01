@@ -131,6 +131,10 @@ try:
     ADSBloc = cfg.get('location', 'ADSBloc').strip("'").strip('"')
 except:
     ADSBloc = ''
+try:
+    ADSBregt = cfg.get('location', 'ADSBreg').strip("'").strip('"')
+except:
+    ADSBregt = 'True'
     
 try:
         prttext     = cfg.get('server', 'prt').strip("'")
@@ -200,6 +204,11 @@ if (ADSBtext == 'True'):
     ADSB = True
 else:
     ADSB = False
+if (ADSBregt == 'True'):
+    ADSBreg = True
+else:
+    ADSBreg = False
+
 if (PUSH2OGNtext == 'True'):
     PUSH2OGN = True
 else:
