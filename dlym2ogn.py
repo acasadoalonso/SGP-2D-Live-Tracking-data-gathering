@@ -323,7 +323,7 @@ if os.path.exists(keyfile):		# check for the encrypted keyfile
          print (DK)
       print (DK)
 else:
-      print ("ERROR: No key file found !!!")
+      print ("ERROR: No key file found !!!", keyfile)
       exit (-1)
 # --------------------------------------#
 if report:
@@ -517,7 +517,7 @@ try:
                print ("Decoding >>>>", jstring, ">>", txt, "<<", len(txt), ident, station, "<<<<")
 
             try:				# decode the encrypted message
-                   #print(">>>:", DK, txt)
+                   print(">>>:", DK, txt)
 						# invoke the decoding routine, passing the message and the decoding keys
                    jstring=ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3])
 

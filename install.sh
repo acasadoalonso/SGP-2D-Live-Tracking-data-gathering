@@ -34,7 +34,10 @@ echo								#
 cd /var/www/html/main						#
 sudo apt-get install -y tasksel  				#
 sudo tasksel install lamp-server                                #
-sudo apt-get install -y mysql-server mysql-client sqlite3	#
+sudo apt policy mysql-server					#
+sudo apt install mysql-server=5.7.32-1ubuntu18.04		#
+sudo apt install mysql-client=5.7.32-1ubuntu18.04		#
+sudo apt-get install -y sqlite3					#
 sudo apt-get install -y python3-dev python3-pip 		#
 sudo apt-get install -y python-mysqld  				#
 sudo apt-get install -y figlet  				#
@@ -48,6 +51,8 @@ sudo apt-get install -y php-mcrypt 				#
 sudo apt-get install -y php-mbstring php-gettext php-json	#
 sudo apt-get install -y php7.2					#
 sudo apt-get install -y ntpdate					#
+sudo apt-get install -y ssmtp					#
+sudo apt-get install -y at sshpass minicomm 			#
 sudo a2enmod rewrite						#
 sudo phpenmod mcrypt						#
 sudo phpenmod mbstring						#
@@ -67,7 +72,8 @@ sudo -H python3 -m pip install pycountry			#
 sudo -H python3 -m pip install beeprint ogn.client		#
 sudo -H python3 -m pip install tqdm psutil 			#
 sudo -H python3 -m pip install ttn               		#
-sudo -H python3 -m pip install eciespy pycryptodome             #
+sudo -H python3 -m pip install pyserial 			#
+sudo -H python3 -m pip install eciespy pycryptodome rsa         #
 sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 uninstall mysqlclient				#
 sudo -H pip3 install --no-binary mysqlclient mysqlclient	#

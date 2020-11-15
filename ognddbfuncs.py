@@ -7,7 +7,7 @@ _ogninfo_ = {}                              # the OGN info data
 ####################################################################
 
 DDB_URL = "http://ddb.glidernet.org/download/?j=2"
-DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
+#DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
 
 def getddbdata():                           # get the data from the API server
 

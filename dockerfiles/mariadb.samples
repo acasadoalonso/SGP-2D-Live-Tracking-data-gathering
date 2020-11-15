@@ -1,0 +1,23 @@
+docker search mariadb
+docker pull mariadb/server:10.4
+docker images
+docker run --name mariadbtest -e MYSQL_ROOT_PASSWORD=mypass --restart unless-stopped -d mariadb/server:10.4
+docker run --name mariadbtest -e MYSQL_ROOT_PASSWORD=mypass -d mariadb/server:10.4 --log-bin --binlog-format=MIXED
+docker run --name mariadbtest -e MYSQL_ROOT_PASSWORD=mypass -d mariadb/server:10.4 --log-bin --binlog-format=MIXED 
+docker ps
+docker restart mariadbtest
+docker logs mariadbtest
+docker exec -it mariadbtest bash
+apt-get update
+apt-get install vim
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mariadbtest
+mysql -h 172.17.0.2 -u root -p
+mysql -h 172.17.0.2 -P 3306 --protocol=TCP -u root -p
+mysql -h 172.18.0.2 -u root -pmypass
+docker system prune -a
+docker volumes prune
+docker network create --subnet=172.18.0.0/16 mynetsql
+docker run --net mynetsql --ip 172.18.0.22 -it ubuntu bash
+docker run --net mynetsql --ip 172.18.0.2 --name mariadbtest -e MYSQL_ROOT_PASSWORD=mypass -d mariadb/server:10.4 --log-bin --binlog-format=MIXED 
+
+
