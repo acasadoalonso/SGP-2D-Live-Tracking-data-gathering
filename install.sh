@@ -37,10 +37,11 @@ sudo tasksel install lamp-server                                #
 sudo apt policy mysql-server					#
 sudo apt install mysql-server=5.7.32-1ubuntu18.04		#
 sudo apt install mysql-client=5.7.32-1ubuntu18.04		#
+sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3					#
 sudo apt-get install -y python3-dev python3-pip 		#
 sudo apt-get install -y python-mysqld  				#
-sudo apt-get install -y figlet  				#
+sudo apt-get install -y figlet inetutils-*			#
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt npm nodejs vim	# 
 git config --global user.email "acasadoalonso@gmail.com"        #

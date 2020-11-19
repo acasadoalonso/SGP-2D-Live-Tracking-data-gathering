@@ -61,7 +61,6 @@ def shutdown(sock, prt=False):          # shutdown routine, close files and repo
           i += 1			# one more to delete from table
           numaprsmsg += 1		# counter of published APRS msgs
     print ("Shutdown now, Time now:", local_time, " Local time.")
-    print ("Number of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d Num Err Decodes %d \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco))
     mem =  process.memory_info().rss/(1024*1024)  	# in M bytes
     print ("Memory available:      ", mem)
     prtrep(trackers, "Encrypting trackers msgs:")	# report the encrypted messages
@@ -71,6 +70,7 @@ def shutdown(sock, prt=False):          # shutdown routine, close files and repo
     if os.path.exists(config.DBpath+"DLYM2OGN.alive"):
                                         # delete the mark of being alive
         os.remove(config.DBpath+"DLYM2OGN.alive")
+    print ("Number of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d Num Err Decodes %d Perc Err: %f%% \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco, numerrdeco*100/numdecodes))
     return                              # job done
 
 #########################################################################
@@ -116,11 +116,14 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
 
             resto=resto.lstrip(' ')                     # swap 2nd and 3rd words in rest of message
             sp1=resto.find(' ')				# find the end of first word
-            sp2=resto[sp1+1:].find(' ')+1+sp1  
-            db =resto[0:sp1]
-            khz=resto[sp1+1:sp2]
-            e  =resto[sp2+1:]
-            rt=' '+db+' '+e+' '+khz				# the sequence now 
+            if sp1 != -1:				# if not dound
+               sp2=resto[sp1+1:].find(' ')+1+sp1  
+               db =resto[0:sp1]				# xx.xdB 
+               khz=resto[sp1+1:sp2]			# xx.xkHz
+               e  =resto[sp2+1:]			# xe
+               rt=' '+db+' '+e+' '+khz			# the sequence now 
+            else:
+               rt=' '+resto+' 0e '			# just a a white separator
 
                                                         # build the APRS message
             lat = deg2dmslat(abs(latitude))
@@ -194,7 +197,8 @@ def genreport(curs, DK):
            Acft               =decode["Acft"]
            if latitude > 90.0 or latitude < -90.0 or longitude > 180.0 or longitude < -180.0 or Acft != 1:
                continue
-           print ("RRR:>>>:", id1, station, otime, reg, cid, status[0:7], decode, "<<<:RRR")
+           if prt:
+              print ("RRR:>>>:", id1, station, otime, reg, cid, status[0:7], decode, "<<<:RRR")
            recvalid += 1
         else:
            recstat += 1
@@ -481,16 +485,18 @@ try:
                print("DLY: parse error >>>>", e, s, "<<<<\n")
                continue				# nothing else to do !!
 
-						# check if it is a OGN tracker status message
-            if beacon["aprs_type"] == "status" and beacon["beacon_type"] == "tracker" and beacon["dstcall"] == "OGNTRK" and "comment" in beacon:
-               comment=beacon['comment']	# get the comment where it is the data
+						# check if it is a OGN tracker status messagea
+            #if beacon["dstcall"] == "OGNTTN":
+               #print ("\n\nBBB", beacon, "\n\n")
+
+            if beacon["aprs_type"] == "status" and (beacon["beacon_type"] == "tracker" or beacon["beacon_type"] == "unknown") and (beacon["dstcall"] == "OGNTRK" or beacon["dstcall"] == "OGNTTN") :
+               comment=s[ph+10:]	        # get the comment where it is the data
+               #print ("CCC:", comment.rstrip(" \n\r"), ":", len(comment), s) 
             else:
                continue				# otherwise ignore it	
-            #print("ORIGMSG: ", s)
-            #print (beacon)
             sp=comment.find(' ')		# look for the first space
             txt=comment[0:sp]			# that is the text to decode
-            rest=comment[sp:]			# save the rest: freq deviation, error bits, ... 
+            rest=comment[sp:].rstrip("\n\r")	# save the rest: freq deviation, error bits, ... 
             ident = beacon['name']		# tracker ID
             station = beacon['receiver_name'] 	# station
             #print ("Txt:>>>", len(txt), txt, ":::>", sp, rest, ":::>", s, "\n")
@@ -517,7 +523,8 @@ try:
                print ("Decoding >>>>", jstring, ">>", txt, "<<", len(txt), ident, station, "<<<<")
 
             try:				# decode the encrypted message
-                   print(">>>:", DK, txt)
+                   if prt:
+                      print(">>>:", DK, txt)
 						# invoke the decoding routine, passing the message and the decoding keys
                    jstring=ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3])
 
@@ -528,7 +535,7 @@ try:
                    if p1 != -1:			# if found ???
                         p=int(pos)		# convert to integeer
                         errordet=jstring[p-3:p+3] # extract the position
-                   print ("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, txt)
+                   print ("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, comment,"\n\n")
                    numerrdeco += 1		# increse the counter
                    continue			# nothing else to do
             if len(jstring) > 0:		# if valid ???
@@ -543,8 +550,9 @@ try:
                       latitude           =decode["Lat"]
                       longitude          =decode["Lon"]
                       Acft               =decode["Acft"]
+
                       if latitude > 90.0 or latitude < -90.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14):
-                         print("Coord error:", ID, station, hora, ">>>:",txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]))
+                         print("Coord error:", ID, station, hora, ">>>:",txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]),"<<<\n")
                          if not ID in trkerrors:   	# did we see this tracker
                                 trkerrors[ID] = 1    	# init the counter
                          else:
