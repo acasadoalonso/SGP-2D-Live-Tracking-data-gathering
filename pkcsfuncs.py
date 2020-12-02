@@ -7,7 +7,7 @@ from Crypto.Hash      import MD5
 from Crypto.Signature import DSS, pss
 from Crypto.Random    import get_random_bytes
 from Crypto.Cipher    import AES, PKCS1_OAEP
-
+import sys
 
 import binascii
 import json
@@ -71,6 +71,7 @@ def RSAgenkeypair(keylen):				# gen a RSA key pair public/private
 def ECCgenkeypair():
 	keyPair = ECC.generate(curve='P-256')
 	pubKey  = keyPair.public_key()
+	#print("ECC Size:", sys.getsizeof(pubKey))
 	privKeyPEM = keyPair.export_key(format='PEM')
 	publKeyPEM = pubKey.export_key(format='PEM')
 	return(publKeyPEM, privKeyPEM)

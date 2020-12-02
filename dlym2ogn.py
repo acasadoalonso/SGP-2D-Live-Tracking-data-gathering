@@ -192,6 +192,9 @@ def genreport(curs, DK):
            jstring=jstring[0:jstring.find('}')+1]
            decode=json.loads(jstring) # get the dict from the JSON string
 
+           if "msg" in decode:
+              print(">>>>>>> message on decode string:", decode["msg"])
+              continue
            latitude           =decode["Lat"]
            longitude          =decode["Lon"]
            Acft               =decode["Acft"]
@@ -544,6 +547,9 @@ try:
                       #print ("Return:>>>>", len(jstring), jstring)
                       decode=json.loads(jstring) # get the dict from the JSON string
                       #print ("DDD", decode)
+                      if "msg" in decode:
+                         print(">>>>>>> message on decode string:", decode)
+                         continue
                       ID=beacon["name"]		# tracker ID
                       station=beacon["receiver_name"] # station
 

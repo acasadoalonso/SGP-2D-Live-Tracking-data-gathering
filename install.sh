@@ -23,8 +23,8 @@ export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 echo "export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8 " >>~/.profile #
 echo "export LD_LIBRARY_PATH=/usr/local/lib" >>~/.profile 	#
 sudo apt-get -y upgrade						#
-sudo apt install cifs-utils					#
-sudo apt install nfs-common					#
+sudo apt install -y cifs-utils					#
+sudo apt install -y nfs-common					#
 echo								#
 echo " "							#
 echo "Installing the packages required . (LAMP stack)..."	#
@@ -32,11 +32,12 @@ echo "=================================================="	#
 echo " "							#
 echo								#
 cd /var/www/html/main						#
+sudo apt-get install -y mariadb-server mariadb-client		#
 sudo apt-get install -y tasksel  				#
-sudo tasksel install lamp-server                                #
-sudo apt policy mysql-server					#
-sudo apt install mysql-server=5.7.32-1ubuntu18.04		#
-sudo apt install mysql-client=5.7.32-1ubuntu18.04		#
+sudo tasksel install -y lamp-server                             #
+#sudo apt policy mysql-server					#
+#sudo apt install mysql-server=5.7.32-1ubuntu18.04		#
+#sudo apt install mysql-client=5.7.32-1ubuntu18.04		#
 sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3					#
 sudo apt-get install -y python3-dev python3-pip 		#
@@ -120,10 +121,10 @@ mysql --login-path=APRSogn --database APRSLOG < APRSLOG.template.sql #
 echo								#
 echo "Optional steps ... "					#
 echo								#
-sudo apt-get install -y libsqlite3-dev ruby-dev			#
-echo "Install MailCatcher."					#
-sudo gem install mailcatcher					#
-mailcatcher --http-ip=0.0.0.0					#
+#sudo apt-get install -y libsqlite3-dev ruby-dev			#
+#echo "Install MailCatcher."					#
+#sudo gem install mailcatcher					#
+#mailcatcher --http-ip=0.0.0.0					#
 cd sh	 							#
 crontab <crontab.data						#
 crontab -l 							#
