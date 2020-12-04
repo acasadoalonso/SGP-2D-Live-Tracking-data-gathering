@@ -1,13 +1,6 @@
-
-DocumentRoot /var/www/html
-<Directory /var/www/html>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-</Directory>
 <Directory /usr/share/phpmyadmin>
     AuthType Basic
     AuthName "Restricted Content"
     AuthUserFile /etc/apache2/.htpasswd
     Require valid-user
 </Directory>
-

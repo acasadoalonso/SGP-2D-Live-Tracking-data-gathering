@@ -67,7 +67,6 @@ ADSBHOST           = "localhost"
 ADSBfile           = "/nfs/tmp/aircraft.json"
 ADSBname           = "LEMDadsb"
 INREACH            = False
-LT24               = False
 SKYLINE            = False
 CAPTURS            = False
 OGNT               = True
