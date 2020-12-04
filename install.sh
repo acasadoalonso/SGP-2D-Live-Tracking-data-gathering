@@ -157,10 +157,11 @@ then
    $(lsb_release -cs) \
    stable"
    sudo apt update
-   sudo apt-get install docker-ce docker-ce-cli containerd.io
-   bash dockerfiles/mariadbnet.sh
-   bash dockerfiles/mariadb.sh
-   bash dockerfiles/mariadbpma.sh
+   sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+   sudo usermod -aG docker $USER
+   sudo bash dockerfiles/mariadbnet.sh
+   sudo bash dockerfiles/mariadb.sh
+   sudo bash dockerfiles/mariadbpma.sh
 fi
 echo								#
 echo "Optional steps ... "					#
