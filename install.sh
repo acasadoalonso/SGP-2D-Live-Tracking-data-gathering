@@ -146,8 +146,7 @@ else
 fi
 cd /tmp
 wget acasado.es:60080/files/GLIDERS.sql
-mysql -u ogn -pogn  APRSLOG <GLIDERS.sql
-rm GLIDERS.sql
+mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
@@ -165,8 +164,11 @@ then
    sudo bash dockerfiles/mariadbpma.sh
    sudo mysql -h MARIADB <doc/adduser.sql	
    echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn	-h MARIADB
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn	-h MARIADB
    mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
+   mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
 fi
+rm GLIDERS.sql
 echo								#
 echo "Optional steps ... "					#
 echo								#
