@@ -162,11 +162,11 @@ then
    sudo bash dockerfiles/mariadbnet.sh
    sudo bash dockerfiles/mariadb.sh
    sudo bash dockerfiles/mariadbpma.sh
-   sudo mysql -h MARIADB <doc/adduser.sql	
-   echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn	-h MARIADB
-   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn	-h MARIADB
+   sudo mysql -u root -pogn -h MARIADB <doc/adduser.sql	
+   echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn -h MARIADB
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn -h MARIADB
    mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
-   mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
+   mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
 fi
 rm GLIDERS.sql
 echo								#
