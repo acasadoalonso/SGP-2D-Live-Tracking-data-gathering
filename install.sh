@@ -150,9 +150,16 @@ rm GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
-   sudo apt install docker-ce					#
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   sudo apt-key fingerprint 0EBFCD88
+   sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+   sudo apt update
+   sudo apt-get install docker-ce docker-ce-cli containerd.io
    bash dockerfiles/mariadbnet.sh
-   bash dockerfiles/mariadbdb.sh
+   bash dockerfiles/mariadb.sh
    bash dockerfiles/mariadbpma.sh
 fi
 echo								#
