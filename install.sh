@@ -53,9 +53,9 @@ sudo mysql  <doc/adduser.sql					#
 echo "Create database APRSLOG ..."				#
 if [ $sql = 'MySQL' ]			
 then								#
-	echo "CREATE DATABASE APRSLOG" | mysql --login-path=APRSogn	#
+	echo "CREATE DATABASE if not exist APRSLOG" | mysql --login-path=APRSogn	#
 else
-	echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn	
+	echo "CREATE DATABASE if not exist APRSLOG" | mysql -u ogn -pogn	
 fi
 if [ $sql = 'MySQL' ]			
 then								#
@@ -69,7 +69,7 @@ mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
-   echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn -h MARIADB
+   echo "CREATE DATABASE if not exist APRSLOG" | mysql -u ogn -pogn -h MARIADB
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn -h MARIADB
    mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
@@ -107,8 +107,6 @@ sudo dpkg-reconfigure tzdata					#
 echo ""								#
 echo "========================================================================================================"	#
 echo ""								#
-sudo apt-get -y dist-upgrade					#
-sudo apt-get -y autoremove					#
 cp /var/www/html/main/doc/aliases .bash_aliases			#
 touch APRSinstallation.done					#
 echo ""								#
