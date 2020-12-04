@@ -1,4 +1,5 @@
-#!/bin/bash 
+#
+!/bin/bash 
 if [ $# = 0 ]; then
 	sql='NO'
 else
@@ -162,6 +163,9 @@ then
    sudo bash dockerfiles/mariadbnet.sh
    sudo bash dockerfiles/mariadb.sh
    sudo bash dockerfiles/mariadbpma.sh
+   sudo mysql -h MARIADB <doc/adduser.sql	
+   echo "CREATE DATABASE APRSLOG" | mysql -u ogn -pogn	-h MARIADB
+   mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
 fi
 echo								#
 echo "Optional steps ... "					#
