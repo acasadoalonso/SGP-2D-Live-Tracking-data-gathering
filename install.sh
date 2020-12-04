@@ -147,6 +147,13 @@ cd /tmp
 wget acasado.es:60080/files/GLIDERS.sql
 mysql -u ogn -pogn  APRSLOG <GLIDERS.sql
 rm GLIDERS.sql
+cd /var/www/html/main						#
+if [ $sql = 'docker' ]			
+then								#
+   bash dockerfile/mariadbnet.sh
+   bash dockerfile/mariadbdb.sh
+   bash dockerfile/mariadbpma.sh
+fi
 echo								#
 echo "Optional steps ... "					#
 echo								#
