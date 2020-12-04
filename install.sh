@@ -149,10 +149,11 @@ mysql -u ogn -pogn  APRSLOG <GLIDERS.sql
 rm GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
-then								#
-   bash dockerfile/mariadbnet.sh
-   bash dockerfile/mariadbdb.sh
-   bash dockerfile/mariadbpma.sh
+then			
+   sudo apt install docker-ce					#
+   bash dockerfiles/mariadbnet.sh
+   bash dockerfiles/mariadbdb.sh
+   bash dockerfiles/mariadbpma.sh
 fi
 echo								#
 echo "Optional steps ... "					#
