@@ -127,6 +127,7 @@ if [ $sql = 'MySQL' ]
 then			
 	mysql_config_editor set --login-path=APRSogn --user=ogn --password
 fi
+cp doc/.my.cnf ~/
 echo "Create user ogn ..."					#
 sudo mysql  <doc/adduser.sql					#
 echo "Create database APRSLOG ..."				#
@@ -142,6 +143,10 @@ then								#
 else
     mysql -u ogn -pogn --database APRSLOG < APRSLOG.template.sql  #
 fi
+cd /tmp
+wget acasado.es:60080/files/GLIDERS.sql
+mysql -u ogn -pogn  APRSLOG <GLIDERS.sql
+rm GLIDERS.sql
 echo								#
 echo "Optional steps ... "					#
 echo								#
