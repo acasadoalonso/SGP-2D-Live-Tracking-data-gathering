@@ -69,10 +69,10 @@ mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
-   echo "CREATE DATABASE if not exist APRSLOG" | mysql -u ogn -pogn -h MARIADB
-   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn -h MARIADB
-   mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
-   mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
+   echo "CREATE DATABASE if not exist APRSLOG" | sudo mysql -u ogn -pogn -h MARIADB
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
+   sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
+   sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
 fi
 rm /tmp/GLIDERS.sql
 echo								#
