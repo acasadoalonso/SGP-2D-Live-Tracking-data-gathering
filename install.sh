@@ -102,8 +102,6 @@ then								#
 	sudo chmod 777 */*					#
 fi								#
 cd								#
-sudo apt-get install percona-toolkit				#
-sudo dpkg-reconfigure tzdata					#
 echo ""								#
 echo "========================================================================================================"	#
 echo ""								#

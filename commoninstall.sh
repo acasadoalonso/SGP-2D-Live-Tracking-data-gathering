@@ -127,7 +127,7 @@ then
    sudo bash dockerfiles/mariadb.sh
    sudo bash dockerfiles/mariadbpma.sh
    sudo mysql -u root -pogn -h MARIADB <doc/adduser.sql	
-   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | mysql -u ogn -pogn -h MARIADB
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
 fi
 cd								#
 sudo apt-get install percona-toolkit				#
