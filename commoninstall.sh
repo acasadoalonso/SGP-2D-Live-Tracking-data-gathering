@@ -123,11 +123,12 @@ then
    sudo apt update
    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
    sudo usermod -aG docker $USER
+   cp doc/.my.cnf ~/
    sudo bash dockerfiles/mariadbnet.sh
    sudo bash dockerfiles/mariadb.sh
    sudo bash dockerfiles/mariadbpma.sh
    sudo mysql -u root -pogn -h MARIADB <doc/adduser.sql	
-   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u root -pogn -h MARIADB
 fi
 cd								#
 sudo apt-get install percona-toolkit				#

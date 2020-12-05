@@ -5,11 +5,19 @@ else
 	sql=$1
 fi
 bash commoninstall.sh $sql
+echo " "							#
+echo "Restart APACHE2  ...." 					#
+echo "=================================================="	#
+echo " "							#
 sudo cat /etc/apache2/apache2.conf html.dir 	>>temp.conf	#
 sudo echo "ServerName APRSLOG " >>temp.conf			#
 sudo mv temp.conf /etc/apache2/apache2.conf			#
 sudo service apache2 restart					#
 cd /var/www/html/						#
+echo " "							#
+echo "Install npm modules ...." 				#
+echo "=================================================="	#
+echo " "							#
 sudo npm install -g npm 
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
