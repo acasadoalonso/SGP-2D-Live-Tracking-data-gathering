@@ -61,9 +61,9 @@ sudo mysql  <doc/adduser.sql					#
 echo "Create database APRSLOG ..."				#
 if [ $sql = 'MySQL' ]			
 then								#
-	echo "CREATE DATABASE if not exist APRSLOG" | mysql --login-path=APRSogn	#
+	echo "CREATE DATABASE if not exists APRSLOG" | mysql --login-path=APRSogn	#
 else
-	echo "CREATE DATABASE if not exist APRSLOG" | mysql -u ogn -pogn	
+	echo "CREATE DATABASE if not exists APRSLOG" | mysql -u ogn -pogn	
 fi
 if [ $sql = 'MySQL' ]			
 then								#
@@ -77,7 +77,7 @@ mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
-   echo "CREATE DATABASE if not exist APRSLOG" | sudo mysql -u ogn -pogn -h MARIADB
+   echo "CREATE DATABASE if not exists APRSLOG" | sudo mysql -u ogn -pogn -h MARIADB
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
