@@ -18,6 +18,7 @@ from parserfuncs import *               # the ogn/ham parser functions
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
 import argparse
+import traceback
 
 #########################################################################
 
@@ -369,10 +370,12 @@ try:
                 print ("ADSB Cache size", getsizeadsbcache())
 
         except Exception as e:
+            print(traceback.format_exc())
             print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
 
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
                 print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat())
+
             nerrors += 1
             if nerrors > 100:
                 shutdown(sock)		                # way to many errors

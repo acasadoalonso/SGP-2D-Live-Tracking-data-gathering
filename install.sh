@@ -18,7 +18,8 @@ echo " "							#
 echo "Install npm modules ...." 				#
 echo "=================================================="	#
 echo " "							#
-sudo npm install -g npm 
+sudo apt-get -y install npm nodejs                              #
+sudo npm install -g npm 					#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
 if [ ! -d /etc/local ]						#
@@ -114,6 +115,11 @@ echo ""								#
 echo "========================================================================================================"	#
 echo ""								#
 cp /var/www/html/main/doc/aliases .bash_aliases			#
+cd /var/www/html/main						#
+git clone https://github.com/openskynetwork/opensky-api.git     #
+cd opensky-api							#
+sudo -H pip3 install -e python/.                                #
+cd ..								#
 touch APRSinstallation.done					#
 echo ""								#
 echo "========================================================================================================"	#

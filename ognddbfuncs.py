@@ -4,10 +4,11 @@ import requests
 import urllib.request, urllib.error, urllib.parse
 global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
+NOinfo    = {"return":"NOinfo"}
 ####################################################################
 
-DDB_URL = "http://ddb.glidernet.org/download/?j=2"
-#DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
+#DDB_URL = "http://ddb.glidernet.org/download/?j=2"
+DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
 
 def getddbdata():                           # get the data from the API server
 
@@ -32,7 +33,7 @@ def getogninfo(devid):			    # return the OGN DDB infor for this device
     for dev in devices:                     # loop into the registrations
             if dev["device_id"] == devid:   # if matches ??
                 return dev  		    # return the information
-    return "NOInfo "                        #if not found !!!
+    return NOInfo                           #if not found !!!
 
 
 def getognreg(devid):                       # get the ogn registration from the flarmID

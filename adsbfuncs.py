@@ -20,6 +20,11 @@ from flarmfuncs import *
 
 import psutil
 MUT=False
+if config.ADSBOpenSky:
+   OPENSKY=True
+else:
+   OPENSKY=False 
+
 #-------------------------------------------------------------------------------------------------------------------#
 global _adsbregcache_
 _adsbregcache_ = {}
@@ -125,7 +130,73 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
 
 
 #-------------------------------------------------------------------------------------------------------------------#
+                                            # extract the data of the last know position from the JSON object
+def adsbopensky(adsbpos, ttime, prt=True):
 
+
+    foundone = False
+    from opensky_api import OpenSkyApi
+
+    api = OpenSkyApi()			    # open the API
+
+    BBox= (float(config.ADSBOpenSkyBox1),   # build the BOX
+           float(config.ADSBOpenSkyBox2), 
+           float(config.ADSBOpenSkyBox3), 
+           float(config.ADSBOpenSkyBox4)) 
+
+    # bbox = (min latitude, max latitude, min longitude, max longitude)
+    states = api.get_states(bbox=BBox)	    # get the sky vectors
+    # 
+    for s in states.states:		    # scan all the VECTORS
+
+        if prt:
+           print("ICAO=%r, CS=%r, COUNTRY=%r, LON=%r, LAT=%r, BARO=%r,"+ 
+                 "GEOALT=%r, VEL=%ri, HEADING=%r, VERT=%r, SQUAWK=%r, SOURCE=%r, TIME=%r" %
+                  (s.icao24, s.callsign, s.origin_country, s.longitude, s.latitude, s.baro_altitude, 
+                   s.geo_altitude, s.velocity, s.heading, s.vertical_rate, 
+                   s.squawk, s.position_source, s.time_position))
+
+        aid = "ICA"+s.icao24.upper()	    # aircraft ID
+        gps = "NO"			    # NO GPS info
+        extpos = "NO"			    # no external position
+        rot = 0				    # no rate of turn
+        if s.time_position == None:
+           continue			    # if no time nothing to do
+        ts = int(s.time_position) 	    # Unix time - seconds from the epocha
+        t=datetime.utcfromtimestamp(ts)
+        date = t.strftime("%y%m%d")
+        tme  = t.strftime("%H%M%S")
+        foundone = True
+        lat = s.latitude		    # data from Open Sky Network
+        lon = s.longitude
+        alt = s.baro_altitude
+        if alt == None or alt == 0:
+           alt = s.geo_altitude
+        if alt == None or alt == 0:
+           continue
+
+        flg = s.callsign
+        vitlat = config.FLOGGER_LATITUDE
+        vitlon = config.FLOGGER_LONGITUDE
+
+        distance = geodesic((lat, lon), (vitlat, vitlon)).km # distance to the station
+
+        pos = {"ICAOID": aid,  "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
+               "dist": distance, "course": s.heading, "speed": s.velocity, "roc": s.vertical_rate, "rot":rot,
+               "GPS": gps, "extpos": extpos , "flight": s.callsign, "squawk": s.squawk }
+
+        if prt:
+            print("adsbPOS :", round(lat, 4), round(lon, 4), alt, aid, round( distance, 4), ts,  date, tme, flg)
+
+        if ts == None or ts < int(ttime)+3: # check if the data is from before
+            continue		            # in that case nothing to do
+
+        adsbpos['adsbpos'].append(pos)      # and store it on the dict
+
+    return(foundone) 			    # indicate that we added an entry to the dict
+
+
+#-------------------------------------------------------------------------------------------------------------------#
 
 def adsbstoreitindb(datafix, curs, conn):   # store the fix into the database
 
@@ -203,10 +274,11 @@ def adsbaprspush(datafix, conn, prt=False):
 
         ccc = "%03d" % int(course)
         sss = "%03d" % int(speed)
- 
+        if roclimb == None:
+           roclimb = 0
         aprsmsg = id+">OGADSB,qAS,"+config.ADSBname+":/" + \
             hora+'h'+lat+"\\"+lon+"^"+ccc+"/"+sss+"/"
-        if altitude > 0:
+        if altitude != None and altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot fn"+flight+" "
         regmodel = getadsbreg(id[3:9])
@@ -259,29 +331,36 @@ def adsbsetrec(sock, prt=False, store=False, aprspush=False):
 # find all the fixes since TTIME . Scan all the adsb devices for new data
 def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
 
-    url = "http://"+config.ADSBhost+"/data.json"
-    adsbfile = config.ADSBfile
-    if not os.path.exists(adsbfile):
-       now = datetime.utcnow()
+    adsbpos = {"adsbpos": []}		# init the dict
+    if OPENSKY:
+       found = adsbopensky(adsbpos, ttime, prt=prt)
+       now = datetime.utcnow()          # get the UTC time
+       # number of seconds until beginning of the day 1-1-1970
+       td = now-datetime(1970, 1, 1)
+       adsbnow = int(td.total_seconds()) # Unix time - seconds from the epoch
+    else:
+       url = "http://"+config.ADSBhost+"/data.json"
+       adsbfile = config.ADSBfile
+       if not os.path.exists(adsbfile):
+          now = datetime.utcnow()
                                         # number of second until beginning of the day of 1-1-1970
-       return (ttime+1)			# return TTIME for next call
+          return (ttime+1)		# return TTIME for next call
 
-    adsbpos = {"adsbpos": []}		# init the dicta
-    pos = adsbgetapidata(adsbfile)      # get the JSON data from the ADSB server
-    if prt:
-        print(json.dumps(pos, indent=4)) # convert JSON to dictionary
-    adsbnow = pos['now']		# timestamp from the ADSB data
-    tracks  = pos['aircraft']		# get the aircraft information 
+       pos = adsbgetapidata(adsbfile)   # get the JSON data from the ADSB server
+       if prt:
+           print(json.dumps(pos, indent=4)) # convert JSON to dictionary
+       adsbnow = pos['now']		# timestamp from the ADSB data
+       tracks  = pos['aircraft']	# get the aircraft information 
                                         # get all the devices with ADSB
-    found = adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=prt)  # find the gliders since TTIME
+       found = adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=prt)  # find the gliders since TTIME
+
     if prt:
         print(adsbpos)			# print the data
     if store:
         adsbstoreitindb(adsbpos, curs, conn)	# and store it on the DDBB
     if aprspush:
         adsbaprspush(adsbpos, conn, prt=prt)	# and push it into the OGN APRS
-    now = datetime.utcnow()
                                         # number of second until beginning of the day of 1-1-1970
-    return (int(adsbnow))			# return TTIME for next call
+    return (int(adsbnow))		# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#

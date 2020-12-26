@@ -135,6 +135,27 @@ try:
     ADSBregt = cfg.get('location', 'ADSBreg').strip("'").strip('"')
 except:
     ADSBregt = 'True'
+try:
+    ADSBOpenSkyT = cfg.get('location', 'ADSBOpenSky').strip("'").strip('"')
+except:
+    ADSBOpenSkyT = 'False'
+try:
+    ADSBOpenSkyBox1 = cfg.get('location', 'ADSBOpenSkyBox1').strip("'").strip('"')
+except:
+    ADSBOpenSkyBox1 = ''
+try:
+    ADSBOpenSkyBox2 = cfg.get('location', 'ADSBOpenSkyBox2').strip("'").strip('"')
+except:
+    ADSBOpenSkyBox2 = ''
+try:
+    ADSBOpenSkyBox3 = cfg.get('location', 'ADSBOpenSkyBox3').strip("'").strip('"')
+except:
+    ADSBOpenSkyBox3 = ''
+try:
+    ADSBOpenSkyBox4 = cfg.get('location', 'ADSBOpenSkyBox4').strip("'").strip('"')
+except:
+    ADSBOpenSkyBox4 = ''
+    
     
 try:
         prttext     = cfg.get('server', 'prt').strip("'")
@@ -208,6 +229,10 @@ if (ADSBregt == 'True'):
     ADSBreg = True
 else:
     ADSBreg = False
+if (ADSBOpenSkyT == 'True'):
+    ADSBOpenSky= True
+else:
+    ADSBOpenSky= False
 
 if (PUSH2OGNtext == 'True'):
     PUSH2OGN = True
@@ -226,7 +251,7 @@ if 'USER' in os.environ and prt:
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
     print("Config APRS values:  ",  APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-    print("Config location:     ",  location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT, "ADSB=", ADSB)
+    print("Config location:     ",  location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "SPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "OGNT=", OGNT, "ADSB=", ADSB, ADSBOpenSky)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0
