@@ -37,7 +37,9 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
     print("Shutdown now, Time now:", local_time, " Local time.")
     if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
                                         # delete the mark of being alive
-        os.remove(config.DBpath+"PUSH2OGN.alive")
+       os.remove(config.DBpath+"PUSH2OGN.alive")
+    #if os.path.exists(config.PIDfile+".PUSH2OGN"):
+    #   os.remove(config.PIDfile+".PUSH2OGN")
     return                              # job done
 
 #########################################################################
@@ -65,7 +67,7 @@ def prttime(unixtime):
 
 #
 ########################################################################
-programver = 'V2.1'
+programver = 'V2.2'
 print("\n\nStart PUSH2OGN "+programver)
 print("===================")
 
