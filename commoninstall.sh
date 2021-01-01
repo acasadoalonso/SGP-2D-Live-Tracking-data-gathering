@@ -63,6 +63,8 @@ sudo apt-get install -y php7.4					#
 sudo apt-get install -y ntpdate					#
 sudo apt-get install -y ssmtp					#
 sudo apt-get install -y at sshpass minicom 			#
+sudo apt-get install -y fakeroot debhelper 			#
+sudo apt-get install -y libfile-fcntllock-perl			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
 echo								#
