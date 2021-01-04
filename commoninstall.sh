@@ -90,6 +90,10 @@ sudo -H python3 -m pip install pyserial 			#
 sudo -H python3 -m pip install eciespy pycryptodome rsa         #
 sudo -H python3 -m pip install mariadb               		#
 sudo -H python3 -m pip install ansible               		#
+sudo -H python3 -m pip install ansible-lint            		#
+sudo -H python3 -m pip install molecule               		#
+sudo -H python3 -m pip install docker               		#
+sudo -H python3 -m pip install yamllint               		#
 if [ $sql = 'MySQL' ]					
 then	
 	sudo -H pip3 uninstall mysqlclient			#

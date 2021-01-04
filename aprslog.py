@@ -88,8 +88,8 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
     local_time = datetime.now()         # report date and time now
     print("Time now:", local_time, " Local time.")
     print("=====================================")
-    if os.path.exists(config.APP+".alive"):
-        os.remove(config.APP+".alive")  # delete the mark of being alive
+    if os.path.exists(config.APP+hostname+".alive"):
+        os.remove(config.APP+hostname+".alive")  # delete the mark of being alive
     if os.path.exists(config.PIDfile):
         os.remove(config.PIDfile)	# remove it at exit
     atexit.unregister(lambda: os.remove(config.PIDfile)) # remove it at exit
@@ -282,7 +282,7 @@ else:
    datafile=False
 keepalive_count = 1			# init the counter
 keepalive_time = time.time()
-alive(config.APP, first='yes')		# create the ALIVE file/lock
+alive(config.APP+hostname, first='yes')	# create the ALIVE file/lock
 #
 #-----------------------------------------------------------------
 #
@@ -318,7 +318,7 @@ try:
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 5*60 : # keepalives every 5 mins
                                         # and mark that we are still alive
-            alive(config.APP)		# set the mark on the aliave file
+            alive(config.APP+hostname)	# set the mark on the aliave file
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered

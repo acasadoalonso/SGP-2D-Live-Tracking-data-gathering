@@ -8,14 +8,21 @@ then
                 if [ -f $pid ] # if OGN repo interface is  not running
                 then
                         pnum=$(cat $pid)
-                        sudo $pnum 
+                        logger  -t $0 "APRS Log Killing process: "$pnum
+                        sudo kill $pnum 
                 fi
 #               restart OGN data collector
                 bash ~/src/APRSsrc/main/sh/APRSlog.sh 
-                logger -t $0 "APRS Log seems down, restarting"
                 echo $(date)" - "$(hostname)  >>/nfs/OGN/SWdata/.APRSrestart.log
+                sleep 10
+                if [ -f $pid ] # if we have PID file
+                then
+                   logger -t $0 "APRS Log seems down, restarting: "$(cat $pid)
+                else
+                   logger -t $0 "APRS Log seems down, restarting, no PID yet "
+                fi
 else
-                logger -t $0 "APRS Log is alive"
+                logger -t $0 "APRS Log is alive Process: "$(cat $pid)
 		rm $alive
 fi
 
