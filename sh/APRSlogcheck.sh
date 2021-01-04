@@ -1,5 +1,5 @@
 #!/bin/bash
-alive=$"/nfs/OGN/SWdata/APRS.alive"
+alive=$"/nfs/OGN/SWdata/APRS"$(hostname)".alive"
 #pid=$"/tmp/aprs.pid"
 pid=$(echo  `grep '^pid' /etc/local/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
 if [ ! -f $alive ]
@@ -22,7 +22,7 @@ then
                    logger -t $0 "APRS Log seems down, restarting, no PID yet "
                 fi
 else
-                logger -t $0 "APRS Log is alive Process: "$(cat $pid)
+                logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
 		rm $alive
 fi
 
