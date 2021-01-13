@@ -268,8 +268,12 @@ login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 # logon to OGN APRS network
 
 sock=False
-(sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
-
+try:
+   (sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
+except:
+   print ("Errors connecting with APRS ... leaving now \n\n\n")
+   exit(-1)
+   
 #-----------------------------------------------------------------
 start_time = time.time()
 local_time = datetime.now()
@@ -322,12 +326,12 @@ try:
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
+                run_time = time.time() - start_time
                 if prt:
                       print("Send keepalive number: ", keepalive_count, loopcnt," After elapsed_time: ",
                                                        int((current_time - keepalive_time)), " After runtime: ", int(run_time), " secs", now)
                 if DATA:		# if we need to record on a file. flush it as well
                    datafile.flush()
-                run_time = time.time() - start_time
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
                 now = datetime.utcnow()	# get the UTC time

@@ -37,20 +37,25 @@ echo "=================================================="	#
 echo " "							#
 echo								#
 cd /var/www/html/main						#
-sudo apt install -y mariadb-server mariadb-client		#
+sudo apt install -y mariadb-client				#
 sudo apt install -y libmariadb-dev				#
-if [ $sql = 'MySQL' ]			
-then		
+if [ $sql = 'MariaDB' ]						#
+then								#
+     sudo apt install -y mariadb-server 			#
+     sudo -H python3 -m pip install mariadb            		#
+fi								#
+if [ $sql = 'MySQL' ]						#
+then								#
 	sudo apt-get install -y tasksel  			#
 	sudo apt policy mysql-server				#
 	sudo apt install mysql-server=5.7.32-1ubuntu18.04	#
 	sudo apt install mysql-client=5.7.32-1ubuntu18.04	#
+        sudo tasksel install lamp-server                                #
 fi								#
-sudo tasksel install lamp-server                                #
 sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3 ntpdate				#
 sudo apt-get install -y python3-dev python3-pip 		#
-sudo apt-get install -y figlet inetutils-* mailutils		#
+sudo apt-get install -y figlet inetutils-* 			#
 sudo apt-get install -y avahi-daemon libcurl4-openssl-dev       #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt vim		# 
@@ -70,9 +75,15 @@ sudo phpenmod mbstring						#
 echo								#
 echo "Installing phpmyadmin  ... "				#
 echo								#
-sudo apt-get install -y phpmyadmin 				#
-sudo service apache2 restart					#
-sudo apt-get -y autoremove					#
+if [ $sql = 'MySQL' ]						#
+then								#
+    sudo apt-get install -y phpmyadmin 				#
+    sudo service apache2 restart				#
+    sudo apt-get -y autoremove					#
+    echo "Running msqladmin .... assign root password ... "	#
+    sudo mysqladmin -u root password ogn			#
+    sudo mysql_secure_installation				#
+fi								#
 echo								#
 echo " "							#
 echo "Installing the PYTHON modules required  ..."		#
@@ -88,16 +99,15 @@ sudo -H python3 -m pip install tqdm psutil python-dateutil	#
 sudo -H python3 -m pip install ttn               		#
 sudo -H python3 -m pip install pyserial 			#
 sudo -H python3 -m pip install eciespy pycryptodome rsa         #
-sudo -H python3 -m pip install mariadb               		#
 sudo -H python3 -m pip install ansible               		#
 sudo -H python3 -m pip install ansible-lint            		#
 sudo -H python3 -m pip install molecule               		#
 sudo -H python3 -m pip install docker               		#
 sudo -H python3 -m pip install yamllint               		#
-if [ $sql = 'MySQL' ]					
-then	
+if [ $sql = 'MySQL' ]						#	
+then	a							#
 	sudo -H pip3 uninstall mysqlclient			#
-fi
+fi								#
 sudo apt-get install -y libmysqlclient-dev 			#
 sudo -H pip3 install --no-binary mysqlclient mysqlclient 	#
 cd /var/www/html/						#
@@ -123,12 +133,14 @@ echo "Installing the templates needed  ...." 			#
 echo "=================================================="	#
 echo " "							#
 echo								#
+if [ ! -d /var/www/html/main ]					#
+then								#
+     mkdir /var/www/html/main					#
+     chmod 777 /var/www/html/main				#
+fi								#
 cd /var/www/html/main						#
-echo "Running msqladmin .... assign root password ... "		#
-sudo mysqladmin -u root password ogn				#
-cd /var/www/html/main						#
-if [ $sql = 'docker' ]			
-then			
+if [ $sql = 'docker' -o $sql == 'MariaDB' ]			#
+then								#
    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
    sudo apt-key fingerprint 0EBFCD88
    sudo add-apt-repository \
@@ -144,11 +156,10 @@ then
    sudo bash dockerfiles/mariadbpma.sh
    sudo mysql -u root -pogn -h MARIADB <doc/adduser.sql	
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u root -pogn -h MARIADB
-fi
+   sudo mysql_secure_installation				#
+fi								#
 cd								#
-sudo mysql_secure_installation					#
 sudo apt-get install percona-toolkit				#
-sudo dpkg-reconfigure tzdata					#
 sudo apt-get -y autoremove					#
 echo								#
 echo " "							#
