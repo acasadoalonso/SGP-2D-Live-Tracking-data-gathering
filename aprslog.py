@@ -621,7 +621,8 @@ try:
 
                                                 # get the date from the system as the APRS packet does not contain the date
                                                 # get the date from the system as the APRS packet does not contain the date
-                dte = date.strftime("%y%m%d")  	# today's date
+                dateutc = datetime.utcnow()
+                dte = dateutc.strftime("%y%m%d")# today's date
                 if len(source) > 4:
                     source = source[0:4]	# restrict the length to 4 chars
                 dtype=ident[0:3]		# device type: ICAO, FLARM, OGNT
