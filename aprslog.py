@@ -268,11 +268,17 @@ login=login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 # logon to OGN APRS network
 
 sock=False
-try:
-   (sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
-except:
-   print ("Errors connecting with APRS ... leaving now \n\n\n")
-   exit(-1)
+NTries=0
+(sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
+if sock == False:
+   while Ntries < 10:
+      (sock,sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
+      if sock != False:
+         break
+      Ntries += 1
+      if Ntries == 10:
+         print ("Errors connecting with APRS ... leaving now \n\n\n")
+         exit(-1)
    
 #-----------------------------------------------------------------
 start_time = time.time()
