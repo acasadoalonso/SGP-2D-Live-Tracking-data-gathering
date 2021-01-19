@@ -4,6 +4,7 @@
 *.alive
 *.csv
 *.xz
+*.bkup
 ogndecode/
 utils/
 log/

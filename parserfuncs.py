@@ -8,6 +8,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import json
+import socket
 from datetime import datetime, timedelta
 #from beeprint import pp
 from ogn.parser import parse
@@ -632,6 +633,7 @@ def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
 def alive(app, first='no', register=False):
 
     alivename = app+".alive"
+    hostname = socket.gethostname()
     if (first == 'yes'):
         # create a file just to mark that we are alive
         alivefile = open(alivename, 'w')
@@ -643,7 +645,7 @@ def alive(app, first='no', register=False):
         alivefile = open(alivename, 'a')
     local_time = datetime.now()
     alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
-    alivefile.write(alivetime+"\n")  # write the time as control
+    alivefile.write(alivetime+":"+hostname+"\n")  # write the time as control
     alivefile.close()               # close the alive file
     return()
 #########################################################################
