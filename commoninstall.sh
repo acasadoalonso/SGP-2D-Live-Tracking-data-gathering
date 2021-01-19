@@ -70,6 +70,9 @@ sudo apt-get install -y ssmtp					#
 sudo apt-get install -y at sshpass minicom 			#
 sudo apt-get install -y fakeroot debhelper 			#
 sudo apt-get install -y libfile-fcntllock-perl			#
+sudo apt-get install -y nvme-cli				#
+sudo apt-get install -y dnsutils				#
+sudo apt-get install -y python3-autopep8			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
 echo								#
@@ -104,6 +107,7 @@ sudo -H python3 -m pip install ansible-lint            		#
 sudo -H python3 -m pip install molecule               		#
 sudo -H python3 -m pip install docker               		#
 sudo -H python3 -m pip install yamllint               		#
+sudo -H python3 -m pip install flake8               		#
 if [ $sql = 'MySQL' ]						#	
 then	a							#
 	sudo -H pip3 uninstall mysqlclient			#

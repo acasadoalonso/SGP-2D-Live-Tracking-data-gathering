@@ -22,7 +22,12 @@ then
                    logger -t $0 "APRS Log seems down, restarting, no PID yet "
                 fi
 else
-                logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
+		if [ ! -f $pid ]
+		then
+                	logger -t $0 "APRS NOPID yet Log is alive Process: "$alive
+		else
+                	logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
+		fi
 		rm $alive
 fi
 
