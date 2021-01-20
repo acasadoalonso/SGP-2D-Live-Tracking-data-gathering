@@ -3,7 +3,7 @@
 from os import path
 from setuptools import setup, find_packages
 
-from ogn.client.settings import PACKAGE_VERSION
+#from ogn.client.settings import PACKAGE_VERSION
 
 
 here = path.abspath(path.dirname(__file__))
