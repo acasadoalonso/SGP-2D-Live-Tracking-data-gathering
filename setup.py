@@ -14,7 +14,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='aprslog',
-    version=PACKAGE_VERSION,
+    version='2.0',
     description='A python module for the Open Glider Network',
     long_description=long_description,
     long_description_content_type='text/markdown',
