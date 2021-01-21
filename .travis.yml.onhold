@@ -1,0 +1,19 @@
+language: python
+
+python:
+  - 3.6
+  - 3.7
+  - 3.8
+
+git:
+  submodules: false
+
+notifications:
+  email:
+    recipients:
+      - acasado@acm.org
+    on_success: never  # default: change
+    on_failure: always # default: always
+
+script:
+  python3 lastfix.py

@@ -24,3 +24,4 @@ BasicAircraftLookup.sqb
 flightaware*
 keyfile.encrypt
 Keys.py
+ADSBreg.py

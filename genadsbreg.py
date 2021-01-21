@@ -34,7 +34,7 @@ class create_dict(dict):
     def add(self, key, value): 
         self[key] = value
 
-programver = 'V1.00'			# manually set the program version !!!
+programver = 'V1.01'			# manually set the program version !!!
 
 print("\n\nGen the ADSB registration JSON file : "+programver)
 print("==================================================================================")
@@ -48,6 +48,8 @@ date = datetime.now()
 print("Time now is: ", date, " Local time")
 date = datetime.utcnow()
 tme = date.strftime("%y-%m-%d %H:%M:%S")# today's date
+Y = date.strftime("%Y")# today's date
+M = date.strftime("%m")# today's date
 
 
 # --------------------------------------#
@@ -62,7 +64,7 @@ DBname      = config.DBname
 OGNT        = config.OGNT
 filedb      = "utils/BasicAircraftLookup.sqb"
 filefa      = "utils/flightaware-20200924.csv"
-fileos      = "utils/aircraftDatabase-2020-12.csv"
+fileos      = "utils/aircraftDatabase-"+Y+"-"+M+".csv"
 # --------------------------------------#
 parser = argparse.ArgumentParser(description="Gen the ADSB registration file\n")
 parser.add_argument('-p',  '--print',     required=False,
@@ -128,6 +130,9 @@ print ("Registrations from VRS:", counter)
 cntbasic=counter
 # -----------------------------------------------------------------#
 if flighta:				# if extra data from FlightAare 
+   if not os.path.exists(filefa):
+    print ("FlightAware data not available \n")
+    exit(-1)
    lc=linecount_wc(filefa)
    print ("Adding data from:", filefa, lc)
    pbar=tqdm(total=lc)
@@ -164,6 +169,8 @@ if flighta:				# if extra data from FlightAare
 print ("Registrations from FA:", cntfa)
 
 if flighto:				# if extra data from FlightAare 
+   if not os.path.exists(fileos):
+     os.system("cd utils && bash get_os_csv.sh")
    lc=linecount_wc(fileos)
    print ("Adding data from:", fileos, lc)
    pbar=tqdm(total=lc)
@@ -207,7 +214,7 @@ stud_json = json.dumps(mydict)
 fd=open ("ADSBreg.py","w")
 fd.write("ADSBreg="+stud_json)
 fd.close()
-print ("Size of ADSBreg file", len(stud_json), " Registrations generated at ADSBreg.py ", counter, cntbasic, cntfa, cntos)
+print ("Size of ADSBreg file", len(stud_json), " Registrations generated at ADSBreg.py ", counter,"Basic:", cntbasic, "FA:",cntfa, "OS:",cntos)
 conn.commit()
 conn.close()
 exit(0)

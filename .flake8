@@ -1,4 +1,4 @@
 [flake8]
 ignore = D203,F403,E501,E111,E114
-exclude = .git,__pycache__,old,build,dist
+exclude = .git,__pycache__,old,build,dist,ADSBreg.py
 max-complexity = 10
