@@ -26,6 +26,7 @@
 
   tasks:
     - name: Bash aliases | Add aliases
+      become: no
       lineinfile:
         dest: "~/.bash_aliases"
         create: yes
@@ -34,6 +35,16 @@
         regexp: "^alias {{ item.alias }}="
       with_items: "{{ bash_aliases }}"
       when: bash_aliases != false
+
+    - name: Copy 
+      become: no
+      copy:
+         src: "../aliases"
+         dest: /tmp/aliases
+
+    - name: Gen aliases
+      become: no
+      shell: /tmp/aliases
 
     - import_tasks: setup.yml
     - import_tasks: docker.yml

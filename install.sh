@@ -101,7 +101,7 @@ then
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
-fi
+fi								#
 sudo rm /tmp/GLIDERS.sql					#
 echo								#
 echo "Optional steps ... "					#
@@ -109,8 +109,8 @@ echo								#
 cd sh	 							#
 if [ -f crontab.data ]						#
 then 								#
-     crontab <crontab.data					#
-     crontab -l 						#
+     crontab -u vagrant <crontab.data				#
+     crontab -u vagrant -l 					#
 fi								#
 if [ ! -d ~/src  ]						#
 then								#
@@ -136,12 +136,6 @@ cd								#
 echo ""								#
 echo "========================================================================================================"	#
 echo ""								#
-if [ ! -f ~/.bash_aliases ]					#
-then								#
-    cp /var/www/html/main/doc/aliases ~/.bash_aliases		#
-else								#
-    cat /var/www/html/main/doc/aliases ~/.bash_aliases >~/.bash_aliases
-fi								#
 cd /var/www/html/main						#
 if [ ! -d opensky-api ]						#
 then								#
