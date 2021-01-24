@@ -18,6 +18,7 @@ echo " "							#
 echo "Restart APACHE2  ...." 					#
 echo "=================================================="	#
 echo " "							#
+cd /var/www/html/main						#
 sudo cat /etc/apache2/apache2.conf html.dir 	>>temp.conf	#
 sudo echo "ServerName APRSLOG " >>temp.conf			#
 sudo mv temp.conf /etc/apache2/apache2.conf			#
@@ -61,16 +62,20 @@ echo "=================================================="	#
 cd /var/www/html/						#
 python3 genconfig.py						#
 cd /var/www/html/main						#
-echo "Running msqladmin .... assign root password ... "		#
-echo "================================================"		#
-sudo mysqladmin -u root password ogn				#
-if [ $sql = 'MySQL' ]	
+sudo service mariadb start					#
+if [ $sql = 'MySQL' ]						#
 then			
+        sudo service mysql start				#
+        echo "Running msqladmin .... assign root password ... "	#
+        echo "================================================"	#
+        sudo mysqladmin -u root password ogn			#
         echo "Create the APRSogn login-path: Type assigned password"	
 	mysql_config_editor set --login-path=APRSogn --user=ogn --password
-fi
-cp doc/.my.cnf ~/
-echo "Create user ogn ..."					#
+else								#
+        sudo service mariadb start				#
+fi								#
+cp doc/.my.cnf ~/						#
+echo "Create DB user ogn ..."					#
 sudo mysql  <doc/adduser.sql					#
 echo "Create database APRSLOG ..."				#
 if [ $sql = 'MySQL' ]			
@@ -130,7 +135,12 @@ cd								#
 echo ""								#
 echo "========================================================================================================"	#
 echo ""								#
-cp /var/www/html/main/doc/aliases .bash_aliases			#
+if [ ! -f ~/.bash_aliases ]					#
+then								#
+    cp /var/www/html/main/doc/aliases ~/.bash_aliases		#
+else								#
+    cat /var/www/html/main/doc/aliases ~/.bash_aliases >~/.bash_aliases
+fi								#
 cd /var/www/html/main						#
 if [ ! -d opensky-api ]						#
 then								#
