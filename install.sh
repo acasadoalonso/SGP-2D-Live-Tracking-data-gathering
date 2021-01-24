@@ -4,7 +4,11 @@ if [ $# = 0 ]; then
 else
 	sql=$1
 fi
-bash commoninstall.sh $sql
+if [ ! -f /tmp/commoninstall.sh
+then
+   echo "Installing the common software"
+   bash commoninstall.sh $sql
+fi
 echo " "							#
 echo "Restart APACHE2  ...." 					#
 echo "=================================================="	#
@@ -13,6 +17,7 @@ sudo cat /etc/apache2/apache2.conf html.dir 	>>temp.conf	#
 sudo echo "ServerName APRSLOG " >>temp.conf			#
 sudo mv temp.conf /etc/apache2/apache2.conf			#
 sudo service apache2 restart					#
+echo "=================================================="	#
 cd /var/www/html/						#
 echo " "							#
 echo "Install npm modules ...." 				#
@@ -22,6 +27,7 @@ sudo apt-get -y install npm nodejs                              #
 sudo npm install -g npm 					#
 sudo npm install websocket socket.io request parsejson	ini	#
 sudo npm install forever -g 					#
+echo "=================================================="	#
 if [ ! -d /etc/local ]						#
 then								#
     sudo mkdir /etc/local					#
@@ -46,14 +52,16 @@ echo " "							#
 echo								#
 cd /var/www/html/main						#
 sudo cp config.template /etc/local/APRSconfig.ini		#
+echo "=================================================="	#
 cd /var/www/html/						#
 python3 genconfig.py						#
 cd /var/www/html/main						#
 echo "Running msqladmin .... assign root password ... "		#
+echo "================================================"		#
 sudo mysqladmin -u root password ogn				#
-echo "Create the APRSogn login-path: Type assigned password"	#
 if [ $sql = 'MySQL' ]	
 then			
+        echo "Create the APRSogn login-path: Type assigned password"	
 	mysql_config_editor set --login-path=APRSogn --user=ogn --password
 fi
 cp doc/.my.cnf ~/
@@ -83,13 +91,16 @@ then
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
 fi
-rm /tmp/GLIDERS.sql
+sudo rm /tmp/GLIDERS.sql					#
 echo								#
 echo "Optional steps ... "					#
 echo								#
 cd sh	 							#
-crontab <crontab.data						#
-crontab -l 							#
+if [ -f crontab.data ]						#
+then 								#
+     crontab <crontab.data					#
+     crontab -l 						#
+fi								#
 if [ ! -d ~/src  ]						#
 then								#
 	mkdir ~/src   						#
@@ -116,9 +127,12 @@ echo "==========================================================================
 echo ""								#
 cp /var/www/html/main/doc/aliases .bash_aliases			#
 cd /var/www/html/main						#
-git clone https://github.com/openskynetwork/opensky-api.git     #
-cd opensky-api							#
-sudo -H pip3 install -e python/.                                #
+if [ ! -d opensky-api ]						#
+then								#
+   git clone https://github.com/openskynetwork/opensky-api.git  #
+   cd opensky-api						#
+   sudo -H pip3 install -e python/.                             #
+fi								#
 cd ..								#
 touch APRSinstallation.done					#
 echo ""								#

@@ -4,6 +4,8 @@
 
   vars:
     build_root: /vagrant/
+    bash_aliases:
+      - { alias: 'mariadb', command: 'mysql -u root -pogn -h 172.17.0.2' }
 
   pre_tasks:
     - name: Update apt cache if needed.
@@ -22,6 +24,16 @@
       apt: autoremove=yes
 
   tasks:
+    - name: Bash aliases | Add aliases
+      lineinfile:
+        dest: "~/.bash_aliases"
+        create: yes
+        mode: 0644
+        line: 'alias {{ item.alias }}="{{ item.command }}"'
+        regexp: "^alias {{ item.alias }}="
+      with_items: "{{ bash_aliases }}"
+      when: bash_aliases != false
+
     - import_tasks: setup.yml
     - import_tasks: docker.yml
     - import_tasks: basicpak.yml
