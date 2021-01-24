@@ -76,9 +76,10 @@
         mode: '0755'
 
     - name: Create a symbolic link to src/APRSsrc
+      become: no
       ansible.builtin.file:
-        src: /var/www/html/main
-        dest: ~/src/APRSsrc
+        src: /var/www/html/main/
+        dest: ~/src/APRSsrc/
         owner: vagrant
         group: vagrant
         state: link
