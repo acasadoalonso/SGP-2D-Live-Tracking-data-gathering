@@ -16,11 +16,10 @@
       command: ansible-galaxy collection install community.mysql
     - name: Install Maria-DB Client
       apt: name=mariadb-client state=present
+    - name: Install PHPMYADMIN
+      apt: name=phpmyadmin state=present
     - name: Autoremove
       apt: autoremove=yes
-
-  #roles:
-  #  - role: acasadoalonso.docker
 
   tasks:
     - import_tasks: setup.yml
