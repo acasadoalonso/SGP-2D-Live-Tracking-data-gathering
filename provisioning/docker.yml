@@ -63,7 +63,7 @@
      dest: /tmp/CRONTAB.sh
 - name: Copy crontab data
   copy:
-     src: "../crontab.data"
+     src: "./crontab.data"
      dest: /tmp/
 - name: Copy aliases
   copy:
