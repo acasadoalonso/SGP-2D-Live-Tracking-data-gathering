@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: true
+
+  vars:
+    build_root: /vagrant/
+
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=yes cache_valid_time=3600
+    - name: Upgrade.
+      apt: upgrade=yes
+    - name: Install Ansible
+      apt: name=ansible state=present
+    - name: Update ansible.
+      command: ansible-galaxy collection install community.mysql
+    - name: Install Maria-DB Client
+      apt: name=mariadb-client state=present
+    - name: Autoremove
+      apt: autoremove=yes
+
+  #roles:
+  #  - role: acasadoalonso.docker
+
+  tasks:
+    - import_tasks: setup.yml
+    - import_tasks: docker.yml
+    - import_tasks: basicpak.yml

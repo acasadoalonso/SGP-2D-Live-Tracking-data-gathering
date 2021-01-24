@@ -1,0 +1,99 @@
+---
+
+pre_tasks:
+  - name: Update apt cache if needed.
+    apt: update_cache=yes cache_valid_time=3600
+
+handlers:
+  - name: restart apache
+    service: name=apache2 state=restarted
+
+tasks:
+  - name: Get software for apt repository management.
+    apt:
+      state: present
+      name:
+        - python-apt
+        - python-pycurl
+
+  - name: Add ondrej repository for later versions of PHP.
+    apt_repository: repo='ppa:ondrej/php' update_cache=yes
+
+  - name: "Install Apache, MySQL, PHP, and other dependencies."
+    apt:
+      state: present
+      name:
+        - acl
+        - git
+        - curl
+        - unzip
+        - sendmail
+        - apache2
+        - php7.4-common
+        - php7.4-cli
+        - php7.4-dev
+        - php7.4-gd
+        - php7.4-curl
+        - php7.4-json
+        - php7.4-opcache
+        - php7.4-xml
+        - php7.4-mbstring
+        - php7.4-pdo
+        - php7.4-mysql
+        - php-apcu
+        - libpcre3-dev
+        - libapache2-mod-php7.4
+        - python3-mysqldb
+        - mariadb-server 
+        - mariadb-client		
+        - libmariadb-dev
+
+
+  - name: Disable the firewall (since this is for local dev only).
+    service: name=ufw state=stopped
+
+  - name: "Start Apache, MySQL/MariaDB, and PHP."
+    service: "name={{ item }} state=started enabled=yes"
+    with_items:
+      - apache2
+      - mysql
+
+  - name: Enable Apache rewrite module (required for OGN).
+    apache2_module: name=rewrite state=present
+    notify: restart apache
+
+
+  - name: Adjust OpCache memory setting.
+    lineinfile:
+      dest: "/etc/php/7.4/apache2/conf.d/10-opcache.ini"
+      regexp: "^opcache.memory_consumption"
+      line: "opcache.memory_consumption = 96"
+      state: present
+    notify: restart apache
+
+  - name: Create a MySQL/MariaDB database for OGN.
+    mysql_db: 
+      db: APRSLOG 
+      state: present
+
+  - name: Create a MySQL/MariaDB user for OGN.
+    community.mysql.mysql_user:
+      name: "root"
+      password: "ogn"
+      priv: '*.*:ALL,GRANT'
+      host: localhost
+      state: present
+
+  - name: copy DB schema
+      copy:
+      src: ../APRSLOG.template.sql
+      dest: /tmp 
+
+  - name: Create a MySQL/MariaDB tables
+    community.mysql.mysql_db:
+      state: import
+      name: APRSLOG
+      target: /tmp/APRSLOG.template.sql
+      encoding: latin1
+      force: yes
+

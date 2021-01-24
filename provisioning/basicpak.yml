@@ -1,0 +1,60 @@
+- name: Install Aptitude
+  package:
+    name: aptitude
+    state: present
+- name: Install ntpdate
+  package:
+    name: ntpdate
+    state: present
+- name: Install VIM
+  package:
+    name: vim
+    state: present
+- name: Install Software Properties Common
+  package:
+    name: software-properties-common 		
+    state: present
+- name: Install Python Software Properties
+  package:
+    name: python3-software-properties 		
+    state: present
+- name: Install Build Essential
+  package:
+    name: build-essential 	
+    state: present
+- name: Install Cifs utils
+  package:
+    name: cifs-utils		
+    state: present
+- name: Install NFS Common
+  package:
+    name: nfs-common					
+    state: present
+- name: Install Figlet
+  package:
+    name: figlet 
+    state: present
+- name: Install Utils
+  package:
+    name: inetutils-* 
+    state: present
+- name: Install Avahi
+  package:
+    name: avahi-daemon
+    state: present
+- name: Install pkg-config
+  package:
+    name: pkg-config
+    state: present
+- name: Install git
+  package:
+    name: git
+    state: present
+- name: Install Python3 Dev
+  package:
+    name: python3-dev 
+    state: present
+- name: Install pip
+  package:
+    name: python3-pip
+    state: present

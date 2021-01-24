@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.hostname = "APRSTESTOGN"
+  config.vm.boot_timeout = 600
+
+  config.vm.network "forwarded_port", guest: 80, host: 8383
+
+  $default_network_interface = `ip route | awk '/^default/ {printf "%s", $5; exit 0}'`
+  config.vm.network "public_network", bridge: "#$default_network_interface"
+
+  config.vm.synced_folder "./public", "/var/www/public"
+  config.vm.synced_folder "./html",   "/var/www/html"
+  config.vm.synced_folder "/nfs",   "/nfs"
+ # Enable provisioning with Ansible.
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "main.yml"
+  end
+  config.vm.provision :shell, path: "bootstrap.sh"
+end
+

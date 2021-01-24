@@ -1,0 +1,123 @@
+---
+
+- name: Create a network with custom IPAM config
+  community.general.docker_network:
+    name: mynetsql
+    state: present
+    ipam_config:
+      - subnet: 172.17.0.0/24
+        iprange: 172.17.0.0/26
+- name: Run a MARIADB MySQL container.
+  docker_container:
+    image: mariadb:latest
+    name: mariadb
+    state: started
+    restart: yes
+    ports: "3306:3306"
+    #container_default_behaviour: no_defaults
+    env:
+      MYSQL_ROOT_PASSWORD: ogn
+      MYSQL_DATABASE: APRSLOG
+      MYSQL_USER: ogn
+      MYSQL_PASSWORD: ogn
+    network_mode: mynetsql
+    networks:
+      - name: mynetsql
+        ipv4_address: 172.17.0.2
+    networks_cli_compatible: yes
+
+- name: Run a PHPMYADMIN container.
+  docker_container:
+    image: phpmyadmin:latest
+    name: phpmyadmin
+    state: present
+    network_mode: mynetsql
+    networks:
+      - name: mynetsql
+        ipv4_address: 172.17.0.3
+
+# Copy database dump file to remote host and restore it to database 'my_db'
+- name: Copy database dump file
+  copy:
+     src: "../APRSLOG.template.sql"
+     dest: /tmp
+- name: Copy adduser file
+  copy:
+     src: "../doc/adduser.sql"
+     dest: /tmp
+- name: Copy APRSLOG shell file
+  copy:
+     src: "./APRSLOG.sh"
+     dest: /tmp
+- name: Copy GLIDERS shell file
+  copy:
+     src: "./GLIDERS.sh"
+     dest: /tmp/GLIDERS.sh
+- name: Copy ADDUSER shell file
+  copy:
+     src: "./ADDUSER.sh"
+     dest: /tmp/ADDUSER.sh
+- name: Copy CRONTAB shell file
+  copy:
+     src: "./CRONTAB.sh"
+     dest: /tmp/CRONTAB.sh
+- name: Copy crontab data
+  copy:
+     src: "../crontab.data"
+     dest: /tmp/
+- name: Copy aliases
+  copy:
+     src: "../aliases"
+     dest: ~/.bash_aliases
+- name: Copy COMMON INSTALL
+  copy:
+     src: "../commoninstall.sh"
+     dest: /tmp/commoninstall.sh
+- name: Copy Install shell
+  copy:
+     src: "../install.sh"
+     dest: /tmp/install.sh
+- name: Copy MariaDB conf
+  copy:
+     src:  "~/.my.cnf"
+     dest: "~/.my.cnf"
+
+- name: Restore database
+  command: "bash /tmp/APRSLOG.sh"
+
+- name: Download GLIDERS.sql
+  get_url:
+    url: http://acasado.es:60080/files/GLIDERS.sql
+    dest: /tmp/GLIDERS.sql
+    mode: '0440'
+
+- name: Restore database table GLIDERS.sql
+  command: "bash /tmp/GLIDERS.sh" 
+
+- name: Restore crontab
+  command: "bash /tmp/CRONTAB.sh"
+
+- name: Create a /etc/local directory
+  file:
+    path: /etc/local
+    state: directory
+    mode: '0755'
+
+- name: Copy 
+  copy:
+     src: "../config.template"
+     dest: /etc/local/APRSconfig.ini
+
+- name: Create a /nfs directories
+  file:
+    path: /nfs/OGN/DIRdata
+    state: directory
+    mode: '0755'
+
+- name: Give permissions to the log file
+  file:
+    path: /var/log/syslog
+    owner: root
+    group: root
+    mode: '1755'
+
