@@ -41,6 +41,7 @@
       copy:
          src: "../aliases"
          dest: /tmp/aliases
+         mode: 0777
 
     - name: Gen aliases
       become: no
