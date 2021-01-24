@@ -25,6 +25,14 @@
       - name: mynetsql
         ipv4_address: 172.17.0.2
     networks_cli_compatible: yes
+- name: Replace entry MARIADB
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: 'mariadb'
+    line: 172.17.0.2 mariadb
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Run a PHPMYADMIN container.
   docker_container:
