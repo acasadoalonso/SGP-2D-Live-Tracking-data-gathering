@@ -72,7 +72,10 @@
       become: no
       ansible.builtin.file:
         path: "~/src"
+        path: "~/src/APRSsrc"
         state: directory
+        owner: vagrant
+        group: vagrant
         mode: '0755'
 
     - name: Create a symbolic link to src/APRSsrc
