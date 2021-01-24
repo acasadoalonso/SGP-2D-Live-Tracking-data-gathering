@@ -68,16 +68,20 @@
          src: "../install.sh"
          dest: /tmp/install.sh
 
-    - name: Create a directory if it does not exist
+    - name: Create the source directory at home
       become: no
       ansible.builtin.file:
         path: "~/src"
         state: directory
         mode: '0755'
 
-    - name: Make home source directory
-      become: no
-      shell: "ln -s /var/www/html/main/ ~/src/APRSsrc"
+    - name: Create a symbolic link to src/APRSsrc
+      ansible.builtin.file:
+        src: /var/www/html/main
+        dest: ~/src/APRSsrc
+        owner: vagrant
+        group: vagrant
+        state: link
 
     - name: Copy CRONTAB shell file
       copy:
