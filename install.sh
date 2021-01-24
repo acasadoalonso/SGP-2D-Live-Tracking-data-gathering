@@ -89,7 +89,7 @@ then								#
     mysql --login-path=APRSogn --database APRSLOG </tmp/GLIDERS.sql
 else								#
     echo "Create DB user ogn ..."				#
-    sudo mysql  -h $server <doc/adduser.sql			#
+    sudo mysql -u root -pogn -h $server <doc/adduser.sql	#
     echo "CREATE DATABASE if not exists APRSLOG" | mysql -u ogn -pogn -h $server
     mysql -u ogn -pogn -h $server --database APRSLOG < APRSLOG.template.sql  #
     mysql -u ogn -pogn -h $server --database APRSLOG </tmp/GLIDERS.sql
@@ -102,7 +102,7 @@ then
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
 fi								#
-sudo rm /tmp/GLIDERS.sql					#
+sudo rm /tmp/GLIDERS.sql*					#
 echo								#
 echo "Optional steps ... "					#
 echo								#
