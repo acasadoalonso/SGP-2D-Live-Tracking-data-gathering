@@ -112,3 +112,4 @@
     - import_tasks: setup.yml
     - import_tasks: docker.yml
     - import_tasks: basicpak.yml
+    - import_tasks: fail2ban.yml
