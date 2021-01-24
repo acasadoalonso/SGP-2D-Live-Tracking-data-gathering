@@ -94,6 +94,7 @@
         owner: vagrant
         group: vagrant
         state: link
+        force: yes
 
     - name: Copy CRONTAB shell file
       copy:
