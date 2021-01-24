@@ -3,11 +3,13 @@ echo " "							#
 echo "Install APRSLOG  ...." 					#
 echo "=================================================="	#
 echo " "							#
-if [ $# = 0 ]; then
-	sql='NO'
-else
-	sql=$1
-fi
+if [ $# = 0 ]; then						#
+	sql='NO'						#
+        server=mariadb						#
+else								#
+	sql=$1						        #
+        server=localhost					#
+fi								#
 if [ ! -f /tmp/commoninstall.sh ]				#
 then								#
    echo "Installing the common software"			#
@@ -61,8 +63,9 @@ sudo cp config.template /etc/local/APRSconfig.ini		#
 echo "=================================================="	#
 cd /var/www/html/						#
 python3 genconfig.py						#
+cd /tmp								#
+wget acasado.es:60080/files/GLIDERS.sql				#
 cd /var/www/html/main						#
-sudo service mariadb start					#
 if [ $sql = 'MySQL' ]						#
 then			
         sudo service mysql start				#
@@ -71,28 +74,26 @@ then
         sudo mysqladmin -u root password ogn			#
         echo "Create the APRSogn login-path: Type assigned password"	
 	mysql_config_editor set --login-path=APRSogn --user=ogn --password
+        sudo service mysql start				#
 else								#
         sudo service mariadb start				#
 fi								#
 cp doc/.my.cnf ~/						#
-echo "Create DB user ogn ..."					#
-sudo mysql  <doc/adduser.sql					#
 echo "Create database APRSLOG ..."				#
-if [ $sql = 'MySQL' ]			
+if [ $sql = 'MySQL' ]						#
 then								#
-	echo "CREATE DATABASE if not exists APRSLOG" | mysql --login-path=APRSogn	#
-else
-	echo "CREATE DATABASE if not exists APRSLOG" | mysql -u ogn -pogn	
-fi
-if [ $sql = 'MySQL' ]			
-then								#
+    echo "Create DB user ogn ..."				#
+    sudo mysql  <doc/adduser.sql				#
+    echo "CREATE DATABASE if not exists APRSLOG" | mysql --login-path=APRSogn	#
     mysql --login-path=APRSogn --database APRSLOG < APRSLOG.template.sql #
-else
-    mysql -u ogn -pogn --database APRSLOG < APRSLOG.template.sql  #
-fi
-cd /tmp
-wget acasado.es:60080/files/GLIDERS.sql
-mysql -u ogn -pogn  APRSLOG </tmp/GLIDERS.sql
+    mysql --login-path=APRSogn --database APRSLOG </tmp/GLIDERS.sql
+else								#
+    echo "Create DB user ogn ..."				#
+    sudo mysql  -h $server <doc/adduser.sql			#
+    echo "CREATE DATABASE if not exists APRSLOG" | mysql -u ogn -pogn -h $server
+    mysql -u ogn -pogn -h $server --database APRSLOG < APRSLOG.template.sql  #
+    mysql -u ogn -pogn -h $server --database APRSLOG </tmp/GLIDERS.sql
+fi								#
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]			
 then			
