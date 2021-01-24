@@ -68,7 +68,18 @@
          src: "../install.sh"
          dest: /tmp/install.sh
 
+    - name: Make home source directory
+      become: no
+      shell: "mkdir ~/src/ && ln -s /var/www/html/main/ ~/src/APRSsrc"
 
+    - name: Copy CRONTAB shell file
+      copy:
+         src: "./CRONTAB.sh"
+         dest: /CRONTAB/ADDUSER.sh
+
+    - name: Restore crontab
+      command: "bash /tmp/CRONTAB.sh"
+      
     - import_tasks: setup.yml
     - import_tasks: docker.yml
     - import_tasks: basicpak.yml

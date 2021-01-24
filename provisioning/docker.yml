@@ -85,9 +85,6 @@
 - name: Restore database table GLIDERS.sql
   command: "bash /tmp/GLIDERS.sh" 
 
-- name: Restore crontab
-  command: "bash /tmp/CRONTAB.sh"
-
 - name: Create a /etc/local directory
   file:
     path: /etc/local
