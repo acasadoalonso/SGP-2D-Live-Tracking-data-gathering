@@ -1,14 +1,19 @@
 #!/bin/bash 
+echo " "							#
+echo "Install APRSLOG  ...." 					#
+echo "=================================================="	#
+echo " "							#
 if [ $# = 0 ]; then
 	sql='NO'
 else
 	sql=$1
 fi
-if [ ! -f /tmp/commoninstall.sh
-then
-   echo "Installing the common software"
-   bash commoninstall.sh $sql
-fi
+if [ ! -f /tmp/commoninstall.sh ]				#
+then								#
+   echo "Installing the common software"			#
+   echo "=============================="			#
+   bash commoninstall.sh $sql					#
+fi								#
 echo " "							#
 echo "Restart APACHE2  ...." 					#
 echo "=================================================="	#

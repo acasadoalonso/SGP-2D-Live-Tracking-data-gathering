@@ -14,11 +14,12 @@ fi
 
 if [ -f /tmp/commoninstall.sh ]
 then 
-        sudo bash /tmp/commoninstall.sh
 	echo "======================================================================="
 	echo "Install the rest of the software running     bash /tmp/commoninstall.sh"
-	echo "follow by running                            bash /tmp/install.sh"
+	echo "follow by running                            bash /tmp/install.sh      "
 	echo "======================================================================="
+        sudo bash /tmp/commoninstall.sh
+        sudo bash /tmp/install.sh
 fi
 sudo apt-get autoremove
 echo "======================================================================"
