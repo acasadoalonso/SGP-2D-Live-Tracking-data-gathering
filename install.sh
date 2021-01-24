@@ -63,8 +63,11 @@ sudo cp config.template /etc/local/APRSconfig.ini		#
 echo "=================================================="	#
 cd /var/www/html/						#
 python3 genconfig.py						#
-cd /tmp								#
-wget acasado.es:60080/files/GLIDERS.sql				#
+if [ ! -f /tmp/GLIDERS.sql ]					#
+then								#
+	cd /tmp							#
+	wget acasado.es:60080/files/GLIDERS.sql			#
+fi								#
 cd /var/www/html/main						#
 if [ $sql = 'MySQL' ]						#
 then			
@@ -95,14 +98,14 @@ else								#
     mysql -u ogn -pogn -h $server --database APRSLOG </tmp/GLIDERS.sql
 fi								#
 cd /var/www/html/main						#
-if [ $sql = 'docker' ]			
-then			
+if [ $sql = 'docker' ]						#
+then								#
    echo "CREATE DATABASE if not exists APRSLOG" | sudo mysql -u ogn -pogn -h MARIADB
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
 fi								#
-sudo rm /tmp/GLIDERS.sql*					#
+sudo rm -f /tmp/GLIDERS.sql*					#
 echo								#
 echo "Optional steps ... "					#
 echo "==================="					#

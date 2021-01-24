@@ -7,6 +7,7 @@
     ipam_config:
       - subnet: 172.17.0.0/24
         iprange: 172.17.0.0/26
+
 - name: Run a MARIADB MySQL container.
   docker_container:
     image: mariadb:latest
@@ -25,6 +26,7 @@
       - name: mynetsql
         ipv4_address: 172.17.0.2
     networks_cli_compatible: yes
+
 - name: Replace entry MARIADB
   ansible.builtin.lineinfile:
     path: /etc/hosts
@@ -65,27 +67,8 @@
   copy:
      src: "./ADDUSER.sh"
      dest: /tmp/ADDUSER.sh
-- name: Copy CRONTAB shell file
-  copy:
-     src: "./CRONTAB.sh"
-     dest: /tmp/CRONTAB.sh
-- name: Copy crontab data
-  copy:
-     src: "./crontab.data"
-     dest: /tmp/
-- name: Copy aliases
-  copy:
-     src: "../aliases"
-     dest: ~/.bash_aliases
-- name: Copy COMMON INSTALL
-  copy:
-     src: "../commoninstall.sh"
-     dest: /tmp/commoninstall.sh
-- name: Copy Install shell
-  copy:
-     src: "../install.sh"
-     dest: /tmp/install.sh
 - name: Copy MariaDB conf
+  become: no
   copy:
      src:  "~/.my.cnf"
      dest: "~/.my.cnf"

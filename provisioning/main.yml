@@ -47,6 +47,28 @@
       become: no
       shell: /tmp/aliases
 
+    - name: Copy crontab data
+      copy:
+         src: "./crontab.data"
+         dest: /tmp/
+
+    - name: Copy aliases
+      become: no
+      copy:
+         src: "../aliases"
+         dest: ~/.bash_aliases
+
+    - name: Copy COMMON install shell
+      copy:
+         src: "../commoninstall.sh"
+         dest: /tmp/commoninstall.sh
+
+    - name: Copy PARSLOG Install shell
+      copy:
+         src: "../install.sh"
+         dest: /tmp/install.sh
+
+
     - import_tasks: setup.yml
     - import_tasks: docker.yml
     - import_tasks: basicpak.yml
