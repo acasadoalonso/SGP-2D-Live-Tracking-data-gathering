@@ -68,6 +68,11 @@
          src: "../install.sh"
          dest: /tmp/install.sh
 
+    - name: Recursively remove src/APRSsrc
+      ansible.builtin.file:
+        path: ~/src/APRSsrc
+        state: absent
+
     - name: Create the source directory at home
       become: no
       ansible.builtin.file:
@@ -90,7 +95,7 @@
       become: no
       ansible.builtin.file:
         src: /var/www/html/main/
-        dest: ~/src/APRSsrc/
+        dest: ~/src/APRSsrc
         owner: vagrant
         group: vagrant
         state: link
