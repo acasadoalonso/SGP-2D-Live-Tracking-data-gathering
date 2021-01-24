@@ -72,6 +72,14 @@
       become: no
       ansible.builtin.file:
         path: "~/src"
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0755'
+
+    - name: Create the APRSsrc directory at home
+      become: no
+      ansible.builtin.file:
         path: "~/src/APRSsrc"
         state: directory
         owner: vagrant
