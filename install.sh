@@ -105,15 +105,22 @@ fi								#
 sudo rm /tmp/GLIDERS.sql*					#
 echo								#
 echo "Optional steps ... "					#
+echo "==================="					#
 echo								#
 cd sh	 							#
 if [ -f crontab.data ]						#
 then 								#
-     crontab -u vagrant <crontab.data				#
-     crontab -u vagrant -l 					#
+     	echo							#
+     	echo "Set the crontab ... "				#
+     	echo							#
+     	crontab -u vagrant crontab.data				#
+     	crontab -u vagrant -l 					#
 fi								#
 if [ ! -d ~/src  ]						#
 then								#
+     	echo							#
+     	echo "Set the src dir ... "				#
+     	echo							#
 	mkdir ~/src   						#
 	mkdir ~/src/APRSsrc					#
 	ln -s /var/www/html/main ~/src/APRSsrc			#
@@ -121,6 +128,9 @@ fi								#
 ls  -la ~/src 							#
 if [ ! -d /nfs  ]						#
 then								#
+     	echo							#
+     	echo "Set the NFS dir ... "				#
+     	echo							#
 	sudo mkdir /nfs						#
 	sudo mkdir /nfs/OGN					#
 	sudo mkdir /nfs/OGN/APRSdata				#
