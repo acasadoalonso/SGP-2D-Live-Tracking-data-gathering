@@ -75,7 +75,7 @@
     - name: Copy CRONTAB shell file
       copy:
          src: "./CRONTAB.sh"
-         dest: /CRONTAB/ADDUSER.sh
+         dest: /tmp/CRONTAB.sh
 
     - name: Restore crontab
       command: "bash /tmp/CRONTAB.sh"
