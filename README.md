@@ -19,7 +19,7 @@ install.sh		  The script of installation
 
 ognddbfuncs.py	The table with all the flarms ID and its registration ID
 
-adsbfuncs.py		The APRS parser routine
+adsbfuncs.py		The ADSB parser routine
 
 flarmfuncs.py		The Flarm utility functions
 
