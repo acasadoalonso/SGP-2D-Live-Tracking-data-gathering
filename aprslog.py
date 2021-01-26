@@ -43,7 +43,7 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-
+    print ("Connecting with APRS HOST:", config.APRS_SERVER_HOST)
     if LASTFIX:				# if LASTFIX use the non filtered port
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
                                         #sock.connect(("aprs.glidernet.org", 10152))

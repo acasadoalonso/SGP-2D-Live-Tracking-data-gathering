@@ -2,18 +2,40 @@
 import json
 import requests
 import urllib.request, urllib.error, urllib.parse
+import sys
+import socket
+
 global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
 NOinfo    = {"return":"NOinfo"}
 ####################################################################
+HOST="acasado.es"
+PORT=60082
+DDB_URL1 = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
+DDB_URL2 = "http://ddb.glidernet.org/download/?j=2"
 
-DDB_URL = "http://ddb.glidernet.org/download/?j=2"
-#DDB_URL = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
+def servertest(host, port):
+
+    args = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+    for family, socktype, proto, canonname, sockaddr in args:
+        s = socket.socket(family, socktype, proto)
+        try:
+            s.connect(sockaddr)
+        except socket.error:
+            return False
+        else:
+            s.close()
+            return True
 
 def getddbdata():                           # get the data from the API server
 
     global _ogninfo_                        # the OGN info data
     #url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
+    if servertest(HOST, PORT):
+       DDB_URL=DDB_URL1
+    else:
+       DDB_URL=DDB_URL2
+    print ("Connecting with: ", DDB_URL)  
     req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")
