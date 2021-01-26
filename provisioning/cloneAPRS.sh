@@ -1,5 +1,7 @@
 #!/bin/bash
-sudo apt install -y ansible ansible-lint
+sudo apt install -y  python3-pip
+/usr/bin/python3 -m pip install --upgrade pip
+pip3 install ansible
 rm html
 sudo rm -r public
 git clone https://github.com/acasadoalonso/SGP-2D-Live-Tracking.git 			public
