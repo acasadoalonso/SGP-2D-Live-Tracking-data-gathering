@@ -1,2 +1,2 @@
 #!/bin/bash 
-sudo -u vagrant /usr/bin/crontab </tmp/crontab.data 
+sudo cp /tmp/crontab.data /etc/cron.d/APRSLOG 

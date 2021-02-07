@@ -6,8 +6,11 @@ else
 fi
 echo								#
 echo " "							#
+echo " "							#
+echo "=================================================="	#
 echo "Installing the common components of the OGN  ...." 	#
 echo "=================================================="	#
+echo " "							#
 echo " "							#
 echo								#
 export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
@@ -167,6 +170,7 @@ sudo apt-get install percona-toolkit				#
 sudo apt-get -y autoremove					#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "End of common componets  ...." 				#
 echo "=================================================="	#
 echo " "							#
