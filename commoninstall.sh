@@ -21,6 +21,7 @@ sudo apt-get install -y build-essential 			#
 #sudo add-apt-repository ppa:ondrej/php				#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "Lets update the operating system libraries  ...." 	#
 echo "=================================================="	#
 echo " "							#
@@ -35,6 +36,7 @@ sudo apt install -y cifs-utils					#
 sudo apt install -y nfs-common					#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "Installing the packages required . (LAMP stack)..."	#
 echo "=================================================="	#
 echo " "							#
@@ -78,9 +80,8 @@ sudo apt-get install -y dnsutils				#
 sudo apt-get install -y python3-autopep8			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
-echo								#
-echo "Installing phpmyadmin  ... "				#
-echo								#
+echo	""							#
+echo	""							#
 if [ $sql = 'MySQL' ]						#
 then								#
     sudo apt-get install -y phpmyadmin 				#
@@ -92,6 +93,7 @@ then								#
 fi								#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "Installing the PYTHON modules required  ..."		#
 echo "=================================================="	#
 echo " "							#
@@ -137,6 +139,7 @@ then								#
 fi								#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "Installing the templates needed  ...." 			#
 echo "=================================================="	#
 echo " "							#
@@ -149,6 +152,11 @@ fi								#
 cd /var/www/html/main						#
 if [ $sql = 'docker' -o $sql == 'MariaDB' ]			#
 then								#
+   echo " "							#
+   echo "=================================================="	#
+   echo "Install docker  ...." 					#
+   echo "=================================================="	#
+   echo " "							#
    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
    sudo apt-key fingerprint 0EBFCD88
    sudo add-apt-repository \
@@ -174,5 +182,6 @@ echo " "							#
 echo "=================================================="	#
 echo "End of common componets  ...." 				#
 echo "=================================================="	#
+echo " "							#
 echo " "							#
 echo								#

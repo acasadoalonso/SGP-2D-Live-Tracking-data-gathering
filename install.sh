@@ -86,7 +86,7 @@ else								#
         echo "================================================"	#
         echo "Running mariadb .... ... "	 		#
         echo "================================================"	#
-        sudo apt install mariadb-server				#
+        sudo apt install -y mariadb-server			#
         sudo service mariadb start				#
 fi								#
 cp doc/.my.cnf ~/						#
