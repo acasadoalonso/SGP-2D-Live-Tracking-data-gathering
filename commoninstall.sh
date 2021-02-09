@@ -87,7 +87,9 @@ then								#
     sudo apt-get install -y phpmyadmin 				#
     sudo service apache2 restart				#
     sudo apt-get -y autoremove					#
+    echo "================================================"     #
     echo "Running msqladmin .... assign root password ... "	#
+    echo "================================================"     #
     sudo mysqladmin -u root password ogn			#
     sudo mysql_secure_installation				#
 fi								#
@@ -98,7 +100,7 @@ echo "Installing the PYTHON modules required  ..."		#
 echo "=================================================="	#
 echo " "							#
 echo								#
-#sudo -H python3 -m pip install --upgrade pip			#
+sudo -H python3 -m pip install --upgrade pip			#
 pip3 -V								#
 sudo -H python3 -m pip install ephem pytz geopy configparser 	#
 sudo -H python3 -m pip install pycountry uritemplate requests	#
