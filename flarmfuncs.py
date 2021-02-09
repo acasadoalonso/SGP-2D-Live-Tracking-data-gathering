@@ -3,9 +3,9 @@ from ognddbfuncs import getognchk
 unkglider = []
 
 
-def getflarmid(conn, registration): # get the FLARMID from the GLIDERS table on the database
+def getflarmid(conn, registration):  # get the FLARMID from the GLIDERS table on the database
 
-    import MySQLdb 
+    import MySQLdb
     cursG = conn.cursor()           # set the cursor for searching the devices
     try:
         cursG.execute("select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
@@ -15,12 +15,12 @@ def getflarmid(conn, registration): # get the FLARMID from the GLIDERS table on 
         except IndexError:
             print(">>>MySQL Error: %s" % str(e))
             print(">>>MySQL error:", "select idglider, flarmtype from GLIDERS where registration = '"+registration+"' ;")
-            print(">>>MySQL data :",  registration)
+            print(">>>MySQL data :", registration)
         return("NOREG")
     rowg = cursG.fetchone() 	    # look for that registration on the OGN database
     if rowg == None:
         return("NOREG")
-    idglider  = rowg[0]		    # flarmid to report
+    idglider = rowg[0]		    # flarmid to report
     flarmtype = rowg[1]		    # flarmtype flarm/ica/ogn
     if not getognchk(idglider):     # check that the registration is on the table - sanity check
         if idglider not in unkglider:

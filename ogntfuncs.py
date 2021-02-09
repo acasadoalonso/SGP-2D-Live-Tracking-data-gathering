@@ -3,18 +3,20 @@
 # OGN tracker integration functions
 #
 # -------------------------------------------------------------------------------------------------------------------------------- #
-from flarmfuncs  import *
-from ognddbfuncs import *
+from flarmfuncs import getflarmid, chkflarmid
+from ognddbfuncs import getognreg
 
 #
 # function to build the OGN tracker table of relation between flarmid and registrations
 #
-def ogntbuildtable(conn, ognttable, prt=False): # conn is the DB connection id, ogntable is where to return the pairs table
+
+
+def ogntbuildtable(conn, ognttable, prt=False):  # conn is the DB connection id, ogntable is where to return the pairs table
 
     oldtable = ognttable.copy()         # have a copy of it
     auxtable = {}			# the aux table to know the registrations
     cursG = conn.cursor()               # set the cursor for searching the devices
-                                        # get all the devices with OGN tracker
+    # get all the devices with OGN tracker
     cursG.execute("select id, flarmid, registration from TRKDEVICES where devicetype = 'OGNT' and active = 1; ")
     for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
 
@@ -23,11 +25,11 @@ def ogntbuildtable(conn, ognttable, prt=False): # conn is the DB connection id, 
         registration = rowg[2]          # registration id to be linked
         if prt:
             print("OGNTtable:", ogntid, flarmid, registration)
-        if flarmid == None or flarmid == '': # if flarmid is not provided
-                                        # get it from the registration
+        if flarmid == None or flarmid == '':  # if flarmid is not provided
+            # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:
-            found=chkflarmid(flarmid)
+            chkflarmid(flarmid)
 
         ognttable[ogntid] = flarmid
 

@@ -1,4 +1,8 @@
 [flake8]
-ignore = D203,F403,E501,E111,E114
-exclude = .git,__pycache__,old,build,dist,ADSBreg.py
+ignore = C901,D203,E111,E114,E223,E225,E226,E265,E501,E711,E722,F403
+exclude = .git,__pycache__,old,doc,dockerfiles,.idea,sh,openski-api,utils,build,dist,ADSBreg.py
 max-complexity = 10
+[pycodestyle]
+mas_line_length = 120
+ignore =E501
+

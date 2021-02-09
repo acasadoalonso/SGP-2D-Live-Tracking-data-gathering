@@ -1,22 +1,16 @@
 #!/bin/python3
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import json
-from ctypes import *
-from datetime import datetime, timedelta
-import socket
-import time
-import string
-import sys
-import os
-import signal
+from datetime import datetime
 from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
-import hashlib
-import hmac
-import urllib.request, urllib.parse, urllib.error
-import random
+import urllib.request
+import urllib.parse
+import urllib.error
 import config
-from flarmfuncs import *
+from flarmfuncs import getflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -33,8 +27,9 @@ def skylgetapidata(url): 	            # get the data from the API server
     return j_obj                            # return the JSON object
 #-------------------------------------------------------------------------------------------------------------------#
 
+    # extract the data of the last know position from the JSON object
 
-                                            # extract the data of the last know position from the JSON object
+
 def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):
 
     foundone = False
@@ -44,18 +39,18 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):
         id = pilot['id']		    # pilot ID
         pilotname = pilotname.decode("utf-8")
         if pilotname.isnumeric():           # id numeric is pilot id
-                                            # if is not this pilot id nothing to do
+            # if is not this pilot id nothing to do
             if pilotname.strip(' ') != id.strip(' '):
                 continue
         else:
-                                            # if is not this pilot name nothing to do
+            # if is not this pilot name nothing to do
             if pilotname.strip(' ') != name.strip(' '):
                 continue
         foundone = True
         dte = msg['time']		    # get the time on ISO format
         dte = dte[0:19]			    # get the important part
         ttt = datetime.strptime(dte, "%Y-%m-%dT%H:%M:%S")  # parser the time
-                                            # number of second until beginning of the day
+        # number of second until beginning of the day
         td = ttt-datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # Unix time - seconds from the epoch
         location = msg['location']
@@ -92,7 +87,7 @@ def skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg):
 def skylstoreitindb(datafix, curs, conn):   # store the fix into the database
 
     for fix in datafix['skylpos']:	    # for each fix on the dict
-        id = fix['pilotname']		    # extract the information
+        idpn = fix['pilotname']		    # extract the information
         dte = fix['date']
         hora = fix['time']
         station = config.location_name
@@ -122,8 +117,7 @@ def skylstoreitindb(datafix, curs, conn):   # store the fix into the database
                 print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
                 print(">>>MySQL Error: %s" % str(e))
-                print(">>>MySQL error:", cout, addcmd)
-                print(">>>MySQL data :",  data)
+                print(">>>MySQL error:", addcmd, idpn)
             return (False)                  # indicate that we have errors
     conn.commit()                           # commit the DB updates
     return(True)			    # indicate that we have success
@@ -134,26 +128,26 @@ def skylstoreitindb(datafix, curs, conn):   # store the fix into the database
 def skylaprspush(datafix, conn, prt=False):
 
     for fix in datafix['skylpos']:	    # for each fix on the dict
-        id = fix['pilotname']		    # extract the information
-        dte = fix['date']
-        hora = fix['time']
+        idpn 			= fix['pilotname']		    # extract the information
+        dte 			= fix['date']
+        hora 			= fix['time']
         station = config.location_name
-        latitude = fix['Lat']
-        longitude = fix['Long']
-        altitude = fix['altitude']
-        speed = fix['speed']
-        course = fix['course']
-        roclimb = fix['roc']
+        latitude 		= fix['Lat']
+        longitude 		= fix['Long']
+        altitude 		= fix['altitude']
+        speed 			= fix['speed']
+        course 			= fix['course']
+        roclimb			 = fix['roc']
         rot = 0
         sensitivity = 0
-        gps = fix['GPS']
-        uniqueid = str(fix["UnitID"])
-        dist = fix['dist']
-        extpos = fix['extpos']
-        gliderreg = fix['gliderreg']
-        flarmid = getflarmid(conn, gliderreg)
-                                            # build the APRS message
-        lat = deg2dmslat(abs(latitude))
+        gps 			= fix['GPS']
+        uniqueid 		= str(fix["UnitID"])
+        dist 			= fix['dist']
+        extpos 			= fix['extpos']
+        gliderreg 		= fix['gliderreg']
+        flarmid 		= getflarmid(conn, gliderreg)
+        # build the APRS message
+        lat 			= deg2dmslat(abs(latitude))
         if latitude > 0:
             lat += 'N'
         else:
@@ -172,7 +166,7 @@ def skylaprspush(datafix, conn, prt=False):
             aprsmsg += "A=%06d" % int(altitude*3.28084)
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" \n"
         print("APRSMSG: ", aprsmsg)
-        rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
 
     return (True)
@@ -185,14 +179,14 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):
 
     curs = conn.cursor()                # set the cursor for storing the fixes
     cursG = conn.cursor()               # set the cursor for searching the devices
-                                        # get the counter of IDs
+    # get the counter of IDs
     cursG.execute(
         "select count(*) from TRKDEVICES where devicetype = 'SKYL' and active = '1'; ")
     cnt = cursG.fetchone()
     cnt = int(cnt[0])
     if cnt == 0:
         now = datetime.utcnow()
-                                        # number of second until beginning of the day of 1-1-1970
+        # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         sync = int(td.total_seconds())  # as an integer
         return (sync+1)			# return TTIME for next call
@@ -202,7 +196,7 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):
     if prt:
         print(json.dumps(pos, indent=4))  # convert JSON to dictionary
     tracks = pos['tracks']
-                                        # get all the devices with SKYL
+    # get all the devices with SKYL
     cursG.execute(
         "select id, Registration, active from TRKDEVICES where devicetype = 'SKYL' ; ")
     for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
@@ -212,16 +206,16 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):
         active = rowg[2]		# if active or not
         if active == 0:
             continue                    # if not active, just ignore it
-                                        # build the userlist to call to the SKYL server
-        found = skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)  # find the gliders since TTIME
+            # build the userlist to call to the SKYL server
+        skyladdpos(tracks, skylpos, ttime, pilotname, gliderreg)  # find the gliders since TTIME
     if prt:
         print(skylpos)
     if store:
-        skylstoreitindb(skylpos, curs, conn)# and store it on the DDBB
+        skylstoreitindb(skylpos, curs, conn)  # and store it on the DDBB
     if aprspush:
-        skylaprspush(skylpos, conn, prt=prt)	# and push it into the OGN APRS
+        skylaprspush(skylpos, conn, prt=prt)  # and push it into the OGN APRS
     now = datetime.utcnow()
-                                        # number of second until beginning of the day of 1-1-1970
+    # number of second until beginning of the day of 1-1-1970
     td = now-datetime(1970, 1, 1)
     sync = int(td.total_seconds())      # as an integer
     return (sync+1)			# return TTIME for next call

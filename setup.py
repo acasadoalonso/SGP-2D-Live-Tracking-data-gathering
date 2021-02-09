@@ -3,7 +3,7 @@
 from os import path
 from setuptools import setup, find_packages
 
-#from ogn.client.settings import PACKAGE_VERSION
+# from ogn.client.settings import PACKAGE_VERSION
 
 
 here = path.abspath(path.dirname(__file__))
@@ -18,8 +18,8 @@ setup(
     description='A python module for the Open Glider Network',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering', 
-    author='Angel Casado', 
+    url='https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering',
+    author='Angel Casado',
     author_email='acasado@acm.org',
     license='AGPLv3',
     classifiers=[

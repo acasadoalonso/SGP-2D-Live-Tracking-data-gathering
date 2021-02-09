@@ -3,18 +3,17 @@
 # Python code to push into the OGN APRS the data from SPOT/SPIDER/CAPTURS/LT24/SKYLINES
 #
 
-from datetime import datetime
+import config                           # get the configuration data
+from datetime import datetime, timedelta
 from ctypes import *
 import socket
 import time
-import string
-import pytz
 import sys
 import os
 import os.path
 import signal
 import atexit
-from parserfuncs import *               # the ogn/ham parser functions
+from parserfuncs import alive               # the ogn/ham parser functions
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
 import argparse
@@ -24,20 +23,20 @@ import traceback
 
 
 def shutdown(sock):		        # shutdown routine, close files and report on activity
-                                        # shutdown before exit
+    # shutdown before exit
     try:
         sock.shutdown(0)                # shutdown the connection
         sock.close()                    # close the connection file
     except Exception as e:
-        print("Socket error...")
+        print("Socket error...", e, "ignored \n")
     if conn:
-       conn.commit()                    # commit the DB updates
-       conn.close()                     # close the database
+        conn.commit()                    # commit the DB updates
+        conn.close()                     # close the database
     local_time = datetime.now()         # report date and time now
     print("Shutdown now, Time now:", local_time, " Local time.")
     if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
-                                        # delete the mark of being alive
-       os.remove(config.DBpath+"PUSH2OGN.alive")
+        # delete the mark of being alive
+        os.remove(config.DBpath+"PUSH2OGN.alive")
     #if os.path.exists(config.PIDfile+".PUSH2OGN"):
     #   os.remove(config.PIDfile+".PUSH2OGN")
     return                              # job done
@@ -84,59 +83,58 @@ print("Time now is: ", date, " Local time")
 # get the SPIDER TRACK  & SPOT & InReach ... information
 #
 # --------------------------------------#
-import config                           # get the configuration data
 #
-APP         = "PUSH2OGN"		# the application name
-SLEEP       = 10			# sleep 10 seconds in between calls to the APRS
-nerrors     = 0				# number of errors in *funcs found
-day         = 0				# day of running
-TimeSPOTSPIDERINREACH   = 300           # time in second from each run
-TimeCAPTUR              = 150           # time in second from each run
-TimeLT24SKYL            =  60           # time in second from each run
+APP = "PUSH2OGN"		# the application name
+SLEEP = 10			# sleep 10 seconds in between calls to the APRS
+nerrors = 0				# number of errors in *funcs found
+day = 0				# day of running
+TimeSPOTSPIDERINREACH = 300           # time in second from each run
+TimeCAPTUR = 150           # time in second from each run
+TimeLT24SKYL = 60           # time in second from each run
 
 # --------------------------------------#
-DBpath      = config.DBpath
-DBhost      = config.DBhost
-DBuser      = config.DBuser
-DBpasswd    = config.DBpasswd
-DBname      = config.DBname
+DBpath = config.DBpath
+DBhost = config.DBhost
+DBuser = config.DBuser
+DBpasswd = config.DBpasswd
+DBname = config.DBname
 # we force everything TRUE as we try to push to the APRS
-OGNT        = True
+OGNT = True
 parser = argparse.ArgumentParser(description="OGN push to the APRS network and store it on the MySQL database")
-parser.add_argument('-p',  '--print',     required=False,
-                    dest='prt',   action='store', default=False)
-parser.add_argument('-r',  '--SPIDER',     required=False,
-                    dest='SPIDER',   action='store', default=False)
-parser.add_argument('-s',  '--SPOT',     required=False,
-                    dest='SPOT',   action='store', default=False)
-parser.add_argument('-i',  '--INREACH',     required=False,
-                    dest='INREACH',   action='store', default=False)
-parser.add_argument('-k',  '--SKYLINE',     required=False,
-                    dest='SKYLINE',   action='store', default=False)
-parser.add_argument('-c',  '--CAPTURS',     required=False,
-                    dest='CAPTURS',   action='store', default=False)
-parser.add_argument('-l',  '--LT24',     required=False,
-                    dest='LT24',   action='store', default=False)
-parser.add_argument('-a',  '--ADSB',     required=False,
-                    dest='ADSB',   action='store', default=False)
-parser.add_argument('-u',  '--USEDDB',     required=False,
-                    dest='USEDDB',   action='store', default=False)
+parser.add_argument('-p', '--print', required=False,
+                    dest='prt', action='store', default=False)
+parser.add_argument('-r', '--SPIDER', required=False,
+                    dest='SPIDER', action='store', default=False)
+parser.add_argument('-s', '--SPOT', required=False,
+                    dest='SPOT', action='store', default=False)
+parser.add_argument('-i', '--INREACH', required=False,
+                    dest='INREACH', action='store', default=False)
+parser.add_argument('-k', '--SKYLINE', required=False,
+                    dest='SKYLINE', action='store', default=False)
+parser.add_argument('-c', '--CAPTURS', required=False,
+                    dest='CAPTURS', action='store', default=False)
+parser.add_argument('-l', '--LT24', required=False,
+                    dest='LT24', action='store', default=False)
+parser.add_argument('-a', '--ADSB', required=False,
+                    dest='ADSB', action='store', default=False)
+parser.add_argument('-u', '--USEDDB', required=False,
+                    dest='USEDDB', action='store', default=False)
 
 args = parser.parse_args()
-prt        = args.prt			# print on|off
-SPIDER     = args.SPIDER
-SPOT       = args.SPOT
-INREACH    = args.INREACH
-CAPTURS    = args.CAPTURS
-SKYLINE    = args.SKYLINE
-LT24       = args.LT24	
-ADSB       = args.ADSB
-USEDDB     = args.USEDDB
+prt = args.prt			# print on|off
+SPIDER = args.SPIDER
+SPOT = args.SPOT
+INREACH = args.INREACH
+CAPTURS = args.CAPTURS
+SKYLINE = args.SKYLINE
+LT24 = args.LT24
+ADSB = args.ADSB
+USEDDB = args.USEDDB
 # --------------------------------------#
 if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
-print ("Setup: SPIDER:", SPIDER, "SPOT:",SPOT,"INREACH:",INREACH,"CAPTURS:", CAPTURS,"SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
+print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -158,10 +156,12 @@ if SKYLINE:
     from skylfuncs import *
 
 if ADSB:
+    from adsbfuncs import getsizeadsbcache, adsbsetrec
     from adsbfuncs import *
     SLEEP = 5
 
 if LT24:
+    from lt24funcs import lt24login
     from lt24funcs import *
     lt24username = config.LT24username
     lt24password = config.LT24password
@@ -177,12 +177,12 @@ if LT24:
 
 # -----------------------------------------------------------------#
 if not USEDDB:
-   import MySQLdb                          # the SQL data base routines^M
-   conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
-   print("MySQL: Database:", DBname, " at Host:", DBhost)
+    import MySQLdb                          # the SQL data base routines^M
+    conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
+    print("MySQL: Database:", DBname, " at Host:", DBhost)
 else:
-   print("Using the OGN DDB.")
-   conn = False
+    print("Using the OGN DDB.")
+    conn = False
 
 #----------------------pus2ogn.py start-----------------------#
 
@@ -248,7 +248,7 @@ spispotcount = 0			# loop counter
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
 day = now.day				# day of the month
-print ("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "\n\n")
+print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "\n\n")
 if LT24:
     # login into the LiveTrack24 server
     lt24login(LT24path, lt24username, lt24password)
@@ -258,7 +258,6 @@ if LT24:
 
 if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB:
     print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
-
 
 
 date = datetime.now()
@@ -271,7 +270,7 @@ try:
         local_time = datetime.now()
         elapsed_time = current_time - keepalive_time    # time since last keep_alive
         if (current_time - keepalive_time) > 180:      	# keepalives every 3 mins
-                                                        # and mark that we are still alive
+            # and mark that we are still alive
             alive(config.DBpath+APP)
             run_time = time.time() - start_time
             keepalive_time = current_time
@@ -291,7 +290,7 @@ try:
                 print("UTC time is now: ", now, keepalive_count, run_time)
 
         now = datetime.utcnow()				# get the UTC time
-                                                        # number of second until beginning of the epoch
+        # number of second until beginning of the epoch
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
             print("End of Day...")
@@ -304,21 +303,21 @@ try:
                     func='SPIDER'
                     ttime = spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt=prt, store=False, aprspush=True)
                 else:
-                                                        # format required by SPIDER
+                    # format required by SPIDER
                     ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
                 if SPOT:			        # if we have the SPOT according with the configuration
                     func='SPOT'
                     ts = spotfindpos(ts, conn, prt=prt, store=False, aprspush=True)
                 else:
-                                                        # number of second until beginning of the day
+                    # number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ts = int(td.total_seconds())
                 if INREACH:			        # if we have the INREACH according with the configuration
                     func='INREACH'
                     tr = inreachfindpos(tr, conn, prt=prt, store=False, aprspush=True)
                 else:
-                                                        # number of second until beginning of the day
+                    # number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tr = int(td.total_seconds())
                 ttspid = tt
@@ -328,7 +327,7 @@ try:
                     func='CAPTUR'
                     tc = captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
                 else:
-                                                        # number of second until beginning of the day
+                    # number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tc = int(td.total_seconds())
                 ttcapt = tt
@@ -338,28 +337,28 @@ try:
                     func='SKYLINE'
                     ty = skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
                 else:
-                                                        # number of second until beginning of the day
+                    # number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ty = int(td.total_seconds())
                 if LT24:				# if we have the LT24 according with the configuration
-                                                        # find the position and add it to the DDBB
+                    # find the position and add it to the DDBB
                     func='LT24'
                     lt24ts = lt24findpos(lt24ts, conn, LT24firsttime, prt=prt, store=False, aprspush=True)
                     LT24firsttime = False		# only once the addpos
                 else:
-                                                        # number of second until beginning of the day
+                    # number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     lt24ts = int(td.total_seconds())
                 ttltsk = tt
 
             if ADSB:					# if we have the ADSB according with the configuration
-                                                        # find the position and add it to the DDBB
-                    func='ADSB'
-                    adsbts = adsbfindpos(adsbts, conn, prt=prt, store=False, aprspush=True)
+                # find the position and add it to the DDBB
+                func='ADSB'
+                adsbts = adsbfindpos(adsbts, conn, prt=prt, store=False, aprspush=True)
             else:
-                                                        # number of second until beginning of the day
-                    td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
-                    adsbts = int(td.total_seconds())
+                # number of second until beginning of the day
+                td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
+                adsbts = int(td.total_seconds())
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
@@ -369,7 +368,7 @@ try:
                     tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
             if ADSB and spispotcount % 10 == 0:
 
-                print ("ADSB Cache size", getsizeadsbcache())
+                print("ADSB Cache size", getsizeadsbcache())
 
         except Exception as e:
             print(traceback.format_exc())

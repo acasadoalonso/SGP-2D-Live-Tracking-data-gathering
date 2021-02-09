@@ -1,23 +1,18 @@
 #!/bin/python3
-import urllib.request, urllib.error, urllib.parse
-import json
+import urllib.request
+import urllib.error
+import urllib.parse
 import xml.etree.ElementTree as ET
-from ctypes import *
-import socket
-from datetime import *
-import time
-import string
-import sys
-import os
-import signal
+from datetime import datetime
 from geopy.distance import geodesic         # use the Vincenty algorithm^M
 import MySQLdb                              # the SQL data base routines^M
 import config
-from flarmfuncs import *
+from flarmfuncs import getflarmid, chkflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
 
+# get the data from the API server
 
-                                            # get the data from the API server
+
 def inreachgetapidata(url, prt=False):
 
     req = urllib.request.Request(url, headers={'User-Agent': "Magic Browser"})
@@ -35,8 +30,9 @@ def inreachgetapidata(url, prt=False):
         print(kml)                          # print it if requested
     return kml
 
+    # extract the data from the JSON object
 
-                                            # extract the data from the JSON object
+
 def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
 
     # print msg                             # print the input
@@ -62,7 +58,7 @@ def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
             yy = timeutc[8:10]
             i = 10
     date = yy+mm+dd                         # date in format YYMMDD
-                                            # convert to datettime the rest of the data
+    # convert to datettime the rest of the data
     timett = datetime.strptime(timeutc[i+1:], "%I:%M:%S %p")
     yyy = int(yy)+2000                      # year on integer format
     mmm = int(mm)
@@ -70,9 +66,9 @@ def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
     hhh = timett.hour                       # hour on integer format
     min = timett.minute
     sss = timett.second
-                                            # rebuild now on datetime format/object
+    # rebuild now on datetime format/object
     tt = datetime(yyy, mmm, ddd, hhh, min, sss)
-                                            # number of second until beginning of the day of 1-1-1970
+    # number of second until beginning of the day of 1-1-1970
     td = tt-datetime(1970, 1, 1)
     unixtime = int(td.total_seconds())      # unixtime as an integer
     #print "TT", date, tt, unixtime
@@ -82,7 +78,7 @@ def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
     if (unixtime < ttime or altitude == 0):
         return (False)			    # if is lower than the last time just ignore it
     reg = regis
-                                            # extract from the JSON object the data that we need
+    # extract from the JSON object the data that we need
     lat = msg["Latitude"]
     lon = msg["Longitude"]
     id = msg["IMEI"] 			    # identifier for the final user
@@ -95,23 +91,24 @@ def inreachaddpos(msg, inreachpos, ttime, regis, flarmid):
     course = ccourse[0:couidx]
     extpos = msg["Valid GPS Fix"] 	    # check if from valid GPS
     name = msg["Name"]                      # pilot name
-                                            # convert to ISO format in order to extract all the DATE
+    # convert to ISO format in order to extract all the DATE
     dte = tt.isoformat()
     date = dte[2:4]+dte[5:7]+dte[8:10]
-    time = dte[11:13]+dte[14:16]+dte[17:19]
-    vitlat = config.FLOGGER_LATITUDE        
-                                            # get the coordinates of the BASE station
+    tme = dte[11:13]+dte[14:16]+dte[17:19]
+    vitlat = config.FLOGGER_LATITUDE
+    # get the coordinates of the BASE station
     vitlon = config.FLOGGER_LONGITUDE
-                                            # distance to the station
+    # distance to the station
     distance = geodesic((lat, lon), (vitlat, vitlon)).km
-    pos = {"registration": flarmid, "date": date, "time": time, "Lat": lat, "Long": lon, "altitude": altitude,
+    pos = {"registration": flarmid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": altitude,
            "UnitID": id, "GPS": mid, "speed": speed, "course": course, "dist": distance, "extpos": extpos, "PilotName": name}
     inreachpos['inreachpos'].append(pos)		# and store it on the dict
-    print("INREACHPOS :", lat, lon, altitude, id, distance, unixtime, dte, date, time, reg, flarmid, extpos, name)
+    print("INREACHPOS :", lat, lon, altitude, id, distance, unixtime, dte, date, tme, reg, flarmid, extpos, name)
     return (True)			    # indicate that we added an entry to the dict
 
+    # return on a dictionary the position of all fix positions
 
-                                            # return on a dictionary the position of all fix positions
+
 def inreachgetaircraftpos(kml, inreachpos, ttime, regis, flarmid, prt=True):
     msg = {}                                # create the local object
     found = False                           # assume no entries initailly
@@ -138,7 +135,7 @@ def inreachgetaircraftpos(kml, inreachpos, ttime, regis, flarmid, prt=True):
                                         print("InreachPos", item, "==>", value)
 
     if found:
-                                            # add the position for this fix
+        # add the position for this fix
         found = inreachaddpos(msg, inreachpos, ttime, regis, flarmid)
     #print inreachpos
     return (found)			    # return if we found a message or not
@@ -176,8 +173,7 @@ def inreachstoreitindb(datafix, curs, conn):  # store the fix into the database
                 print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
                 print(">>>MySQL Error: %s" % str(e))
-                print(">>>MySQL error:", cout, addcmd)
-                print(">>>MySQL data :",  data)
+                print(">>>MySQL error:", addcmd)
             return (False)	            # indicate that we have errors
     conn.commit()                           # commit the DB updates
     return(True)			    # indicate that we have success
@@ -188,30 +184,30 @@ def inreachaprspush(datafix, prt=False):    # push the data into the OGN APRS
         id = fix['registration'] 	    # extract the information
         if len(id) > 9:
             id = id[0:9]
-        dte = fix['date']                   # date
-        hora = fix['time']
-        latitude = float(fix['Lat'])
-        longitude = float(fix['Long'])
-        altitude = float(fix['altitude']) * 3.28084
-        speed = fix['speed']
-        course = fix['course']
-        roclimb = 0
-        rot = 0
-        sensitivity = 0
-        gps = fix['GPS']		    # model ID
-        gps = gps[0:6]                      # only six chars
-        uniqueid = str(fix["UnitID"])       # identifier of the owner
-        dist = fix['dist']		    # distance to BASE
-        extpos = fix['extpos']		    # GPS valid fix
-        pilotname = fix['PilotName']        # Pilot name
-                                            # build the APRS message
-                                            # convert the latitude to the format required by APRS
+        dte 					= fix['date']               # date
+        hora 					= fix['time']		    # time
+        latitude 				= float(fix['Lat'])
+        longitude 				= float(fix['Long'])
+        altitude 				= float(fix['altitude']) * 3.28084
+        speed 					= fix['speed']
+        course 					= fix['course']
+        roclimb 				= 0			    # rate of climb
+        rot 					= 0			    # rate of turn
+        sensitivity 				= 0
+        gps 					= fix['GPS']		    # model ID
+        gps 					= gps[0:6]                  # only six chars
+        uniqueid 				= str(fix["UnitID"])        # identifier of the owner
+        dist 					= fix['dist']		    # distance to BASE
+        extpos 					= fix['extpos']		    # GPS valid fix
+        pilotname 				= fix['PilotName']  	    # Pilot name
+        # build the APRS message
+        # convert the latitude to the format required by APRS
         lat = deg2dmslat(abs(latitude))
         if latitude > 0:
             lat += 'N'
         else:
             lat += 'S'
-                                            # convert longitude to the DDMM.MM format
+            # convert longitude to the DDMM.MM format
         lon = deg2dmslon(abs(longitude))
         if longitude > 0:
             lon += 'E'
@@ -223,41 +219,42 @@ def inreachaprspush(datafix, prt=False):    # push the data into the OGN APRS
             aprsmsg += "A=%06d" % int(altitude)
         aprsmsg += " id"+uniqueid+" "+gps+" "+extpos+" "+pilotname+" \n"
         print("APRSMSG : ", aprsmsg)
-        rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
     return(True)
 
+    # find all the fixes since TTIME
 
-                                            # find all the fixes since TTIME
+
 def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
 
     foundone = False			    # asume no found
     curs = conn.cursor()                    # set the cursor for storing the fixes
     cursG = conn.cursor()                   # set the cursor for searching the devices
-                                            # get all the devices with INRE
+    # get all the devices with INRE
     cursG.execute(
         "select id, spotid as inreachid, spotpasswd as inreachpasswd, active, flarmid, registration from TRKDEVICES where devicetype = 'INRE'; ")
     for rowg in cursG.fetchall(): 	    # look for that registration on the OGN database
 
-        reg = rowg[0]		            # registration to report
-        inreachID = rowg[1]	            # INREach
-        inreachpasswd = rowg[2]	            # InReach password
-        active = rowg[3]		    # if active or not
-        flarmid = rowg[4]		    # Flamd id to be linked
-        registration = rowg[5]	            # registration id to be linked
+        reg 		= rowg[0]	    # registration to report
+        inreachID 	= rowg[1]	    # INREach
+        inreachpasswd 	= rowg[2]	    # InReach password
+        active 		= rowg[3]	    # if active or not
+        flarmid 	= rowg[4]	    # Flamd id to be linked
+        registration 	= rowg[5]	    # registration id to be linked
         if active == 0:
             continue	                    # if not active, just ignore it
         if flarmid == None or flarmid == '': 		# if flarmid is not provided
-                                            # get it from the registration
+            # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:
             chkflarmid(flarmid)
 
-                                            # build the URL to call to the InReach server
+            # build the URL to call to the InReach server
         if ttime == 0:
             url = "http://inreach.garmin.com/feed/share/"+inreachID
         else:
-                                            # get the date in ISO format to be used on the URL
+            # get the date in ISO format to be used on the URL
             tt = datetime.utcfromtimestamp(ttime)
             ts = tt.isoformat()
             url = "http://inreach.garmin.com/feed/share/" + \
@@ -266,13 +263,13 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             print(url)
         print(url)
         inreachpos = {"inreachpos": []}     # init the dict
-                                            # get the KML data from the InReach server
+        # get the KML data from the InReach server
         kml = inreachgetapidata(url)
         if kml == ' ':
             return -1                       # return error
         if prt:				    # if we require printing the raw data
             print("KML ===>", kml)          # print the KML data
-                                            # find the gliders since TTIME
+            # find the gliders since TTIME
         found = inreachgetaircraftpos(
             kml, inreachpos, ttime, reg, flarmid, prt=prt)
         if found:
@@ -280,14 +277,14 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
         if prt:
             print(inreachpos)
         if store:
-                                            # and store it on the DDBB
+            # and store it on the DDBB
             inreachstoreitindb(inreachpos, curs, conn)
         if aprspush:
-            inreachaprspush(inreachpos, prt)	# and push the data into the APRS
+            inreachaprspush(inreachpos, prt)  # and push the data into the APRS
 
     if foundone:
         now = datetime.utcnow()
-                                            # number of second until beginning of the day of 1-1-1970
+        # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # as an integer
         return (ts)			    # return TTIME for next call

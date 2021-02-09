@@ -1,23 +1,19 @@
 #!/usr/bin/python3
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import json
-from ctypes import *
-from datetime import datetime, timedelta
-import socket
-import time
-import string
-import sys
-import os
-import signal
+from datetime import datetime
 from geopy.distance import geodesic       # use the Vincenty algorithm^M
 import MySQLdb                            # the SQL data base routines^M
 import hashlib
 import hmac
-import urllib.request, urllib.parse, urllib.error
-import random
+import urllib.request
+import urllib.parse
+import urllib.error
 #-------------------------------------------------------------------------------------------------------------------#
 import config
-from flarmfuncs import *
+from flarmfuncs import getflarmid, chkflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -32,9 +28,9 @@ def lt24login(LT24path, username, password): 	# login into livetrack24.com
     client = config.LT24clientid
     LT24_appKey = client.rstrip().encode(encoding='utf-8')       # clear the whitespace at the end
     secretkey = config.LT24secretkey
-    LT24_appSecret = secretkey.rstrip().encode(encoding='utf-8') # clear the whitespace at the end
+    LT24_appSecret = secretkey.rstrip().encode(encoding='utf-8')  # clear the whitespace at the end
     LT24qwe = " "				# init the seed
-                                                # the first time always is in error but we get the first QWE
+    # the first time always is in error but we get the first QWE
     lt24req("op/ping")
     replylogin = lt24req("op/6/username/"+username+"/pass/"+password)
     LT24login = json.loads(replylogin)          # parse the JSON string
@@ -71,7 +67,7 @@ def lt24unpackDelta(deltaStr):			# unpack the deltta string formated
 def lt24otpReply(question):			# set the LT24 AK & VC
     global LT24_appSecret
     global LT24_appKey
-    signature = hmac.new(LT24_appSecret, msg=question.encode(encoding='utf-8') ,
+    signature = hmac.new(LT24_appSecret, msg=question.encode(encoding='utf-8'),
                          digestmod=hashlib.sha256).hexdigest()
     #print signature
     vc = signature[0:16]
@@ -87,7 +83,7 @@ def lt24req(cmd):				# get the rsponse from the LT24 server
     reply = lt24otpReply(LT24qwe)		# build the AK & VK
     lt24url = lt24req+cmd+reply		        # build the complete URL
     f = urllib.request.urlopen(lt24url)		# call the server
-    response = f.read().decode(encoding='utf-8') # read the data
+    response = f.read().decode(encoding='utf-8')  # read the data
     qwepos = response.find("qwe")		# find where is the key for next request
     LT24qwe = response[qwepos+6:qwepos+22]      # build the seed for next request
     return (response)
@@ -110,14 +106,14 @@ def lt24getapidata(url, auth, prt=False):       # get the data from the API serv
 
 #-------------------------------------------------------------------------------------------------------------------#
 
+    # extract the data of the last know position from the JSON object
 
-                                                # extract the data of the last know position from the JSON object
+
 def lt24addpos(msg, lt24pos, ttime, regis, flarmid):
 
     unixtime = msg["lastPointTM"] 		# the time from the epoch
     if (unixtime < ttime):
         return (ttime)			        # if is lower than the last time just ignore it
-    reg = regis
     lat = msg["lat"] 				# extract from the JSON object the data that we need
     lon = msg["lon"]
     alt = msg["alt"]
@@ -144,12 +140,11 @@ def lt24addpos(msg, lt24pos, ttime, regis, flarmid):
 
 #-------------------------------------------------------------------------------------------------------------------#
 
-                                                # get all the fixes/tracks of a userlist
+    # get all the fixes/tracks of a userlist
 def lt24gettrackpoints(lt24pos, since, userid, flarmids):
 
-                                                # request that to LT24
-    replytest = lt24req("/op/getTrackPoints/userList/" +
-                        userid+"/fromTM/"+str(since))
+    # request that to LT24
+    replytest = lt24req("/op/getTrackPoints/userList/" + userid+"/fromTM/"+str(since))
     pos = json.loads(replytest)		        # parse the JSON string
     # print json.dumps(pos, indent=4) 	        # convert JSON to dictionary
     sync = pos["sync"]			        # get the sync point for next request
@@ -165,7 +160,7 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
         trackFields = data.split(":")           # divide it on the different items
 
         username = trackFields[0]               # the first is the user name
-                                                # the second the userID associated to that user name
+        # the second the userID associated to that user name
         userID = trackFields[1]
         TMs = lt24unpackDelta(trackFields[2])   # timestamps
         Lats = lt24unpackDelta(trackFields[3])  # Latitudes
@@ -174,7 +169,7 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
         SOGs = lt24unpackDelta(trackFields[6])  # Speed
         COGs = lt24unpackDelta(trackFields[7])  # courses
         AGLs = lt24unpackDelta(trackFields[8])  # altitude above the ground
-                                                # vertical speed / rate of climb
+        # vertical speed / rate of climb
         VROs = lt24unpackDelta(trackFields[9])
         if len(Lats) != len(Lons) and Lons[0] == 0.0:  # works ourund a bug
             Lons.pop(0)
@@ -201,15 +196,15 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
             if len(extpos) > 5:
                 extpos = extpos[0:5]		# limit the length to 5 chars
 
-                                                # get the coordenates of the base location (Vitacura, Lillo, ...)
+                # get the coordenates of the base location (Vitacura, Lillo, ...)
             vitlat = config.FLOGGER_LATITUDE
             vitlon = config.FLOGGER_LONGITUDE
-                                                # distance to the central location
+            # distance to the central location
             distance = geodesic((lat, lon), (vitlat, vitlon)).km
-                                                # get the data/time for the timestamp
+            # get the data/time for the timestamp
             dte = datetime.utcfromtimestamp(TMs[i])
-            date = dte.strftime("%y%m%d")	# date format
-            time = dte.strftime("%H%M%S")	# time format
+            date = dte.strftime("%y%m%d")  # date format
+            time = dte.strftime("%H%M%S")  # time format
             gps = "GPS"
             if TMs[i] < since:			# if the timestamp is earlier than the since param
                 print("Nothing to do... SINCE=", since, "Time fix:", TMs[i], "SYNC", sync)
@@ -219,9 +214,9 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
                        "UnitID": userID, "dist": distance, "course": course, "speed": speed, "roc": roc, "GPS": gps, "extpos": extpos}
             #print "POS:", pos
             if lat != 0.0 and lon != 0.0:
-                                                # and store it on the dict
+                # and store it on the dict
                 lt24pos['lt24pos'].append(pos)
-            print("LT24POS2:", round(lat, 4), round(lon, 4), alt, userID,  round(
+            print("LT24POS2:", round(lat, 4), round(lon, 4), alt, userID, round(
                 distance, 4), dte, date, time, username, flarmid, trackid)
 
     return (int(sync))			        # return the SYNC for next call
@@ -262,8 +257,7 @@ def lt24storeitindb(datafix, curs, conn):       # store the fix into the databas
                 print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
                 print(">>>MySQL Error: %s" % str(e))
-                print(">>>MySQL error:", cout, addcmd)
-                print(">>>MySQL data :",  data)
+                print(">>>MySQL error:", addcmd)
             return (False)                      # indicate that we have errors
     conn.commit()                               # commit the DB updates
     return(True)			        # indicate that we have success
@@ -309,7 +303,7 @@ def lt24aprspush(datafix, prt=False):		# push the data to the OGN APRS
             aprsmsg += "A=%06d" % int(altitude*3.28084)
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roc))+gps+" \n"
         print("APRSMSG : ", aprsmsg)
-        rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
 
     return True
@@ -324,7 +318,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
     cursG = conn.cursor()                       # set the cursor for searching the devices
     userList = ''
     lt24pos = {"lt24pos": []}                   # init the dict
-                                                # get all the devices with LT24
+    # get all the devices with LT24
     cursG.execute(
         "select id, registration, active, flarmid from TRKDEVICES where devicetype = 'LT24' ; ")
     for rowg in cursG.fetchall(): 	        # look for that registration on the OGN database
@@ -335,9 +329,9 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
         flarmid = rowg[3]		        # flarmid
         if active == 0:
             continue                            # if not active, just ignore it
-                                                # build the userlist to call to the LT24 server
+            # build the userlist to call to the LT24 server
         if flarmid == None or flarmid == '': 	# if flarmid is not provided
-                                                # get it from the registration
+            # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:
             chkflarmid(flarmid)
@@ -349,12 +343,12 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
     if len(userList) == 0:
         userList = "NONE"
         now = datetime.utcnow()
-                                                # number of second until beginning of the day of 1-1-1970
+        # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
     else:
         userList = userList.rstrip(',')         # clear the last comma
-                                                # request for the time being, just the last position of the glider
+        # request for the time being, just the last position of the glider
     req = "op/2//detailLevel/-1/userList/"+userList  # the URL request to LT24
     jsondata = lt24req(req)		        # get the JSON data from the lt24 server
     pos = json.loads(jsondata)                  # convert JSON to dictionary
@@ -364,16 +358,15 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
         result = pos["result"]                  # get the result part
     else:
         now = datetime.utcnow()
-                                                # number of second until beginning of the day of 1-1-1970
+        # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
 
     k = list(result.keys())		        # get the key or track id
     jsondata = result[str(k[0])] 	        # only the first track
     if once:			                # only the very first time
-        ts = lt24addpos(jsondata, lt24pos, ttime, userList,
-                        flarmid)                # find the gliders since TTIME
-                                                # get now all the fixes/tracks
+        lt24addpos(jsondata, lt24pos, ttime, userList, flarmid)                # find the gliders since TTIME
+    # get now all the fixes/tracks
     sync = lt24gettrackpoints(lt24pos, ttime, userList, flarmids)
     if prt:
         print(lt24pos)
@@ -384,7 +377,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
 
     if sync == 0:			        # just in case of not tracks at all, built the current time
         now = datetime.utcnow()
-                                                # number of second until beginning of the day of 1-1-1970
+        # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         sync = int(td.total_seconds())          # as an integer
     return (sync+1)			        # return TTIME for next call

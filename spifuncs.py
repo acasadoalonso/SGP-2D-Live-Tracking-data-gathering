@@ -1,22 +1,15 @@
 #!/bin/python3
-import urllib.request, urllib.error, urllib.parse
-import json
+import urllib.request
+import urllib.error
+import urllib.parse
 import xml.etree.ElementTree as ET
-from ctypes import *
-from datetime import datetime, timedelta
-import socket
-import time
-import string
-import sys
-import os
-import signal
 import base64
 from geopy.distance import geodesic         # use the Vincenty algorithm
 import MySQLdb                              # the SQL data base routines
 # ---------------- #
 import config
-from flarmfuncs  import *
-from ognddbfuncs import *
+from flarmfuncs import getflarmid, chkflarmid
+from ognddbfuncs import getognflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
 
 # ---------------- #
@@ -32,7 +25,7 @@ def encodeUserData(user, password):
 
 def spigetapidata(url, data, username, password): 	# get the data from the API server
 
-    req = urllib.request.Request(url, data.encode(encoding='utf-8')) # build the req
+    req = urllib.request.Request(url, data.encode(encoding='utf-8'))  # build the req
 
     req.add_header("Content-Type", "application/xml")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
@@ -71,7 +64,7 @@ def spigetaircraftpos(html, spipos):
                 DateTime[17:19] 	    # and the time
             pos = {"UnitID": UnitID}	    # save the unitID as a check
             pos["GPS"] = source             # store the Source GPS
-                                            # store the GPS accuracy on the sensitivity
+            # store the GPS accuracy on the sensitivity
             pos["sensitivity"] = hdop
             pos["extpos"] = fix             # store 3D/2D on the extended position
             pos["date"] = dte
@@ -92,14 +85,14 @@ def spigetaircraftpos(html, spipos):
             lon = pos["Long"]
             vitlat = config.FLOGGER_LATITUDE
             vitlon = config.FLOGGER_LONGITUDE
-                                            # distance to the station VITACURA
+            # distance to the station VITACURA
             distance = geodesic((lat, lon), (vitlat, vitlon)).km
             pos["dist"] = distance
             if pos['registration'] == 'HBEAT':
                 print("SPIDPOS : HBEAT", ttime)
             else:
                 print("SPIDPOS :", pos, ttime)
-                                            # append the position infomatio to the dict
+                # append the position infomatio to the dict
             spipos['spiderpos'].append(pos)
     return (ttime)			    # return the ttime as a reference for next request
 
@@ -108,15 +101,15 @@ def spigetaircraftpos(html, spipos):
 def spibuildtable(conn, spidtable, prt=False):
 
     cursG = conn.cursor()                   # set the cursor for searching the devices
-                                            # get all the devices with SPIDER
-    cursG.execute( "select id, flarmid, registration from TRKDEVICES where devicetype = 'SPID' and active = 1; ")
+    # get all the devices with SPIDER
+    cursG.execute("select id, flarmid, registration from TRKDEVICES where devicetype = 'SPID' and active = 1; ")
     for rowg in cursG.fetchall(): 	    # look for that registration on the OGN database
 
         ident = rowg[0]		            # registration to report
         flarmid = rowg[1]		    # Flarm id to be linked
         registration = rowg[2]              # registration id to be linked
-        if flarmid == None or flarmid == '': # if flarmid is not provided
-                                            # get it from the registration
+        if flarmid == None or flarmid == '':  # if flarmid is not provided
+            # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:
             chkflarmid(flarmid)
@@ -133,10 +126,10 @@ def spibuildtable(conn, spidtable, prt=False):
 def spistoreitindb(data, curs, conn, prt=False):
 
     spidtable = {}
-                                            # build the table of registration and flarmid
+    # build the table of registration and flarmid
     spibuildtable(conn, spidtable, prt)
     for fix in data['spiderpos']:	    # for each position that we have on the dict
-                                            # extract the information to store on the DDBB
+        # extract the information to store on the DDBB
         ident = fix['registration']
         if len(ident) > 9:
             ident = ident[0:9]
@@ -152,7 +145,7 @@ def spistoreitindb(data, curs, conn, prt=False):
         course = fix['heading']
         roclimb = 0
         rot = 0
-                                            # store the GPS accuracy on the sensitivity
+        # store the GPS accuracy on the sensitivity
         sensitivity = fix['sensitivity']
         gps = fix['GPS']
         uniqueid = fix["UnitID"]
@@ -173,8 +166,8 @@ def spistoreitindb(data, curs, conn, prt=False):
                 print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
                 print(">>>MySQL Error: %s" % str(e))
-                print(">>>MySQL error:", cout, addcmd)
-                print(">>>MySQL data :",  data)
+                print(">>>MySQL error:", addcmd)
+                print(">>>MySQL data :", data)
             return (False)                  # report the error
     conn.commit()                           # commit the DB updates
     return(True)			    # report success
@@ -183,10 +176,10 @@ def spistoreitindb(data, curs, conn, prt=False):
 def spiaprspush(data, conn, prt=False):
 
     spidtable = {}
-                                            # build the table of registration and flarmid
+    # build the table of registration and flarmid
     spibuildtable(conn, spidtable, prt)
     for fix in data['spiderpos']:	    # for each position that we have on the dict
-                                            # extract the information to store on the DDBB
+        # extract the information to store on the DDBB
         ident = fix['registration']
         if len(ident) > 9:
             ident = ident[0:9]
@@ -202,7 +195,7 @@ def spiaprspush(data, conn, prt=False):
         course = int(fix['heading'])
         roclimb = 0
         rot = 0
-                                            # store the GPS accuracy on the sensitivity
+        # store the GPS accuracy on the sensitivity
         sensitivity = fix['sensitivity']
         gps = fix['GPS']		    # if GPS is OK or not
         uniqueid = fix["UnitID"]	    # internal ID
@@ -212,8 +205,8 @@ def spiaprspush(data, conn, prt=False):
             reg = spidtable[ident]
         else:
             reg = "SPI"+ident		    # if not ... just add the registration prefix
-                                            # build the APRS message
-                                            # conver the latitude to the format required by APRS
+            # build the APRS message
+            # conver the latitude to the format required by APRS
         lat = deg2dmslat(abs(latitude))
         if latitude > 0:
             lat += 'N'
@@ -233,7 +226,7 @@ def spiaprspush(data, conn, prt=False):
         if altitude > 0:
             aprsmsg += "A=%06d" % int(altitude*3.28084)
         aprsmsg += " id"+uniqueid+" +"+sensitivity+"dB "+id+" "+extpos + "\n"
-        rtn = config.SOCK_FILE.write(aprsmsg)
+        config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
         print("APRSMSG : ", aprsmsg)
 
@@ -246,16 +239,16 @@ def spifindspiderpos(ttime, conn, username, password, SYSid, prt=False, store=Tr
     curs = conn.cursor()		# gen the cursor
     url = "https://go.spidertracks.com/api/aff/feed" 	# the URL for the SPIDER server
     spipos = {"spiderpos": []}		# init the dict
-                                        # get the data for the POST request passing the TTIME
+    # get the data for the POST request passing the TTIME
     data = spigetdataXML(ttime, SYSid)
-                                        # get the data on HTML format
+    # get the data on HTML format
     html = spigetapidata(url, data, username, password)
-                                        # extract the aircraft position from the XML data
+    # extract the aircraft position from the XML data
     ttime = spigetaircraftpos(html, spipos)
     if prt:
         print(spipos)		        # print the raw data
     if store and len(spipos) > 1:
         spistoreitindb(spipos, curs, conn, prt)  # store the fixes on the DDBB
     if aprspush and len(spipos) > 1:
-        spiaprspush(spipos, conn, prt)	# push the fixes to the OGN APRS
+        spiaprspush(spipos, conn, prt)  # push the fixes to the OGN APRS
     return (ttime)			# return the TTIME for the next request

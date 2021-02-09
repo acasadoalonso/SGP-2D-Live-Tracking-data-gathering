@@ -3,20 +3,21 @@
 # Parser functions for the OGN APRS applications
 #
 
-from ctypes import *
 import urllib.request
 import urllib.error
 import urllib.parse
 import json
+import os
+import atexit
 import socket
-from datetime import datetime, timedelta
-#from beeprint import pp
+from datetime import datetime
+# from beeprint import pp
 from ogn.parser import parse
 
 aprssources = {
-    "APRS"  : "OGN",
+    "APRS": "OGN",
     "OGNSDR": "OGN",
-    "OGFLR" : "OGN",
+    "OGFLR": "OGN",
     "OGNFLR": "OGN",
     "OGNTRK": "OGN",
     "OGNDSX": "OGN",
@@ -36,51 +37,54 @@ aprssources = {
     "OGNMAV": "NMAV",
     "OGNDELAY": "DLYM"
 }
-aprssymtypes=[ 
-        "/z",                   # 0 = ?
-        "/'",                   # 1 = (moto-)glider (most frequent)
-        "/'",                   # 2 = tow plane (often)
-        "/X",                   # 3 = helicopter (often)
-        "/g",                   # 4 = parachute (rare but seen - often mixed with drop plane)
-        "\\^",                  # 5 = drop plane (seen)
-        "/g",                   # 6 = hang-glider (rare but seen)
-        "/g",                   # 7 = para-glider (rare but seen)
-        "\\^",                  # 8 = powered aircraft (often)
-        "/^",                   # 9 = jet aircraft (rare but seen)
-        "/z",                   # A = UFO (people set for fun)
-        "/O",                   # B = balloon (seen once)
-        "/O",                   # C = airship (seen once)
-        "/'",                   # D = UAV (drones, can become very common)
-        "/z",                   # E = ground support (ground vehicles at airfields)
-        "\\n"                   # F = static object (ground relay ?)
-        ]
+aprssymtypes=[
+    "/z",                   # 0 = ?
+    "/'",                   # 1 = (moto-)glider (most frequent)
+    "/'",                   # 2 = tow plane (often)
+    "/X",                   # 3 = helicopter (often)
+    "/g",                   # 4 = parachute (rare but seen - often mixed with drop plane)
+    "\\^",                  # 5 = drop plane (seen)
+    "/g",                   # 6 = hang-glider (rare but seen)
+    "/g",                   # 7 = para-glider (rare but seen)
+    "\\^",                  # 8 = powered aircraft (often)
+    "/^",                   # 9 = jet aircraft (rare but seen)
+    "/z",                   # A = UFO (people set for fun)
+    "/O",                   # B = balloon (seen once)
+    "/O",                   # C = airship (seen once)
+    "/'",                   # D = UAV (drones, can become very common)
+    "/z",                   # E = ground support (ground vehicles at airfields)
+    "\\n"                   # F = static object (ground relay ?)
+]
 aprstypes=[
-        "Unkown",               # 0 = ?
-        "Glider",               # 1 = (moto-)glider (most frequent)
-        "Plane",                # 2 = tow plane (often)
-        "Helicopter",           # 3 = helicopter (often)
-        "ParaGlider",           # 7 = para-glider (rare but seen)
-        "DropPlane",            # 5 = drop plane (seen)
-        "HangGlider",           # 6 = hang-glider (rare but seen)
-        "Parachute",            # 4 = parachute (rare but seen - often mixed with drop plane)
-        "PowerAircraft",        # 8 = powered aircraft (often)
-        "Jet",                  # 9 = jet aircraft (rare but seen)
-        "UFO",                  # A = UFO (people set for fun)
-        "Balloon",              # B = balloon (seen once)
-        "Airship",              # C = airship (seen once)
-        "Drone",                # D = UAV (drones, can become very common)
-        "GroundVehicle",        # E = ground support (ground vehicles at airfields)
-        "GroundStation"         # F = static object (ground relay ?)
-        ]
+    "Unkown",               # 0 = ?
+    "Glider",               # 1 = (moto-)glider (most frequent)
+    "Plane",                # 2 = tow plane (often)
+    "Helicopter",           # 3 = helicopter (often)
+    "ParaGlider",           # 7 = para-glider (rare but seen)
+    "DropPlane",            # 5 = drop plane (seen)
+    "HangGlider",           # 6 = hang-glider (rare but seen)
+    "Parachute",            # 4 = parachute (rare but seen - often mixed with drop plane)
+    "PowerAircraft",        # 8 = powered aircraft (often)
+    "Jet",                  # 9 = jet aircraft (rare but seen)
+    "UFO",                  # A = UFO (people set for fun)
+    "Balloon",              # B = balloon (seen once)
+    "Airship",              # C = airship (seen once)
+    "Drone",                # D = UAV (drones, can become very common)
+    "GroundVehicle",        # E = ground support (ground vehicles at airfields)
+    "GroundStation"         # F = static object (ground relay ?)
+]
+
+
 def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the symbol table
 
-    sym=sym1+sym2
+    sym=sym1 +sym2
     idx=0
     while idx < 16:
-          if sym == aprssymtypes[idx]:
-             return (aprstypes[idx])
-          idx += 1
+        if sym == aprssymtypes[idx]:
+            return (aprstypes[idx])
+        idx += 1
     return ("UNKOWN")
+
 
 def isFloat(string):
     try:
@@ -118,20 +122,20 @@ def get_altitude(packet):
     return altitude
 
 
-#def get_daodatum(packet):
-    #try:
-        #daodatum = packet[0].dao_datum_byte
-    #except ValueError:
-        #daodatum = ' '
-    #return daodatum
+# def get_daodatum(packet):
+    # try:
+    # daodatum = packet[0].dao_datum_byte
+    # except ValueError:
+    # daodatum = ' '
+    # return daodatum
 
 
-#def get_resolution(packet):
-    #try:
-        #resolution = packet[0].pos_resolution[0]
-    #except ValueError:
-        #resolution = -1
-    #return resolution
+# def get_resolution(packet):
+    # try:
+    # resolution = packet[0].pos_resolution[0]
+    # except ValueError:
+    # resolution = -1
+    # return resolution
 
 
 def get_speed(packet):
@@ -159,12 +163,14 @@ def get_relay(packet):
         relay = "NORELAY"
     return relay
 
+
 def get_path(packet):
     if 'beacon_type' in packet:
         path = packet['beacon_type']
     else:
         path = "NOPATH"
     return path
+
 
 def get_beacontype(packet):
     if 'beacon_type' in packet:
@@ -221,7 +227,7 @@ def get_station(packet):
     else:
         station=''
     return (station)
-########################################################################
+# #######################################################################
 
 
 def get_source(dstcallsign):
@@ -230,7 +236,7 @@ def get_source(dstcallsign):
         return (aprssources[src])
     else:
         return ("UNKW")
-#########################################################################
+# ########################################################################
 
 
 def gdatal(data, typer):               	        # get data on the left
@@ -240,18 +246,18 @@ def gdatal(data, typer):               	        # get data on the left
     pb = p
     while (data[pb] != ' ' and data[pb] != '/' and pb >= 0):
         pb -= 1
-    ret = data[pb+1:p]                  	# return the data requested
+    ret = data[pb +1:p]                  	# return the data requested
     return(ret)
-########################################################################
+# #######################################################################
 
 
 def gdatar(data, typer):               	# get data on the  right
     p = data.find(typer)              	# scan for the type requested
     if p == -1:
         return (" ")
-    p = p+len(typer)
+    p = p +len(typer)
     pb = p
-    max = len(data)-1
+    max = len(data) -1
     while (pb < max):
         if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r':
             pb += 1
@@ -259,7 +265,7 @@ def gdatar(data, typer):               	# get data on the  right
         pb += 1
     ret = data[p:pb]                 	# return the data requested
     return(ret)
-########################################################################
+# #######################################################################
 #
 # geo specifics validations
 #
@@ -269,27 +275,27 @@ def spanishsta(station):                # return true if is an Spanish station
     if (station) == None:
         return False
     if station[0:2] == 'LE' or station[0:2] == "LP" or	\
-            station[0:5] == 'CREAL'         or 	\
-            station[0:4] == 'MORA'          or 	\
-            station[0:4] == 'LUGO'          or 	\
-            station[0:6] == 'MADRID'        or 	\
-            station[0:8] == 'LEMDadsb'      or 	\
-            station[0:7] == 'TTN2OGN'       or 	\
-            station[0:5] == 'AVILA'         or	\
-            station[0:9] == 'ALCAZAREN'     or	\
-            station[0:7] == 'ANDORRA'       or	\
-            station[0:9] == 'STOROE'        or	\
-            station[0:9] == 'STOROW'        or	\
-            station[0:5] == 'PALOE'         or	\
-            station[0:5] == 'PALOW'         or	\
-            station[0:8] == 'BOITAULL'      or  \
-            station[0:8] == 'LAMOLINA'      or	\
-            station[0:6] == 'CEREJA'        or	\
-            station[0:9] == 'FLYMASTER'     or	\
-            station[0:4] == 'SPOT'          or	\
-            station[0:6] == 'PWLERM'        or	\
-            station[0:9] == 'CASTEJONS'     or	\
-            station[0:9] == 'BELAVISTA'     or	\
+            station[0:5] == 'CREAL' or 	\
+            station[0:4] == 'MORA' or 	\
+            station[0:4] == 'LUGO' or 	\
+            station[0:6] == 'MADRID' or 	\
+            station[0:8] == 'LEMDadsb' or 	\
+            station[0:7] == 'TTN2OGN' or 	\
+            station[0:5] == 'AVILA' or	\
+            station[0:9] == 'ALCAZAREN' or	\
+            station[0:7] == 'ANDORRA' or	\
+            station[0:9] == 'STOROE' or	\
+            station[0:9] == 'STOROW' or	\
+            station[0:5] == 'PALOE' or	\
+            station[0:5] == 'PALOW' or	\
+            station[0:8] == 'BOITAULL' or  \
+            station[0:8] == 'LAMOLINA' or	\
+            station[0:6] == 'CEREJA' or	\
+            station[0:9] == 'FLYMASTER' or	\
+            station[0:4] == 'SPOT' or	\
+            station[0:6] == 'PWLERM' or	\
+            station[0:9] == 'CASTEJONS' or	\
+            station[0:9] == 'BELAVISTA' or	\
             station[0:8] == 'PORTAINE':
         return True
     else:
@@ -308,14 +314,14 @@ def frenchsta(station):                # return true if is an French station
         return True
     else:
         return False
-#########################################################################
+# ########################################################################
 
 
 def dao(dd):  				# return the 3 digit of the decimal minutes
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss*60.0
+    minsec = mmss *60.0
     decmin="%06.3f" % minsec
     return decmin[5]			# just return the last digit
 
@@ -324,7 +330,7 @@ def deg2dmslat(dd):  			# convert degrees float in degrees and decimal minutes (
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss*60.0
+    minsec = mmss *60.0
     if dd < 0:
         cdeg = cdeg * -1
     return "%2.2d%05.2f" % (cdeg, minsec)
@@ -334,7 +340,7 @@ def deg2dmslon(dd):  			# convert degrees float in degrees and decimal minutes (
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss*60.0
+    minsec = mmss *60.0
     if dd < 0:
         cdeg = cdeg * -1
     return "%3.3d%05.2f" % (cdeg, minsec)
@@ -343,12 +349,12 @@ def deg2dmslon(dd):  			# convert degrees float in degrees and decimal minutes (
 def decdeg2dms(dd):			# convert degress float into DDMMSS
     is_positive = dd >= 0
     dd = abs(dd)
-    minutes, seconds = divmod(dd*3600, 60)
+    minutes, seconds = divmod(dd *3600, 60)
     degrees, minutes = divmod(minutes, 60)
     degrees = degrees if is_positive else -degrees
     return (degrees, minutes, seconds)
 
-#########################################################################
+# ########################################################################
 #
 # High level APRS parser function
 #
@@ -361,47 +367,47 @@ def parseraprs(packet_str, msg):
         packet = parse(packet_str)
     except:
         return -1
-    #print (">>>Packet:", packet)
+    # print (">>>Packet:", packet)
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
         date = datetime.utcnow() 			# get the date
         if 'name' in packet:
-        	callsign = packet['name']               # get the call sign FLARM ID or station name
-        	id = callsign                  	        # id
+            callsign = packet['name']               # get the call sign FLARM ID or station name
+            id = callsign                  	        # id
         else:
-                return -1
+            return -1
         longitude = get_longitude(packet)
         latitude = get_latitude(packet)
         altitude = get_altitude(packet)
-        #resolution = get_resolution(packet)
-        #daodatum = get_daodatum(packet)
+        # resolution = get_resolution(packet)
+        # daodatum = get_daodatum(packet)
         speed = get_speed(packet)                       # ground_speed
         course = get_course(packet)                     # track
         path = get_path(packet)                         # aprs_receiver, tracker, aprs_aircraft
         relay = get_relay(packet)                       # relay TCPIP, OGN123456*, RELAY* , OGNDELAY*
-        aprstype = get_aprstype(packet)                 # status or position
-        dst_callsign = get_dst_callsign(packet)         # APRS, OGNTRK, 
+        aprstype = get_aprstype(packet)                 # aprs type: status or position
+        dst_callsign = get_dst_callsign(packet)         # APRS, OGNTRK,
         source = get_source(dst_callsign)               # convert to SOURCE
         destination = get_destination(packet)           # receiver name
-        header = get_header(packet)                     # aprs type
+        # header = get_header(packet)                     # aprs type
         otime = get_otime(packet)                       # msg time
         data = packet_str
         ix = packet_str.find('>')
         cc = packet_str[0:ix]
         ix = packet_str.find(':')     # look for the message type
         # check if it is position report or status report
-        msgtype = packet_str[ix+1:ix+2]
+        msgtype = packet_str[ix +1:ix +2]
         if msgtype != '>' and msgtype != '/':   # only status or location messages
             print("MMM>>>", aprstype, data)
-        if (path  == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
+        if (path == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
             if cc.isupper():
                 id = callsign
             else:
                 id = cc
             station = id
-                                                        # scan for the body of the APRS message
+            # scan for the body of the APRS message
             p = data.find(' v0.')                       # the comment side
-            if aprstype == 'status' :
+            if aprstype == 'status':
                 status = packet['comment'].rstrip()     # status informationa
             else:
                 status = " "
@@ -413,9 +419,9 @@ def parseraprs(packet_str, msg):
                     temp = -99.9		        # -99 means no temp declared
                 else:
                     if isFloat(tempC):                  # check for numeric, just in case
-                       temp = float(tempC)              # temperature
+                        temp = float(tempC)              # temperature
                     else:
-                       temp = -99.9
+                        temp = -99.9
             if 'version' in packet:
                 version=packet['version']               # firmware version
             else:
@@ -452,21 +458,21 @@ def parseraprs(packet_str, msg):
                 msg['ntp_error'] = packet['ntp_error']
             else:
                 msg['ntp_error'] = ''
-            msg['id']               = id	        # return the parsed data into the dict
-            msg['path']             = path
-            msg['relay']            = relay
-            msg['station']          = station
-            msg['aprstype']         = aprstype
-            msg['otime']            = otime
-            msg['latitude']         = latitude
-            msg['longitude']        = longitude
-            msg['altitude']         = altitude
-            msg['version']          = version
-            msg['cpu']              = cpu
-            msg['temp']             = temp
-            msg['rf']               = rf
-            msg['status']           = status
-            msg['source']           = source
+            msg['id'] = id	        # return the parsed data into the dict
+            msg['path'] = path
+            msg['relay'] = relay
+            msg['station'] = station
+            msg['aprstype'] = aprstype
+            msg['otime'] = otime
+            msg['latitude'] = latitude
+            msg['longitude'] = longitude
+            msg['altitude'] = altitude
+            msg['version'] = version
+            msg['cpu'] = cpu
+            msg['temp'] = temp
+            msg['rf'] = rf
+            msg['status'] = status
+            msg['source'] = source
             return (msg)
 # ===================================================================================================== #
         # if std records            aprs_aircraft or tracker
@@ -478,12 +484,12 @@ def parseraprs(packet_str, msg):
                 hora = otime.strftime("%H%M%S")
             else:
                 # scan for the body of the APRS message
-                p1 = data.find(':/')+2
-                if data[p1+6] == 'h':  # case of HHMMSS
-                    hora = data[p1:p1+6]      # get the GPS time in UTC
-                elif data[p1+6] == 'z':  # case of DDHHMM
+                p1 = data.find(':/') +2
+                if data[p1 +6] == 'h':  # case of HHMMSS
+                    hora = data[p1:p1 +6]      # get the GPS time in UTC
+                elif data[p1 +6] == 'z':  # case of DDHHMM
                     # get the GPS time in UTC, ignore date
-                    hora = data[p1+2:p1+6]+'00'
+                    hora = data[p1 +2:p1 +6] +'00'
                 else:
                     # the aprs msgs has not time in this case
                     hora = date.strftime("%H%M%S")
@@ -496,15 +502,15 @@ def parseraprs(packet_str, msg):
                 hora = otime.strftime("%H%M%S")
 
         # scan for the altitude on the body of the message
-        p2 = data.find('/A=')+3
-        if len (data) > (p2 + 7) and data[p2+7] == '!' :                  # get the unique id
-            extpos = data[p2+7:p2+12]           # get extended position indicator
+        p2 = data.find('/A=') +3
+        if len(data) > (p2 + 7) and data[p2 +7] == '!':                  # get the unique id
+            extpos = data[p2 +7:p2 +12]           # get extended position indicator
         else:
             extpos = ' '
 
         p3 = data.find(' id')                   # scan for uniqueid info
         if p3 != -1:
-            uniqueid = "id"+gdatar(data, "id")  # get the unique id
+            uniqueid = "id" +gdatar(data, "id")  # get the unique id
         else:
             uniqueid = ' '		        # no unique ID
         if len(uniqueid) > 15:
@@ -529,11 +535,11 @@ def parseraprs(packet_str, msg):
             else:
                 gps = "NO"			# no GPS data
         if len(gps) > 6:
-                gps=gps[0:6]			# max 6 chars
+            gps=gps[0:6]			# max 6 chars
         if len(station) > 9:
-                station=station[0:9]		# max 9 chars
+            station=station[0:9]		# max 9 chars
         if len(source) > 8:
-                source=source[0:8]		# max 8 chars
+            source=source[0:8]		# max 8 chars
 
         dte = date.strftime("%y%m%d")		# the aprs msgs has not date
 
@@ -547,8 +553,8 @@ def parseraprs(packet_str, msg):
         msg['latitude'] = latitude
         msg['longitude'] = longitude
         msg['altitude'] = altitude
-        #msg['resolution'] = resolution
-        #msg['daodatum'] = daodatum
+        # msg['resolution'] = resolution
+        # msg['daodatum'] = daodatum
         msg['speed'] = speed
         msg['course'] = course
         msg['roclimb'] = roclimb
@@ -563,38 +569,38 @@ def parseraprs(packet_str, msg):
         if aprstype == 'status':
             # scan for the body of the APRS message
             p = data.find(':>')
-            status = data[p+2:p+254].rstrip()  # status information
+            status = data[p +2:p +254].rstrip()  # status information
             msg['status'] = status
         else:
             msg['status'] = "NOSTATUS"
         if station == "DLY2APRS":
-           ix = data.find('>')
-           if data[ix+1:ix+7] == "OGNTRK":
-              idx=data[ix+8:].find(',')
-              nsta=data[ix+8:ix+idx+8] 
-              #print("SSS:", nsta, ix, idx, data)
-              msg['station']=nsta
-              msg['source']="DLYM"
-              msg['relay']="OGNDELAY*"
-                      
+            ix = data.find('>')
+            if data[ix +1:ix +7] == "OGNTRK":
+                idx=data[ix +8:].find(',')
+                nsta=data[ix +8:ix +idx +8]
+                # print("SSS:", nsta, ix, idx, data)
+                msg['station']=nsta
+                msg['source']="DLYM"
+                msg['relay']="OGNDELAY*"
+
         if 'symboltable' in packet and 'symbolcode' in packet:
-              msg['acfttype']=get_aircraft_type(packet['symboltable'], packet['symbolcode'])
+            msg['acfttype']=get_aircraft_type(packet['symboltable'], packet['symbolcode'])
         if source == "ADSB":
-              fn   =gdatar(data," fn")
-              reg  =gdatar(data," reg")
-              model=gdatar(data," model")
-              if fn != ' ':
-                 msg['fn']=fn
-              if reg != ' ':
-                 msg['reg']=reg
-              if model != ' ':
-                 msg['model']=model
+            fn =gdatar(data, " fn")
+            reg =gdatar(data, " reg")
+            model=gdatar(data, " model")
+            if fn != ' ':
+                msg['fn']=fn
+            if reg != ' ':
+                msg['reg']=reg
+            if model != ' ':
+                msg['model']=model
 
         return(msg)
     else:
         return -1				# if length ZERO or just the keep alive
 #
-########################################################################
+# #######################################################################
 
 
 def SRSSgetapidata(url):                    # get the data from the API server
@@ -611,9 +617,9 @@ def SRSSgetapidata(url):                    # get the data from the API server
 def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
 
     ts = 0                                    	# init the return time since epoch
-    url = "http://api.sunrise-sunset.org/json?lat="+lat+"&lng="+lon+"&formatted=0"
+    url = "http://api.sunrise-sunset.org/json?lat=" +lat +"&lng=" +lon +"&formatted=0"
     jsondata = SRSSgetapidata(url)             	# get the data from the web
-    #print jsondata
+    # print jsondata
     if prt:                                 	# if print requested
         print(json.dumps(jsondata, indent=4))
     if jsondata['status'] == "OK":          	# only if results are OK
@@ -623,30 +629,30 @@ def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
         # convert to time format
         ttt = datetime.strptime(timeref, "%Y-%m-%dT%H:%M:%S+00:00")
         # number of second until beginning of the day
-        td = ttt-datetime(1970, 1, 1)
+        td = ttt -datetime(1970, 1, 1)
         ts = int(td.total_seconds())      # Unix time - seconds from the epoch
     return (ts)                             # return it
 
-#########################################################################
+# ########################################################################
 
 
 def alive(app, first='no', register=False):
 
-    alivename = app+".alive"
+    alivename = app +".alive"
     hostname = socket.gethostname()
     if (first == 'yes'):
         # create a file just to mark that we are alive
         alivefile = open(alivename, 'w')
         if register:
-        	atexit.register(lambda: os.remove(alivename))
+            atexit.register(lambda: os.remove(alivename))
 
     else:
         # append a file just to mark that we are alive
         alivefile = open(alivename, 'a')
     local_time = datetime.now()
     alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
-    alivefile.write(alivetime+":"+hostname+"\n")  # write the time as control
+    alivefile.write(alivetime +":" +hostname +"\n")  # write the time as control
     alivefile.close()               # close the alive file
     return()
-#########################################################################
-#import datetime
+# ########################################################################
+# import datetime

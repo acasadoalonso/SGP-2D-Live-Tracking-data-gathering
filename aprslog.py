@@ -6,24 +6,21 @@
 #
 
 import config				# import the configuration details
-from datetime import datetime
-from ctypes import *
+from datetime import datetime, timedelta
 import socket
 import time
-# import string
-# import pytz
 import json
 import sys
 import os
 import os.path
 import signal
 import atexit
-from parserfuncs import *               # the ogn/ham parser functions
+from parserfuncs import alive, parseraprs  # the ogn/ham parser functions
 from geopy.distance import geodesic     # use the Vincenty algorithm^M
 from time import sleep                  # use the sleep function
 # from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
 import MySQLdb                          # the SQL data base routines^M
-from flarmfuncs import *                # import the functions relating with the Flarm ID
+# from flarmfuncs import *                # import the functions relating with the Flarm ID
 import argparse
 
 #########################################################################
@@ -43,11 +40,12 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-    print ("Connecting with APRS HOST:", config.APRS_SERVER_HOST)
     if LASTFIX:				# if LASTFIX use the non filtered port
+        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152)
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
-                                        #sock.connect(("aprs.glidernet.org", 10152))
+        #sock.connect(("aprs.glidernet.org", 10152))
     else:				# if not use the use from the configuration file
+        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT)
         sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
     sock.send(login)			# send the login to the APRS server
@@ -175,7 +173,7 @@ OGNT = config.OGNT
 # --------------------------------------#
 
 if OGNT:
-    from ogntfuncs import *
+    from ogntfuncs import ogntbuildtable
 
 # --------------------------------------#
     # open the DataBase
@@ -462,7 +460,7 @@ try:
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt not in acfttype:
-                   acfttype.append(acftt)
+                    acfttype.append(acftt)
 
             # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
