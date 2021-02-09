@@ -12,6 +12,7 @@ else								#
 fi								#
 if [ ! -f /tmp/commoninstall.sh ]				#
 then								#
+   echo "=============================="			#
    echo "Installing the common software"			#
    echo "=============================="			#
    bash commoninstall.sh $sql					#
@@ -28,6 +29,7 @@ sudo service apache2 restart					#
 echo "=================================================="	#
 cd /var/www/html/						#
 echo " "							#
+echo "=================================================="	#
 echo "Install npm modules ...." 				#
 echo "=================================================="	#
 echo " "							#
@@ -54,6 +56,7 @@ then								#
 fi								#
 echo								#
 echo " "							#
+echo "=================================================="	#
 echo "Installing the templates needed  ...." 			#
 echo "=================================================="	#
 echo " "							#
@@ -72,6 +75,7 @@ cd /var/www/html/main						#
 if [ $sql = 'MySQL' ]						#
 then			
         sudo service mysql start				#
+        echo "================================================"	#
         echo "Running msqladmin .... assign root password ... "	#
         echo "================================================"	#
         sudo mysqladmin -u root password ogn			#
@@ -79,6 +83,10 @@ then
 	mysql_config_editor set --login-path=APRSogn --user=ogn --password
         sudo service mysql start				#
 else								#
+        echo "================================================"	#
+        echo "Running mariadb .... ... "	 		#
+        echo "================================================"	#
+        sudo apt install mariadb-server				#
         sudo service mariadb start				#
 fi								#
 cp doc/.my.cnf ~/						#
@@ -107,6 +115,7 @@ then								#
 fi								#
 sudo rm -f /tmp/GLIDERS.sql*					#
 echo								#
+echo "==================="					#
 echo "Optional steps ... "					#
 echo "==================="					#
 echo								#
@@ -168,6 +177,9 @@ echo "Check the placement of the RootDocument on APACHE2 ... needs to be /var/ww
 echo "If running in Windows under Virtual Box, run dos2unix on /var/www/html  main  src		"		#
 echo "Install phpmyadmin if needed !!!                                                           "              #
 echo "========================================================================================================"	#
+echo ""								#
+echo ""								#
+echo ""								#
 bash
 alias
 

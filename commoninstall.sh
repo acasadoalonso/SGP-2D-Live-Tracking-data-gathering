@@ -110,6 +110,7 @@ sudo -H python3 -m pip install ansible-lint            		#
 sudo -H python3 -m pip install molecule               		#
 sudo -H python3 -m pip install docker               		#
 sudo -H python3 -m pip install yamllint               		#
+sudo -H python3 -m pip install setuptools 			#
 sudo -H python3 -m pip install flake8               		#
 if [ $sql = 'MySQL' ]						#	
 then	a							#

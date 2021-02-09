@@ -5,7 +5,6 @@
 # Version for gathering all the records for the world
 #
 
-import config				# import the configuration details
 from datetime import datetime, timedelta
 import socket
 import time
@@ -15,13 +14,12 @@ import os
 import os.path
 import signal
 import atexit
-from parserfuncs import alive, parseraprs  # the ogn/ham parser functions
-from geopy.distance import geodesic     # use the Vincenty algorithm^M
-from time import sleep                  # use the sleep function
-# from   geopy.geocoders import GeoNames # use the Nominatim as the geolocator^M
-import MySQLdb                          # the SQL data base routines^M
-# from flarmfuncs import *                # import the functions relating with the Flarm ID
 import argparse
+from time import sleep                  # use the sleep function
+from geopy.distance import geodesic     # use the Vincenty algorithm^M
+import MySQLdb                          # the SQL data base routines^M
+import config				# import the configuration details
+from parserfuncs import alive, parseraprs  # the ogn/ham parser functions
 
 #########################################################################
 
@@ -56,7 +54,7 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
         print("APRS Version:", sock_file.readline())  # report the APRS version
         # for control print the login sent and get the response
         print("APRS Login request:", login)  # print the login command for control
-        print("APRS Login reply:  ", sock_file.readline())  # report the APRS reply
+        print("APRS Login reply:  ", sock_file.readline(), "\n")  # report the APRS reply
     sleep(2)				# just wait to receive the login command
     return (sock, sock_file)		# return sock and sockfile
 
@@ -243,19 +241,19 @@ if os.path.isfile(compfile) and not LASTFIX and not STATIONS:		# if we are in co
     else:
         clist = []
     fd.close()
-    filter = "b/"			# filter to only those gliders in competition
+    afilter = "b/"			# filter to only those gliders in competition
     for f in clist:
-        filter += f		        # add the flarmid
-        filter += "/"
+        afilter += f		        # add the flarmid
+        afilter += "/"
 
     if OGNT:			        # if we have OGN tracker paired
         for f in ognttable:             # for each ogntracker
 
-            filter += f  # add the flarm id/tracker id associated
-            filter += "/"  # separated by an slash
-    filter += "\n"
+            afilter += f  		# add the flarm id/tracker id associated
+            afilter += "/"  		# separated by an slash
+    afilter += "\n"
     # in case of competition we filter to just the competition gliders and their OGNT pairs
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, filter)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, afilter)
 else:
     # normal case either STD or STATIONS
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
@@ -351,9 +349,8 @@ try:
                     print(">>>>: Write returns an error code. Failure.  Orderly closeout")
                     date = datetime.now()
                     break
-                else:
-                    sleep(SLEEPTIME) 	# wait X seconds
-                    continue
+                sleep(SLEEPTIME) 	# wait X seconds
+                continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                 # rebuild the table from the TRKDEVICES DB table
                 ogntbuildtable(conn, ognttable, prt)
@@ -395,8 +392,7 @@ try:
             comment = True
             commentcnt += 1
             continue
-        else:
-            comment = False
+        comment = False
         if prt:
             print(packet_str)
 
@@ -469,19 +465,19 @@ try:
                 if len(status) > 254:
                     status = status[0:254]
                 if 'temp' in msg:
-                    temp = msg['temp']  # station temperature
+                    temp = msg['temp']  	# station temperature
                     if temp == None or type(temp) == None:
                         temp = -1.0
                 else:
                     temp = -1.0
                 if 'version' in msg:
-                    version = msg['version']  # station SW version
+                    version = msg['version']  	# station SW version
                     if type(version) == None:
                         version = ' '
                 else:
                     version = ' '
                 if 'cpu' in msg:                # station CPU load
-                    cpu = msg['cpu']  # CPU load
+                    cpu = msg['cpu']  		# CPU load
                     if type(cpu) == None:
                         cpu = 0
                 else:
@@ -494,9 +490,9 @@ try:
                     rf = '0'
 
                 if longitude == -1 and latitude == -1:  # if the status report
-                    if ident not in fslla:  # in the rare case that we got the status report but not the position report
-                        continue  # in that case just continue
-                    # we get tle lon/lat/alt from the table
+                    if ident not in fslla:  	# in the rare case that we got the status report but not the position report
+                        continue  		# in that case just continue
+                                                # we get tle lon/lat/alt from the table
                     latitude = fslla[ident]
                     longitude = fsllo[ident]
                     altitude = fslal[ident]
