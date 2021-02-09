@@ -1,5 +1,6 @@
 #!/bin/bash 
 echo " "							#
+echo "=================================================="	#
 echo "Install APRSLOG  ...." 					#
 echo "=================================================="	#
 echo " "							#
@@ -18,6 +19,7 @@ then								#
    bash commoninstall.sh $sql					#
 fi								#
 echo " "							#
+echo "=================================================="	#
 echo "Restart APACHE2  ...." 					#
 echo "=================================================="	#
 echo " "							#
@@ -93,13 +95,17 @@ cp doc/.my.cnf ~/						#
 echo "Create database APRSLOG ..."				#
 if [ $sql = 'MySQL' ]						#
 then								#
+    echo "================================================"	#
     echo "Create DB user ogn ..."				#
+    echo "================================================"	#
     sudo mysql  <doc/adduser.sql				#
     echo "CREATE DATABASE if not exists APRSLOG" | mysql --login-path=APRSogn	#
     mysql --login-path=APRSogn --database APRSLOG < APRSLOG.template.sql #
     mysql --login-path=APRSogn --database APRSLOG </tmp/GLIDERS.sql
 else								#
-    echo "Create DB user ogn ..."				#
+    echo "================================================"	#
+    echo "Create DB user ogn in MariaDB..."			#
+    echo "================================================"	#
     sudo mysql -u root -pogn -h $server <doc/adduser.sql	#
     echo "CREATE DATABASE if not exists APRSLOG" | mysql -u ogn -pogn -h $server
     mysql -u ogn -pogn -h $server --database APRSLOG < APRSLOG.template.sql  #
@@ -108,10 +114,12 @@ fi								#
 cd /var/www/html/main						#
 if [ $sql = 'docker' ]						#
 then								#
+   echo "================================================"	#
    echo "CREATE DATABASE if not exists APRSLOG" | sudo mysql -u ogn -pogn -h MARIADB
    echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u ogn -pogn -h MARIADB
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG < APRSLOG.template.sql  
    sudo mysql -u ogn -pogn -h MARIADB --database APRSLOG </tmp/GLIDERS.sql
+   echo "================================================"	#
 fi								#
 sudo rm -f /tmp/GLIDERS.sql*					#
 echo								#
@@ -123,7 +131,9 @@ cd sh	 							#
 if [ -f crontab.data ]						#
 then 								#
      	echo							#
+        echo "==================="				#
      	echo "Set the crontab ... "				#
+        echo "==================="				#
      	echo							#
      	crontab -u vagrant crontab.data				#
      	crontab -u vagrant -l 					#
@@ -131,7 +141,9 @@ fi								#
 if [ ! -d ~/src  ]						#
 then								#
      	echo							#
+        echo "==================="				#
      	echo "Set the src dir ... "				#
+        echo "==================="				#
      	echo							#
 	mkdir ~/src   						#
 	mkdir ~/src/APRSsrc					#
@@ -141,7 +153,9 @@ ls  -la ~/src 							#
 if [ ! -d /nfs  ]						#
 then								#
      	echo							#
+        echo "==================="				#
      	echo "Set the NFS dir ... "				#
+        echo "==================="				#
      	echo							#
 	sudo mkdir /nfs						#
 	sudo mkdir /nfs/OGN					#
