@@ -71,7 +71,7 @@ python3 genconfig.py						#
 if [ ! -f /tmp/GLIDERS.sql ]					#
 then								#
 	cd /tmp							#
-	wget acasado.es:60080/files/GLIDERS.sql			#
+	wget acasado.es:60080/files/GLIDERS.sql	>/dev/null 2>&1	#
 fi								#
 cd /var/www/html/main						#
 if [ $sql = 'MySQL' ]						#
