@@ -2,6 +2,10 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.name = "APRSLOG"
+  end
+
   config.vm.box = "ubuntu/focal64"
   config.vm.hostname = "APRSTESTOGN"
   config.vm.boot_timeout = 600
