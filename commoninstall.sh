@@ -117,7 +117,7 @@ sudo -H python3 -m pip install yamllint               		#
 sudo -H python3 -m pip install setuptools 			#
 sudo -H python3 -m pip install flake8               		#
 if [ $sql = 'MySQL' ]						#	
-then	a							#
+then								#
 	sudo -H pip3 uninstall mysqlclient			#
 fi								#
 sudo apt-get install -y libmysqlclient-dev 			#
@@ -182,7 +182,7 @@ sudo apt-get -y autoremove					#
 echo								#
 echo " "							#
 echo "=================================================="	#
-echo "End of common componets  ...." 				#
+echo " End of common components  ...." 				#
 echo "=================================================="	#
 echo " "							#
 echo " "							#
