@@ -1,5 +1,5 @@
 #!/bin/bash 
 cd /nfs/OGN/SWdata 
-mkdir archive/Y$(date +%y)
+mkdir -p archive/Y$(date +%y)
 cd
 
