@@ -77,6 +77,7 @@ sudo apt-get install -y fakeroot debhelper 			#
 sudo apt-get install -y libfile-fcntllock-perl			#
 sudo apt-get install -y nvme-cli				#
 sudo apt-get install -y dnsutils				#
+sudo apt-get install -y neofetch				#
 sudo apt-get install -y python3-autopep8			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#

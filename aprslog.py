@@ -142,6 +142,8 @@ SLEEPTIME = 2				# time to sleep in case of errors
 comment = False			# comment line from APRS server
 datafile = False			# use the datafile on|off
 COMMIT = True				# commit every keep lives
+COMMITEM = True				# commit every minute
+COMMITMIN = 0				# commit minute
 prt = False			# use the configuration values
 DATA = True				# use the configuration values
 MEM = False			# built the lastfix flarmId table in memory
@@ -363,6 +365,9 @@ try:
         if prt:
             print("In main loop. Count= ", loopcnt)
         loopcnt += 1			# just keep a count of number of request to the APRS server
+        if COMMITEM and COMMITMIN != now.minute:
+                conn.commit()		# commit to the DB every 1 minutes
+                COMMITMIN = now.minute	# remember when we made commit
         try:
             packet_str = ''
             packet_str = sock_file.readline() 		# Read packet string from socket

@@ -5,17 +5,20 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import socket
+import config
 
 global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
 NOinfo = {"return": "NOinfo"}
 ####################################################################
-HOST="acasado.es"
-PORT=60082
-DDB_URL1 = "http://acasado.es:60082/download/?j=2"  # the OGN DDB source
-DDB_URL2 = "http://ddb.glidernet.org/download/?j=2"
 
+HOST		=config.DDBhost		    # OGN DDB host name to try first
+PORT		=config.DDBport		    # port to try
+DDB_URL1 	=config.DDBurl1		    # url of where to get initially the DDB data
+DDB_URL2 	=config.DDBurl2		    # second choice 
+prt		=config.prt
 
+####################################################################
 def servertest(host, port):
 
     args = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
@@ -38,7 +41,8 @@ def getddbdata():                           # get the data from the API server
         DDB_URL=DDB_URL1
     else:
         DDB_URL=DDB_URL2
-    print("Connecting with: ", DDB_URL)
+    if prt:
+       print("Connecting with: ", DDB_URL)
     req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")

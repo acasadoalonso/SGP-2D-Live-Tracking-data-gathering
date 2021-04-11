@@ -290,6 +290,7 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:5] == 'PALOW' or	\
             station[0:8] == 'BOITAULL' or  \
             station[0:6] == 'TAULL2' or  \
+            station[0:6] == 'Taull2' or  \
             station[0:8] == 'LAMOLINA' or	\
             station[0:6] == 'MATARO' or	\
             station[0:6] == 'CEREJA' or	\
