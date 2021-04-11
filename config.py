@@ -156,7 +156,6 @@ try:
 except:
     ADSBOpenSkyBox4 = ''
 
-
 try:
     prttext = cfg.get('server', 'prt').strip("'")
     if (prttext == 'False'):
@@ -167,26 +166,24 @@ except:
     prt = True
 
 try:
-	DDBhost     = cfg.get('server', 'DDBhost').strip("'")
+    DDBhost = cfg.get('server', 'DDBhost').strip("'")
 except:
-	DDBhost     = 'acasado.es'
+    DDBhost = 'acasado.es'
 
 try:
-	DDBport     = cfg.get('server', 'DDBport').strip("'")
+    DDBport = cfg.get('server', 'DDBport').strip("'")
 except:
-	DDBport     = '60082'
+    DDBport = '60082'
 
 try:
-	DDBurl1     = cfg.get('server', 'DDBurl1').strip("'")
+    DDBurl1 = cfg.get('server', 'DDBurl1').strip("'")
 except:
-	DDBurl1     = 'http://acasado.es:60082/download/?j=2'
+    DDBurl1 = 'http://acasado.es:60082/download/?j=2'
 
 try:
-	DDBurl2     = cfg.get('server', 'DDBurl2').strip("'")
+    DDBurl2 = cfg.get('server', 'DDBurl2').strip("'")
 except:
-	DDBurl2     = 'http://DDB.glidernet.org/download/?j=2'
-
-
+    DDBurl2 = 'http://DDB.glidernet.org/download/?j=2'
 
 DBpath = cfg.get('server', 'DBpath').strip("'").strip('"')
 MySQLtext = cfg.get('server', 'MySQL').strip("'").strip('"')
