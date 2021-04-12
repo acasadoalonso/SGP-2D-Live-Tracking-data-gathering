@@ -1,6 +1,11 @@
 #!/bin/bash
 
-pid=$(echo  `grep '^pid' /etc/local/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g').PUSH2OGN
+if [ -z $CONFIGDIR ]
+then 
+     export CONFIGDIR=/etc/local
+fi
+pid=$(echo     `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g').PUSH2OGN
+DBpath=$(echo  `grep '^DBpath ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 if [ ! -f $pid ]
 then
                 logger  -t $0 "PUSH2OGN Log is not alive"
@@ -14,12 +19,14 @@ then
 #               restart OGN data collector
                 #bash ~/src/sh/push2ogn.sh 
                 logger -t $0 "PUSH2OGN Log seems down, restarting"
-                echo $(date)" - "$(hostname)" - PUSH2OGN "  >>/nfs/OGN/SWdata/.APRSrestart.log
+                echo $(date)" - "$(hostname)" - PUSH2OGN "  >>$DBpath/.APRSrestart.log
 else
                 logger -t $0 "PUSH2OGN Log is alive"
 fi
 
-adsb=$(echo  `grep '^ADSB ' /etc/local/APRSconfig.ini` | sed 's/=//g' | sed 's/^ADSB //g')
+DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
+DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
+adsb=$(echo       `grep '^ADSB '    $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^ADSB //g')
 if [ $adsb = "True" ]
 then
 

@@ -25,3 +25,5 @@ flightaware*
 keyfile.encrypt
 Keys.py
 ADSBreg.py
+sh/APRSlogcheck.sh
+sh/APRSlog.sh

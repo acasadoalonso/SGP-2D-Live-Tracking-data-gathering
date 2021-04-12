@@ -1,12 +1,9 @@
 #!/bin/sh
-cd /nfs/OGN/SWdata
-date														     >>DLYM.log 2>/dev/null
 if [ $# = 0 ]; then
 	server='localhost'
 else
 	server=$1
 fi
-echo "Server: "$server                                                                                               >>DLYM.log 
 hostname=$(hostname)
 cd ~/src/APRSsrc
 day=$(date +%d)
@@ -39,23 +36,33 @@ fi
 
 date=$yea$mon$day
 #echo $date
-cd /nfs/OGN/SWdata
-date														     >>DLYM.log 2>/dev/null
-echo "clean OGNDATA in APRSLOG"							                                     >>DLYM.log 2>/dev/null
-echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG >>DLYM.log 2>/dev/null
-echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | mysql --login-path=SARogn -v -h $server APRSLOG >>DLYM.log 2>/dev/null
-echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG >>DLYM.log 2>/dev/null
+
+if [ -z $CONFIGDIR ]
+then 
+     export CONFIGDIR=/etc/local
+fi
+DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
+DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
+DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
+cd $DBpath
+date														         >>DLYM.log 2>/dev/null
+echo "Server: "$server                                                                                                   >>DLYM.log 
+date													                 >>DLYM.log 2>/dev/null
+echo "clean OGNDATA in APRSLOG"				  			                                         >>DLYM.log 2>/dev/null
+echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                        | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>DLYM.log 2>/dev/null
+echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>DLYM.log 2>/dev/null
+echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                        | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>DLYM.log 2>/dev/null
 date														     >>DLYM.log 2>/dev/null
 wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql
 if [[ -f TRKDEVICES.sql && $(hostname) != 'CHILEOGN' ]]
 then
-       	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>DLYM.log 2>/dev/null           
-        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>DLYM.log 2>/dev/null
-	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        	     >>DLYM.log 2>/dev/null
+       	echo "DELETE FROM TRKDEVICES ; "                       | mysql -u $DBuser -p$DBpasswd -v APRSLOG 		     >>DLYM.log 2>/dev/null           
+        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql -u $DBuser -p$DBpasswd -v APRSLOG		     >>DLYM.log 2>/dev/null
+	echo "select * FROM TRKDEVICES ; "                     | mysql -u $DBuser -p$DBpasswd -v APRSLOG        	     >>DLYM.log 2>/dev/null
 
 	rm TRKDEVICES.sql
 else
-        ~/perl5/bin/pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server >>DLYM.log 2>/dev/null
+        pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server --user=$DBuser --password=$DBpasswd >>DLYM.log 2>/dev/null
 fi
 echo "Done."     		     						                                     >>DLYM.log 2>/dev/null
 date														     >>DLYM.log 2>/dev/null

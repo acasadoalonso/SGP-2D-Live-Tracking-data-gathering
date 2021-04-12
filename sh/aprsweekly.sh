@@ -8,6 +8,15 @@ echo "Server: "$server
 
 hostname=$(hostname)
 
-echo "DELETE FROM APRSLOG.GLIDERS; " | mysql --login-path=SARogn -v -h $server 
-echo "INSERT INTO APRSLOG.GLIDERS SELECT * FROM OGNDB.GLIDERS; " | mysql --login-path=SARogn -v -h $server 
-echo "select count(*) from GLIDERS;" |    mysql --login-path=SARogn -h $server APRSLOG
+if [ -z $CONFIGDIR ]
+then 
+     export CONFIGDIR=/etc/local
+fi
+DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
+DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
+
+echo "select count(*) from GLIDERS;" |    mysql -u $DBuser -p$DBpasswd -h localhost APRSLOG
+
+echo "DELETE FROM APRSLOG.GLIDERS; " | i                           mysql -u $DBuser -p$DBpasswd -v -h $server 
+echo "INSERT INTO APRSLOG.GLIDERS SELECT * FROM OGNDB.GLIDERS; " | mysql -u $DBuser -p$DBpasswd -v -h $server 
+echo "SELECT COUNT(*) FROM APRSLOG.GLIDERS;" |                     mysql -u $DBuser -p$DBpasswd -v -h $server 

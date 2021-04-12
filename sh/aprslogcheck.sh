@@ -1,7 +1,15 @@
 #!/bin/bash
-alive=$"/nfs/OGN/SWdata/APRS"$(hostname)".alive"
-pid=$"/tmp/aprs.pid"
-pid=$(echo  `grep '^pid' /etc/local/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
+
+if [ -z $CONFIGDIR ]
+then 
+     export CONFIGDIR=/etc/local
+fi
+DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
+DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
+DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
+
+alive=$DBpath"APRS"$(hostname)".alive"
+pid=$(echo  `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
 if [ ! -f $alive ]
 then
                 logger  -t $0 "APRS Log is not alive"
@@ -13,7 +21,7 @@ then
                 fi
 #               restart OGN data collector
                 bash ~/src/APRSsrc/main/sh/aprslog.sh 
-                echo $(date)" - "$(hostname)  >>/nfs/OGN/SWdata/.APRSrestart.log
+                echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                 sleep 10
                 if [ -f $pid ] # if we have PID file
                 then

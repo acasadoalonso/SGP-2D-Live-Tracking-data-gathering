@@ -1,13 +1,22 @@
 #!/bin/sh
-cd /nfs/OGN/SWdata
-date														     >>APRSproc.log 2>/dev/null
 if [ $# = 0 ]; then
 	server='localhost'
 else
 	server=$1
 fi
-echo "Server: "$server                                                                                               >>APRSproc.log 
 hostname=$(hostname)
+
+if [ -z $CONFIGDIR ]
+then 
+     export CONFIGDIR=/etc/local
+fi
+DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
+DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
+DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
+
+cd $DBpath
+date														     >>APRSproc.log 2>/dev/null
+echo "Server: "$server                                                                                               >>APRSproc.log 
 cd ~/src/APRSsrc
 day=$(date +%d)
 mon=$(date +%m)
@@ -48,38 +57,38 @@ cd /var/www/html/SWS
 mv cuc/*json cuc/archive	2>/dev/null
 mv cuc/*tsk  cuc/archive	2>/dev/null
 mv cuc/*lst  cuc/archive	2>/dev/null
-cd /nfs/OGN/SWdata
+cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
 sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 							     >/dev/null     2>/dev/null
 sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | mysql --login-path=SARogn -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                   | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM OGNDATA;"                                    | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE FROM GLIDERS ; "                                  | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql --login-path=SARogn    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "INSERT INTO OGNDATAARCHIVE SELECT * FROM OGNDATA;      " | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATAARCHIVE where date < '"$date"'; "     | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNTRKSTATUS WHERE otime < date('"$(date +%Y-%m-%d)"'); " | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from OGNTRKSTATUS  ; "                   | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM OGNDATA;"                                    | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE FROM GLIDERS ; "                                  | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "INSERT INTO GLIDERS  SELECT * FROM OGNDB.GLIDERS;      " | mysql -u $DBuser -p$DBpasswd    -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS  ; "                        | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 echo "Report number of GLIDERS with the LAST FIX POSITION"			                                     >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE from GLIDERS_POSITIONS WHERE length(flarmId) < 6;"| mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
-echo "DELETE from GLIDERS_POSITIONS WHERE flarmId like '%RND%' ;"| mysql --login-path=SARogn -v -h $server APRSLOG   >>APRSproc.log 2>/dev/null
-echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql --login-path=SARogn -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE from GLIDERS_POSITIONS WHERE length(flarmId) < 6;"| mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
+echo "DELETE from GLIDERS_POSITIONS WHERE flarmId like '%RND%' ;"| mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG   >>APRSproc.log 2>/dev/null
+echo "SELECT COUNT(*) from GLIDERS_POSITIONS   ; "             | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 if [ -d /var/www/html/files ]
 then
-	mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql  2>/dev/null
-	mysqldump --login-path=SARogn -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql 2>/dev/null
+	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql  2>/dev/null
+	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql 2>/dev/null
 	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump 2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 if [[ $(hostname) == 'CHILEOGN' ]]
 then
-   mysqldump --login-path=SARogn -h $server --add-drop-table APRSLOG TRKDEVICES  >/var/www/html/files/TRKDEVICES.sql 2>/dev/null
+   mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table APRSLOG TRKDEVICES  >/var/www/html/files/TRKDEVICES.sql 2>/dev/null
 else
    if [[ -f TRKDEVICES.sql ]]
    then
@@ -89,14 +98,14 @@ else
 fi
 if [[ -f TRKDEVICES.sql && $(hostname) != 'CHILEOGN' ]]
 then
-       	echo "DELETE FROM TRKDEVICES ; "                       | mysql --login-path=SARogn -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
-        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql --login-path=SARogn -v APRSLOG		     >>APRSproc.log 2>/dev/null
-	echo "select * FROM TRKDEVICES ; "                     | mysql --login-path=SARogn -v APRSLOG        	     >>APRSproc.log 2>/dev/null
+       	echo "DELETE FROM TRKDEVICES ; "                       | mysql -u $DBuser -p$DBpasswd -v APRSLOG 		     >>APRSproc.log 2>/dev/null           
+        sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql -u $DBuser -p$DBpasswd -v APRSLOG		     >>APRSproc.log 2>/dev/null
+	echo "select * FROM TRKDEVICES ; "                     | mysql -u $DBuser -p$DBpasswd -v APRSLOG        	     >>APRSproc.log 2>/dev/null
 
 	rm /tmp/TRKDEVICES.sql
         mv      TRKDEVICES.sql archive
 else
-        pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server 		     >>APRSproc.log 2>/dev/null
+        pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server --user=$DBuser --password=$DBpasswd >>APRSproc.log 2>/dev/null
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
