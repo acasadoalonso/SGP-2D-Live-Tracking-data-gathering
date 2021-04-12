@@ -2,7 +2,7 @@
 
 if [ -z $CONFIGDIR ]
 then 
-     export CONFIGDIR=/etc/local
+     export CONFIGDIR=/etc/local/
 fi
 pid=$(echo     `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g').PUSH2OGN
 DBpath=$(echo  `grep '^DBpath ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
