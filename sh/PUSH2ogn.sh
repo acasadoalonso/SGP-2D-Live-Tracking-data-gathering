@@ -1,5 +1,5 @@
 #!/bin/bash
-
+logger -t $0 "PUSH2OGN Log is starting"
 date                            		>>/tmp/push2ogn.$$.log
 python3 ~/src/APRSsrc/APRScalsunrisesunset.py 	>>/tmp/push2ogn.$$.log
 echo "PUSH2OGN.sh:"            			>>/tmp/push2ogn.$$.log
