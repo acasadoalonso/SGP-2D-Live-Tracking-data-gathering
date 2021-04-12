@@ -17,7 +17,7 @@ then
                 fi
 
 #               restart OGN data collector
-                #bash ~/src/sh/push2ogn.sh 
+                bash ~/src/APRSsrc/sh/PUSH2ogn.sh 
                 logger -t $0 "PUSH2OGN Log seems down, restarting"
                 echo $(date)" - "$(hostname)" - PUSH2OGN "  >>$DBpath/.APRSrestart.log
 else
