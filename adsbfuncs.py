@@ -46,7 +46,7 @@ def getadsbreg(icao):			    # get the registration and model from the ICAO ID
         import ADSBreg			    # this file is huge
         _adsbreg_ = ADSBreg.ADSBreg	    # update the global pointer
     if icao in _adsbregcache_:		    # if ID on the table ???
-        return (_adsbregcache_[icao])        # return model and registration
+        return (_adsbregcache_[icao])       # return model and registration
     else:				    # if not found, look into the whole registration DB
         if icao in _adsbreg_:
             _adsbregcache_[icao]=_adsbreg_[icao]  # and update the cache for next time
@@ -312,7 +312,7 @@ def adsbaprspush(datafix, conn, prt=False):
 RPI = is_raspberrypi()
 
 
-def adsbsetrec(sock, prt=False, store=False, aprspush=False):
+def adsbsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
     t = datetime.utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ADSBloc+" \n"

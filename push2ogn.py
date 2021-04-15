@@ -66,7 +66,7 @@ def prttime(unixtime):
 
 #
 ########################################################################
-programver = 'V2.2'
+programver = 'V2.3'
 print("\n\nStart PUSH2OGN "+programver)
 print("===================")
 
@@ -120,16 +120,16 @@ parser.add_argument('-a', '--ADSB', required=False,
 parser.add_argument('-u', '--USEDDB', required=False,
                     dest='USEDDB', action='store', default=False)
 
-args = parser.parse_args()
-prt = args.prt			# print on|off
-SPIDER = args.SPIDER
-SPOT = args.SPOT
+args 	= parser.parse_args()
+prt 	= args.prt			# print on|off
+SPIDER 	= args.SPIDER
+SPOT 	= args.SPOT
 INREACH = args.INREACH
 CAPTURS = args.CAPTURS
 SKYLINE = args.SKYLINE
-LT24 = args.LT24
-ADSB = args.ADSB
-USEDDB = args.USEDDB
+LT24 	= args.LT24
+ADSB 	= args.ADSB
+USEDDB  = args.USEDDB
 # --------------------------------------#
 if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")

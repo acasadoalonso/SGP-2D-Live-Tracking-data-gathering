@@ -16,6 +16,7 @@ HOST		=config.DDBhost		    # OGN DDB host name to try first
 PORT		=config.DDBport		    # port to try
 DDB_URL1 	=config.DDBurl1		    # url of where to get initially the DDB data
 DDB_URL2 	=config.DDBurl2		    # second choice 
+                                            #url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
 prt		=config.prt
 
 ####################################################################
@@ -36,13 +37,12 @@ def servertest(host, port):
 def getddbdata():                           # get the data from the API server
 
     global _ogninfo_                        # the OGN info data
-    #url = "http://ddb.glidernet.org/download/?j=2"  # the OGN DDB source
     if servertest(HOST, PORT):
         DDB_URL=DDB_URL1
     else:
         DDB_URL=DDB_URL2
     if prt:
-       print("Connecting with: ", DDB_URL)
+       print("DDB Connecting with: ", DDB_URL, HOST, PORT)
     req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")
