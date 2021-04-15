@@ -19,7 +19,7 @@ else:
 def is_raspberrypi():
     if os.name != 'posix':
         return False
-    chips = ('BCM2708','BCM2709','BCM2711','BCM2835','BCM2836')
+    chips = ('BCM2708', 'BCM2709', 'BCM2711', 'BCM2835', 'BCM2836')
     try:
         with io.open('/proc/cpuinfo', 'r') as cpuinfo:
             for line in cpuinfo:
@@ -32,6 +32,7 @@ def is_raspberrypi():
         pass
     return False
 #-------------------------------------------------------------------------------------------------------------------#
+
 global _adsbregcache_
 _adsbregcache_ = {}
 _adsbreg_ = {}
