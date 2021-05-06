@@ -33,6 +33,7 @@ aprssources = {
     "OGLT24": "LT24",
     "OGCAPT": "CAPT",
     "OGNAVI": "NAVI",
+    "OGNSKY": "SKYS",
     "OGNXCG": "XCG",
     "OGNMAV": "NMAV",
     "OGNDELAY": "DLYM"

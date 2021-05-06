@@ -17,7 +17,7 @@ then
                 then
 			pnum=$(cat $pid)
                         sudo kill $pnum 
-                        rm $pid
+                        rm $pid 2>/dev/null
                 fi
 #               restart OGN data collector
                 bash ~/src/APRSsrc/main/sh/aprslog.sh 
@@ -36,6 +36,6 @@ else
 		else
                 	logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
 		fi
-		rm $alive
+		rm $alive 2>/dev/null
 fi
 
