@@ -21,7 +21,8 @@ from time import sleep                  # use the sleep function
 from datetime import datetime, timedelta
 from ogn.parser import parse
 from parserfuncs import deg2dmslat, deg2dmslon, dao, alive
-from ogntfuncs import getognreg, getogncn, ogntbuildtable
+from ognddbfuncs import getognreg, getogncn
+from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
 from Keys import getprivatekey, getkeyfromencryptedfile, getkeys
 

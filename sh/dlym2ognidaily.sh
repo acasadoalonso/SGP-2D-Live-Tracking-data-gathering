@@ -5,7 +5,6 @@ else
 	server=$1
 fi
 hostname=$(hostname)
-cd ~/src/APRSsrc
 day=$(date +%d)
 mon=$(date +%m)
 yea=$(date +%y)
@@ -66,7 +65,7 @@ else
 fi
 echo "Done."     		     						                                     >>DLYM.log 2>/dev/null
 date														     >>DLYM.log 2>/dev/null
-mutt -a DLYM.log -s $hostname" DLYM daily report ..." -- $(cat ~/src/APRSsrc/sh/mailnames.txt)
+mutt -a DLYM.log -s $hostname" DLYM daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)
 mv DLYM.log  archive/DLYMPROC$(date +%y%m%d).log 	2>/dev/null
 mv dlym2ogn.log  archive/DLYMlog$(date +%y%m%d).log    	2>/dev/null
 mv DLYM*.log archive					2>/dev/null

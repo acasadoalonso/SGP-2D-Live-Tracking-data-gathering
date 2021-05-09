@@ -17,7 +17,6 @@ DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
 echo "Server: "$server                                                                                               >>APRSproc.log 
-cd ~/src/APRSsrc
 day=$(date +%d)
 mon=$(date +%m)
 yea=$(date +%y)
@@ -109,13 +108,12 @@ else
 fi
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat ~/src/APRSsrc/sh/mailnames.txt)
+mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 								     2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      								     2>/dev/null
 mv DATA*.log archive												     2>/dev/null
 mv APRS*.log archive  												     2>/dev/null
 rm APRS.alive  													     2>/dev/null
-cd ~/src/APRSsrc
 sudo  rm   /var/www/html/node/nohup.out	     							    		     >/dev/null 2>/dev/null
 cd
 
