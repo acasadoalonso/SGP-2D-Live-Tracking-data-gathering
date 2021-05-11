@@ -81,6 +81,7 @@ sudo apt-get install -y neofetch				#
 sudo apt-get install -y python3-autopep8			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
+sudo a2enmod headers
 echo	""							#
 echo	""							#
 if [ $sql = 'MySQL' ]						#

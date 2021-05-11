@@ -7,7 +7,8 @@ fi
 DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
 DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
-
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=`dirname $SCRIPT`
 alive=$DBpath"APRS"$(hostname)".alive"
 pid=$(echo  `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
 if [ ! -f $alive ]
@@ -20,7 +21,7 @@ then
                         rm $pid 2>/dev/null
                 fi
 #               restart OGN data collector
-                bash ~/src/APRSsrc/main/sh/aprslog.sh 
+                bash $SCRIPTPATH/aprslog.sh 
                 echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                 sleep 10
                 if [ -f $pid ] # if we have PID file

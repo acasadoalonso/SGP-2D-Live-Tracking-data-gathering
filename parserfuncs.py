@@ -276,30 +276,34 @@ def spanishsta(station):                # return true if is an Spanish station
     if (station) == None:
         return False
     if station[0:2] == 'LE' or station[0:2] == "LP" or	\
-            station[0:5] == 'CREAL' or 	\
-            station[0:4] == 'MORA' or 	\
-            station[0:4] == 'LUGO' or 	\
-            station[0:6] == 'MADRID' or 	\
-            station[0:8] == 'LEMDadsb' or 	\
-            station[0:7] == 'TTN2OGN' or 	\
-            station[0:5] == 'AVILA' or	\
+            station[0:5] == 'CREAL'     or 	\
+            station[0:4] == 'MORA'      or 	\
+            station[0:4] == 'LUGO'      or 	\
+            station[0:6] == 'MADRID'    or 	\
+            station[0:8] == 'LEMDadsb'  or 	\
+            station[0:7] == 'TTN2OGN'   or 	\
+            station[0:5] == 'AVILA'     or	\
             station[0:9] == 'ALCAZAREN' or	\
-            station[0:7] == 'ANDORRA' or	\
-            station[0:9] == 'STOROE' or	\
-            station[0:9] == 'STOROW' or	\
-            station[0:5] == 'PALOE' or	\
-            station[0:5] == 'PALOW' or	\
-            station[0:8] == 'BOITAULL' or  \
-            station[0:6] == 'TAULL2' or  \
-            station[0:6] == 'Taull2' or  \
-            station[0:8] == 'LAMOLINA' or	\
-            station[0:6] == 'MATARO' or	\
-            station[0:6] == 'CEREJA' or	\
+            station[0:7] == 'ANDORRA'   or	\
+            station[0:9] == 'STOROE'    or	\
+            station[0:9] == 'STOROW'    or	\
+            station[0:5] == 'PALOE'     or	\
+            station[0:5] == 'PALOW'     or	\
+            station[0:8] == 'BOITAULL'  or  	\
+            station[0:6] == 'TAULL2'    or  	\
+            station[0:6] == 'Taull2'    or  	\
+            station[0:8] == 'LAMOLINA'  or	\
+            station[0:6] == 'MATARO'    or	\
+            station[0:6] == 'CEREJA'    or	\
             station[0:9] == 'FLYMASTER' or	\
-            station[0:4] == 'SPOT' or	\
-            station[0:6] == 'PWLERM' or	\
+            station[0:4] == 'SPOT'      or	\
+            station[0:6] == 'PWLERM'    or	\
             station[0:9] == 'CASTEJONS' or	\
             station[0:9] == 'BELAVISTA' or	\
+            station[0:9] == 'ALDEASEST' or	\
+            station[0:9] == 'MADDREDAM' or	\
+            station[0:9] == 'PCARRASCO' or	\
+            station[0:8] == 'SMUERDO'   or	\
             station[0:8] == 'PORTAINE':
         return True
     else:
