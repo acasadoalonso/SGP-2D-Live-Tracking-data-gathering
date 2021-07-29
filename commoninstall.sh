@@ -109,7 +109,9 @@ sudo -H python3 -m pip install pycountry uritemplate requests	#
 sudo -H python3 -m pip install beeprint ogn.client		#
 sudo -H python3 -m pip install tqdm psutil python-dateutil	#
 sudo -H python3 -m pip install ttn               		#
+sudo -H python3 -m pip install paho-mqtt			#
 sudo -H python3 -m pip install pyserial 			#
+sudo -H python3 -m pip install pyopenssl 			#
 sudo -H python3 -m pip install eciespy pycryptodome rsa         #
 sudo -H python3 -m pip install ansible               		#
 sudo -H python3 -m pip install ansible-lint            		#

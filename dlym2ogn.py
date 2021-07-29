@@ -25,6 +25,7 @@ from ognddbfuncs import getognreg, getogncn
 from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
 from Keys import getprivatekey, getkeyfromencryptedfile, getkeys
+from collections import deque
 
 #########################################################################
 
@@ -165,7 +166,8 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
 ########################################################################
 
 
-def genreport(curs, DK):
+def genreport(curs, DK):		# report of OGNTRKSTATUS table 
+    print("Report of records on the TRK status table on the DB\n")
     reccount = 0
     recstat = 0
     recvalid = 0
@@ -179,7 +181,7 @@ def genreport(curs, DK):
             print(">>>MySQL2 Error: %s" % str(e))
             print(">>>MySQL3 error:", cmd)
             print(">>>MySQL4 data :", s)
-    for row in curs.fetchall():                                    # search for the first 20 the rows
+    for row in curs.fetchall():         # search for the first 20 the rows
         reccount += 1
         id1 = row[0]
         station = row[1]
@@ -212,14 +214,14 @@ def genreport(curs, DK):
         else:
             recstat += 1
             continue
-    print("Records gen:", recvalid, recstat, reccount)
+    print("Records encrypted valid:", recvalid, "Recs non encrypted", recstat, "Recs total on table",reccount, "\n")
     return
 
 
 #
 ########################################################################
 #
-programver = 'V1.1'
+programver = 'V1.2'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
@@ -244,15 +246,15 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 APP = "DLYM2OGN"		# the application name
 SLEEP = 10			# sleep 10 seconds in between calls to the APRS
 DELAY = config.DELAY		# 20 minutes delay
-nerrors = 0				# number of errors in *funcs found
+nerrors = 0			# number of errors in *funcs found
 day = 0				# day of running
-loopcount = 0				# counter of loops
-inputrec = 0				# number of input records
-numerr = 0				# number of errors
+loopcount = 0			# counter of loops
+inputrec = 0			# number of input records
+numerr = 0			# number of errors
 numtrksta = 0 			# number of tracker status records
-numdecodes = 0				# number of records decoded
-numaprsmsg = 0				# number of APRS messages generated
-numerrdeco = 0				# number of APRS messages generated
+numdecodes = 0			# number of records decoded
+numaprsmsg = 0			# number of APRS messages generated
+numerrdeco = 0			# number of APRS messages generated
 maxnerrs = 100
 queue = []			# queue of pending messages
 trackers = {}			# list of seems trackers encoding
@@ -278,27 +280,28 @@ OGNT = False
 # --------------------------------------#
 
 
-parser = argparse.ArgumentParser(description="OGN Push to the OGN APRS the delayed tracks")
+parser = argparse.ArgumentParser(description="OGN Push to the OGN APRS the delayed tracks\n")
 parser.add_argument('-p', '--print', required=False,
-                    dest='prt', action='store', default=False)
+                    dest='prt', action='store', default=False)				# print the debugging info
 parser.add_argument('-dly', '--delay', required=False,
-                    dest='dly', action='store', default=-1)
+                    dest='dly', action='store', default=-1)				# delay of the encrypted messages to diisplay
 parser.add_argument('-l', '--log', required=False,
-                    dest='log', action='store', default='DLYM2OGN'+dte+'.log')
+                    dest='log', action='store', default='DLYM2OGN'+dte+'.log')		# name of the LOG file
 parser.add_argument('-c', '--comp', '--competition', required=False,
                     dest='comp', action='store', default=False)
 parser.add_argument('-kf', '--keyfile', required=False,
-                    dest='kfile', action='store', default='keyfile.encrypt')
+                    dest='kfile', action='store', default='keyfile.encrypt')		# name of the file with the encrypted keys
 parser.add_argument('-pk', '--privatekey', '--privkey', required=False,
-                    dest='pkey', action='store', default='/utils/keypriv.PEM')
+                    dest='pkey', action='store', default='/utils/keypriv.PEM')		# name of the private key file on PEM format
 parser.add_argument('-kp', '--keypath', required=False,
-                    dest='kpath', action='store', default='/home/angel/src/APRSsrc/')
+                    dest='kpath', action='store', default='/home/angel/src/APRSsrc/')	# path for the working files
 parser.add_argument('-r', '--report', required=False,
-                    dest='report', action='store', default=False)
+                    dest='report', action='store', default=False)			# just print a report of the OGN tracker status on the DB
 args = parser.parse_args()
-prt = args.prt			# print on|off
-dly = args.dly			# delay in seconds, default config.DELAY
-log = args.log			# name of the logfile
+# --------------------------------------------------------------------------------------------------------------------------------------------------- #
+prt = args.prt				# print on|off
+dly = args.dly				# delay in seconds, default config.DELAY
+log = args.log				# name of the logfile
 comp = args.comp			# if in competition or test
 kfile = args.kfile			# name of encrypted file
 pkey = args.pkey			# name of file with the private key
@@ -492,7 +495,7 @@ try:
             #if beacon["dstcall"] == "OGNTTN":
                 #print ("\n\nBBB", beacon, "\n\n")
 
-            if beacon["aprs_type"] == "status" and (beacon["beacon_type"] == "tracker" or beacon["beacon_type"] == "unknown") and (beacon["dstcall"] == "OGNTRK" or beacon["dstcall"] == "OGNTTN"):
+            if beacon["aprs_type"] == "status" and (beacon["beacon_type"] == "tracker" or beacon["beacon_type"] == "unknown") and (beacon["dstcall"] == "OGNTRK" or beacon["dstcall"] == "OGTTN2"):
                 comment=s[ph+10:]	        # get the comment where it is the data
                 #print ("CCC:", comment.rstrip(" \n\r"), ":", len(comment), s)
             else:
@@ -511,16 +514,16 @@ try:
                 else:
                     utrackers[ID] += 1   	# increase the counter
 
-                continue			# nothing else to do
+                continue			# nothing else to do, it is not an encrypted message
 
-                # deal with the decoding case
+            # deal with the decoding case
             if ident not in ognttable:		# if is not on the table that we are working on ???
                 if prt:
                     print(">>:TRK:", ident, station, "<<<")
                 if comp:
                     continue			# nothing to do in case of competition
             else:
-                flarmid=ognttable[ident]		# just in case
+                flarmid=ognttable[ident]	# just in case
             jstring=" " 			# init the json string for receiving the decoded message
             if prt:
                 print("Decoding >>>>", jstring, ">>", txt, "<<", len(txt), ident, station, "<<<<")
@@ -528,8 +531,10 @@ try:
             try:				# decode the encrypted message
                 if prt:
                     print(">>>:", DK, txt)
-                    # invoke the decoding routine, passing the message and the decoding keys
+						# ---------------------------------------------------------- #
+                # invoke the decoding routine, passing the message and the decoding keys
                 jstring=ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3])
+						# ---------------------------------------------------------- #
 
             except Exception as e:		# catch the exception
                 errordet=""			# error messages
@@ -573,17 +578,19 @@ try:
                     lastloc[ID]=(latitude, longitude)  # register the last localtion
                     if distance > 25.0:		# very unlikely that the tracker moved 25 kms from previous position
                         print("Dist error:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]))
-                        if ID not in trkerrors:   	# did we see this tracker
-                            trkerrors[ID] = 1    	# init the counter
+                        if ID not in trkerrors: # did we see this tracker
+                            trkerrors[ID] = 1   # init the counter
                         else:
-                            trkerrors[ID] += 1   	# increase the counter
+                            trkerrors[ID] += 1  # increase the counter
                         numerrdeco += 1		# increase the counter of errors
                         continue
                         # everything seems to be OK, so lets place the entry on the queue
-                now = datetime.utcnow()  # get the UTC time
+                now = datetime.utcnow()  	# get the UTC time
+						# ------------------------------------------------------------------------------------- #
                 # place it on the queue
                 qentry= {"NumDec": numdecodes, "TIME": now, "ID": ID, "station": station, "hora": hora, "rest": rest, "DECODE": decode}
-                queue.append(qentry)  # add the entry to the queue
+                queue.append(qentry)  		# add the entry to the queue
+						# ------------------------------------------------------------------------------------- #
                 if prt:
                     print(">>>N#", numdecodes, len(queue), qentry, "<<<<")
                 if ID not in trackers:   	# did we see this tracker
@@ -592,36 +599,40 @@ try:
                     trackers[ID] += 1    	# increase the counter
 
             else:				# if NOT valid ???
-                numerrdeco += 1		# increse the counter
+                numerrdeco += 1			# increse the counter
                 continue
-#       end of if
+#       end of if of valid decoding messages 
+
+#       =============================================================================================================
                 # check now if we need to publish delayed entries
         nqueue=[]				# the new queue if we need to delete entries
         idx=0					# index to rebuild the table
         ddd=0
         for e in queue: 			# scan the queue for entries to push to the APRS
             etime=e["TIME"]			# get the time
-            delta=(now - etime)		# get the time difference
+            delta=(now - etime)			# get the time difference
             #print("Delta>>>", delta)
-            dts=int(delta.total_seconds())  # time difference in seconds
-            if (dts > DELAY): 		# if higher that DELAY ??
-                aprsmsg=genaprsmsg(e)  # gen the APRS message
+            dts=int(delta.total_seconds())  	# time difference in seconds
+            if (dts > DELAY): 			# if higher that DELAY ??
+                aprsmsg=genaprsmsg(e)  		# gen the APRS message
                 aprsmsg += " %ddly \n" %delta.seconds  # include information about the delay
                 if prt:
-                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugginga
-                logfile.write(aprsmsg)  # log into file
+                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
+                logfile.write(aprsmsg)  	# log into file
                 rtn = config.SOCK_FILE.write(aprsmsg)  # send it to the APRS server
-                config.SOCK_FILE.flush()		        # Make sure gets sent. If not flushed then buffered
+                config.SOCK_FILE.flush()	# Make sure gets sent. If not flushed then buffered
                 idx += 1			# one more to delete from table
-                numaprsmsg += 1		# counter of published APRS msgs
+                numaprsmsg += 1			# counter of published APRS msgs
             else:
                 nqueue.append(e)		# keep that entry on the table
-                if ddd == 0:		# if first on the queue
-                    ddd = dts		# remember that
-                    # end of for loop
+                if ddd == 0:			# if first on the queue
+                    ddd = dts			# remember that
+        # end of for loop of dequeuing messages
+#       =============================================================================================================
+
         if (idx > 0):				# if we found at least one entry
             queue=nqueue			# this is the new queue
-            del nqueue 			# delete the old queue
+            del nqueue 				# delete the old queue
         mem = process.memory_info().rss  	# in bytes
 
         if prt or mem < 2*1024*1024 or (loopcount - int(loopcount/1000)*1000) == 0:        	# if less that 2 Mb
