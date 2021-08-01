@@ -460,7 +460,11 @@ try:
                 path = "tracker"
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
-                if acftt not in acfttype:
+                if acftt == "UNKOWN":
+                   if station != 'NEMO':
+                      print ("Wrong aircraft type:", packet_str)
+                   continue
+                elif acftt not in acfttype:
                     acfttype.append(acftt)
 
             # handle the TCPIP only for position or status reports
@@ -671,6 +675,7 @@ try:
 
                     if not recfound:		# if we never saw this ID ... insert it on the DB
                         try:
+                            #print    ("CMD2", ident, latitude, longitude, altim, course, dte, hora, "ROT", rot, speed, dist, "ROC", roclimb, station, "SENS", sensitivity, gps, otime, source)
                             cmd2 = "INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                                 (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                         except TypeError:

@@ -27,3 +27,4 @@ Keys.py
 ADSBreg.py
 sh/APRSlogcheck.sh
 sh/APRSlog.sh
+node_modules/

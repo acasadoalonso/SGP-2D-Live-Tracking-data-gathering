@@ -27,6 +27,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNHEL": "HELI",		# helium LoRaWan
     "OGADSB": "ADSB",		# ADSB
     "OGNFNT": "FANE",		# FANET
+    "OGFNT":  "FANE",		# FANET
     "OGNPAW": "PAW",		# PilotAware
     "OGPAW":  "PAW",		# PilotAware
     "OGSPOT": "SPOT",		# SPOT
@@ -42,6 +43,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNMTK": "MTRK",		# Microtrack
     "OGNXCG": "XCG",		# Cross Country Guide
     "OGNMAV": "NMAV",		# MAV link
+    "OGNEMO": "NEMO",		# Canadian NEMO
     "OGNDELAY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------
@@ -83,16 +85,20 @@ aprstypes=[
     "GroundStation"         # F = static object (ground relay ?)
 ]
 # --------------------------------------------------------------------------
-
+def isfloat(s):
+    return (s.replace('.','',1).isdigit())
 
 def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the symbol table
 
     sym=sym1 +sym2
     idx=0
-    while idx < 16:
+    while idx < len(aprssymtypes): 
         if sym == aprssymtypes[idx]:
             return (aprstypes[idx])
         idx += 1
+    # deal with the NEMO for the time being
+    if sym1 == 'I' and sym2 == '&':
+       return ("UNKOWN")
     print (">>> Unkown Acft Type", sym1, sym2, "<<<")
     return ("UNKOWN")
 
@@ -543,13 +549,13 @@ def parseraprs(packet_str, msg):
             uniqueid = ' '		        # no unique ID
 
         roclimb = gdatal(data, "fpm ")          # get the rate of climb
-        if roclimb == ' ':			# if no rot provided
+        if roclimb == ' ' or not isfloat(roclimb):	# if no rot provided
             roclimb = 0
         rot = gdatal(data, "rot")               # get the rate of turn
-        if rot == ' ':				# if no rot provided
+        if rot == ' ' or not isfloat(rot):	# if no rot provided
             rot = 0
         sensitivity = gdatal(data, "dB ")       # get the sensitivity
-        if sensitivity == ' ':			# if no sensitivity provided
+        if sensitivity == ' ' or not isfloat(sensitivity):	# if no sensitivity provided
             sensitivity = 0
         p6 = data.find('gps')                   # scan for gps info
         if p6 != -1:

@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering/issues"
   },
-  "homepage": "https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering#readme"
+  "homepage": "https://github.com/acasadoalonso/SGP-2D-Live-Tracking-data-gathering#readme",
+  "dependencies": {
+    "forever": "^4.0.1"
+  }
 }
