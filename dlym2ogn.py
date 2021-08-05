@@ -39,7 +39,7 @@ def prtrep(trk, hdr):
     return
 
 
-def shutdown(sock, prt=False):          # shutdown routine, close files and report on activity
+def shutdown(sock, conn, prt=False):    # shutdown routine, close files and report on activity
     # shutdown before exit
     global numaprsmsg
     try:
@@ -47,8 +47,11 @@ def shutdown(sock, prt=False):          # shutdown routine, close files and repo
         sock.close()                    # close the connection file
     except Exception as e:
         print("Socket error...", e, "Ignored at this time\n")
-    conn.commit()                       # commit the DB updates
-    conn.close()                        # close the database
+    try:
+        conn.commit()                       # commit the DB updates
+        conn.close()                        # close the database
+    except Exception as e:
+        print("Commit error...", e, datetime.now(), "Ignored at this time\n")
     local_time = datetime.now()         # report date and time now
     now = datetime.utcnow()    		# get the date
     print("\n\n=================================================\nQueue: ", len(queue), now, "\n\n")
@@ -86,7 +89,7 @@ def shutdown(sock, prt=False):          # shutdown routine, close files and repo
 
 def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
-    shutdown(sock) 			# shutdown orderly
+    shutdown(sock,conn) 			# shutdown orderly
     logfile.close()
     sys.exit(0)
 
@@ -358,8 +361,8 @@ logfile=open(log, "a")   		# set the log file
 logfile.write(">>: ProcessID"+str(os.getpid())+' '+str(date)+'<<:\n')
 logfile.flush()
 # create socket & connect to server
-server=config.APRS_SERVER_HOST
-server="aprs.glidernet.org"
+server=config.APRS_SERVER_PUSH
+#server="aprs.glidernet.org"
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((server, config.APRS_SERVER_PORT))
 print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
@@ -368,7 +371,7 @@ print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
 config.APRS_USER='DLY2APRS'
 config.APRS_PASSCODE='32159'
 
-login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* \n")
+login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
 login=login.encode(encoding='utf-8', errors='strict')
 sock.send(login)
 
@@ -418,8 +421,8 @@ try:
             # and mark that we are still alive
             alive(config.DBpath+APP)			# mark that we are alive
             mem = process.memory_info().rss/(1024*1024)  # in  M bytes
-            rec=">>: %s Mem:%d Q:%d LC:%d :<<" % (str(local_time), mem, len(queue), loopcount)  # mark the time
-            rec += " Nrec: %d NTrksta: %d NDecodes: %d N.APRSmsgs: %d NErrDecodes %d \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco)
+            rec=">>: %s Mem:%d Queue:%d LoopCount:%d :<<" % (str(local_time), mem, len(queue), loopcount)  # mark the time
+            rec += " ;;; Nrec: %d NTrksta: %d NDecodes: %d N.APRSmsgs: %d NErrDecodes %d ;;;\n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco)
             logfile.write(rec)				# mark the time
             logfile.flush()				# write the records
             run_time = time.time() - start_time
@@ -440,7 +443,7 @@ try:
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
             print("End of Day...")
-            shutdown(sock)				# recycle
+            shutdown(sock,conn)				# recycle
             logfile.close()
             exit(0)
 
@@ -495,7 +498,7 @@ try:
             #if beacon["dstcall"] == "OGNTTN":
                 #print ("\n\nBBB", beacon, "\n\n")
 
-            if beacon["aprs_type"] == "status" and (beacon["beacon_type"] == "tracker" or beacon["beacon_type"] == "unknown") and (beacon["dstcall"] == "OGNTRK" or beacon["dstcall"] == "OGTTN2"):
+            if beacon["aprs_type"] == "status" and (beacon["beacon_type"] == "tracker" or beacon["beacon_type"] == "unknown") and (beacon["dstcall"] == "OGNTRK" or beacon["dstcall"] == "OGTTN2" or beacon['dstcall'] == "OGOBS"):
                 comment=s[ph+10:]	        # get the comment where it is the data
                 #print ("CCC:", comment.rstrip(" \n\r"), ":", len(comment), s)
             else:
@@ -651,7 +654,7 @@ except KeyboardInterrupt:
     print("Keyboard input received, end of program, shutdown")
     pass
 
-shutdown(sock)					# shotdown tasks
+shutdown(sock,conn)					# shotdown tasks
 logfile.close()
 print("Exit now ...          ", nerrors)
 exit(0)

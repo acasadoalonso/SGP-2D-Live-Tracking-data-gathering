@@ -23,7 +23,8 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNTRK": "OGN",		# OGN Tracker
     "OGNDSX": "OGN",		# old DSX
     "OGNTTN": "TTN",		# the things LoRaWan network
-    "OGTTN2": "TTN",		# the things LoRaWan network
+    "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
+    "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
     "OGNHEL": "HELI",		# helium LoRaWan
     "OGADSB": "ADSB",		# ADSB
     "OGNFNT": "FANE",		# FANET
