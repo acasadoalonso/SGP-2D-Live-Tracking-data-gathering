@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 #
 # Python code to push into the OGN APRS the delayed unencrypted PARS messages
 #
@@ -562,10 +562,14 @@ try:
 
                 latitude =decode["Lat"]
                 longitude =decode["Lon"]
+                altitude =decode["Alt"]
                 Acft =decode["Acft"]
 
-                if latitude > 90.0 or latitude < -90.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14):
-                    print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "<<<\n")
+                if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000:
+                    if altitude == 0 or altitude > 15000:
+                        print("Altitude error:", ID, station, hora, altitude,  "<<<\n")
+                    else:
+                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "<<<\n")
                     if ID not in trkerrors:   	# did we see this tracker
                         trkerrors[ID] = 1    	# init the counter
                     else:
