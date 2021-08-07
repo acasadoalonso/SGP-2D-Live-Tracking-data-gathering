@@ -26,6 +26,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
     "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
     "OGNHEL": "HELI",		# helium LoRaWan
+    "OGOBS":  "OBS",		# OBS LoRaWan
     "OGADSB": "ADSB",		# ADSB
     "OGNFNT": "FANE",		# FANET
     "OGFNT":  "FANE",		# FANET

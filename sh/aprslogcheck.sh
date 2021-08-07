@@ -35,7 +35,15 @@ else
 		then
                 	logger -t $0 "APRS NOPID yet Log is alive Process: "$alive
 		else
-                	logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
+                        pnum=$(pgrep -F $pid)
+                        if [ $? -ne 0 ] # if aprsc is  not running
+		        then
+                           bash $SCRIPTPATH/aprslog.sh
+                           echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
+                           logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)
+                        else 
+                	   logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
+		        fi
 		fi
 		rm $alive 2>/dev/null
 fi

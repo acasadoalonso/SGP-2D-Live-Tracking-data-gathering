@@ -213,9 +213,9 @@ if LASTFIX:
                 lastfix.append(fid[0])
         except MySQLdb.Error as e:
             try:
-                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
             except IndexError:
-                print(">>>>: MySQL Error2: [%s]" % str(e))
+                print(">>>>: MySQL Error2: [%s]" % str(e), file=sys.stderr)
         print("Number of IDs on the DB: ", len(lastfix))
 if DATA:
     config.LogData = True
@@ -278,7 +278,7 @@ if sock == False:
             break
         Ntries += 1
         if Ntries == 10:
-            print("Errors connecting with APRS ... leaving now \n\n\n")
+            print("Errors connecting with APRS ... leaving now \n\n\n", file=sys.stderr)
             exit(-1)
 
 # -----------------------------------------------------------------
@@ -343,12 +343,12 @@ try:
                 keepalive_count = keepalive_count + 1
                 now = datetime.utcnow()  # get the UTC time
             except Exception as e:
-                print(('>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))))
+                print(('>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
                 now = datetime.utcnow()  # get the UTC time
                 print("UTC time is now: ", now)
                 err += 1
                 if err > maxnerrs:
-                    print(">>>>: Write returns an error code. Failure.  Orderly closeout")
+                    print(">>>>: Write returns an error code. Failure.  Orderly closeout", file=sys.stderr)
                     date = datetime.now()
                     break
                 sleep(SLEEPTIME) 	# wait X seconds
@@ -358,6 +358,7 @@ try:
                 ogntbuildtable(conn, ognttable, prt)
 
             sys.stdout.flush()		# flush the print messages
+            sys.stderr.flush()		# flush the print messages
             if COMMIT:
                 conn.commit()		# commit to the DB every 5 minutes
             continue			# next APRSMSG
@@ -378,18 +379,18 @@ try:
                 print(packet_str)
         except socket.error as e:
             err += 1
-            print(">>>>: Socket error on readline: ", loopcnt, packet_str, current_time)
-            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))))
+            print(">>>>: Socket error on readline: ", loopcnt, packet_str, current_time, file=sys.stderr)
+            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))), file=sys.stderr)
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             continue
         except KeyboardInterrupt:
-            print("Keyboard input received, Bye Bye")
+            print("Keyboard input received, Bye Bye", file=sys.stderr)
             shutdown(sock, datafile)
             print("Bye ...\n\n\n")
             os._exit(0)
         except:
-            print(">>>>: Error on readline", now)
-            print(">>>>: ", packet_str)
+            print(">>>>: Error on readline", now, file=sys.stderr)
+            print(">>>>: ", packet_str, file=sys.stderr)
             rtn = sock_file.write("# Python APRSLOG App\n")
             continue
 
@@ -405,10 +406,10 @@ try:
         # A zero length line will only be returned after ~30m if keepalives are not sent
         if len(packet_str) == 0:  # socket error ?
             err += 1
-            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err, file=sys.stderr)
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             if err > maxnerrs:
-                print(">>>>: Too many errors reading APRS messages.  Orderly closeout")
+                print(">>>>: Too many errors reading APRS messages.  Orderly closeout", file=sys.stderr)
                 date = datetime.now()
                 print("UTC now is: ", date)
                 break
@@ -539,11 +540,11 @@ try:
                     curs.execute(inscmd)  # insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
+                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: [%s]" % str(e))
-                    print(">>>>: MySQL3 error:", cout, inscmd)
-                    print(">>>>: MySQL4 data :", data)
+                        print(">>>>: MySQL2 Error: [%s]" % str(e), file=sys.stderr)
+                    print(">>>>: MySQL3 error:", cout, inscmd, file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data, file=sys.stderr)
                 cout += 1			# number of records saved
                 continue
 
@@ -565,9 +566,9 @@ try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (
                             e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>>: MySQL2 Error: %s" % str(e))
-                    print(">>>>: MySQL3 error:", cout, inscmd)
-                    print(">>>>: MySQL4 data :", data)
+                        print(">>>>: MySQL2 Error: %s" % str(e), file=sys.stderr)
+                    print(">>>>: MySQL3 error:", cout, inscmd, file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data, file=sys.stderr)
 
                 cout += 1			# number of records saved
 
@@ -661,11 +662,11 @@ try:
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: [%s]" % str(e))
-                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1)
-                            print(">>>>: MySQL data :", data)
+                                print(">>>>: MySQL Error2: [%s]" % str(e), file=sys.stderr)
+                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1, file=sys.stderr)
+                            print(">>>>: MySQL data :", data, file=sys.stderr)
 
                         row = curs.fetchone()		# get the counter 0 or 1 ???
                         if row[0] == 0 and source != "UNKW":  # if not add the entry to the tablea
@@ -686,11 +687,11 @@ try:
                             curs.execute(cmd2)  # insert the data on the DB
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e))
-                            print(">>>>: MySQL error3:", cout, cmd2)
-                            print(">>>>: MySQL data :", data)
+                                print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
+                            print(">>>>: MySQL error3:", cout, cmd2, file=sys.stderr)
+                            print(">>>>: MySQL data :", data, file=sys.stderr)
 
                     else:			# if found just update the entry on the table
                         try:
@@ -704,11 +705,11 @@ try:
                             curs.execute(cmd3)  # update the data on the DB
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e))
-                            print(">>>>: MySQL error3:", cout, cmd3)
-                            print(">>>>: MySQL data :", data)
+                                print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
+                            print(">>>>: MySQL error3:", cout, cmd3, file=sys.stderr)
+                            print(">>>>: MySQL data :", data, file=sys.stderr)
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
@@ -724,11 +725,11 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]))
+                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
                         except IndexError:
-                            print(">>>>: MySQL Error2: %s" % str(e))
-                        print(">>>>: MySQL error3:", cout, addcmd)
-                        print(">>>>: MySQL data :", data)
+                            print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
+                        print(">>>>: MySQL error3:", cout, addcmd, file=sys.stderr)
+                        print(">>>>: MySQL data :", data, file=sys.stderr)
                     conn.commit()		# commit to the DB  right away
 
                 cout += 1  # number of records saved
@@ -748,8 +749,9 @@ print("Exit now ... Number of errors: ", err)
 
 if err > maxnerrs:
     now = datetime.utcnow()			# get the UTC time
-    print("Restarting python program ...", now, sys.executable, "\n\n")
+    print("Restarting python program ...", now, sys.executable, "\n\n", file=sys.stderr)
     sys.stdout.flush()		# flush the print messages
+    sys.stderr.flush()		# flush the print messages
     os.execv(__file__, sys.argv)  # restart the program
     # we should not reach here !!!!
     # python = sys.executable

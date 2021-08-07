@@ -73,12 +73,12 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
     prtrep(trackers, "Encrypting trackers msgs:")  # report the encrypted messages
     prtrep(utrackers, "Unencrypting trackers msgs:")  # report the non encrypte message, like trackers status or from non encrypting trackers
     prtrep(trkerrors, "Trackers with errors:")		# report the trackers with errors
-    print("Last loc:              ", lastloc)
+    print("\n\nLast loc:              ", lastloc)
     if os.path.exists(config.DBpath+"DLYM2OGN.alive"):
         # delete the mark of being alive
         os.remove(config.DBpath+"DLYM2OGN.alive")
     if numdecodes > 0:
-        print("Number of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d Num Err Decodes %d Perc Err: %f%% \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco, numerrdeco*100/numdecodes))
+        print("\nNumber of records read: %d Trk status: %d Decodes: %d APRS msgs gen: %d Num Err Decodes %d Perc Err: %f%% \n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco, numerrdeco*100/numdecodes))
     return                              # job done
 
 #########################################################################
@@ -450,6 +450,7 @@ try:
         loopcount += 1			        	# we report a counter of calls to the interfaces
 
         sys.stdout.flush()				# flush the print messages
+        sys.stderr.flush()				# flush the print messages
         if prt:
             print("In main loop. Count= ", inputrec)
         inputrec += 1
@@ -545,7 +546,7 @@ try:
                 p1=ee.find("(char ")		# find the (char xxx) string
                 if p1 != -1:			# if found ???
                     errordet=jstring[p1-3:p1+3]  # extract the position
-                print("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, comment, "\n\n")
+                print("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, comment, "\n\n", file=sys.stderr)
                 numerrdeco += 1			# increse the counter
                 continue			# nothing else to do
             if len(jstring) > 0:		# if valid ???
@@ -567,9 +568,9 @@ try:
 
                 if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000:
                     if altitude == 0 or altitude > 15000:
-                        print("Altitude error:", ID, station, hora, altitude,  "<<<\n")
+                        print("Altitude error:", ID, station, hora, altitude,  "<<<\n", file=sys.stderr)
                     else:
-                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "<<<\n")
+                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "<<<\n", file=sys.stderr)
                     if ID not in trkerrors:   	# did we see this tracker
                         trkerrors[ID] = 1    	# init the counter
                     else:
@@ -584,7 +585,7 @@ try:
                     distance=geodesic((latitude, longitude), lastloc[ID]).km
                     lastloc[ID]=(latitude, longitude)  # register the last localtion
                     if distance > 25.0:		# very unlikely that the tracker moved 25 kms from previous position
-                        print("Dist error:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]))
+                        print("Dist error:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
                             trkerrors[ID] = 1   # init the counter
                         else:
