@@ -9,9 +9,8 @@ DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
-alive=$DBpath/DLYM2OGN.alive
-pid=$"/tmp/DLY.pid"
-pid=$(echo  `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
+alive=$DBpath/DLYM.alive
+pid=$(echo  `grep '^dlypid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^dlypid//g')
 
 if [ ! -f $alive ]
 then
@@ -26,7 +25,12 @@ then
                 logger -t $0 "DLYM2OGN Log seems down, restarting"
                 echo $(date)" - "$(hostname)  >>$DBpath/.DLYMrestart.log
 else
-                logger -t $0 "DLYM2OGN Log is alive ... "$(cat $pid)
+                if [ -f $pid]
+                then
+                	logger -t $0 "DLYM2OGN Log is alive ... "$(cat $pid)" -- "$(cat $alive)
+                else
+                	logger -t $0 "DLYM2OGN Log is alive ...  -- "$(cat $alive)
+                fi
 		rm $alive
 fi
 

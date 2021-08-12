@@ -46,12 +46,12 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
         sock.shutdown(0)                # shutdown the connection
         sock.close()                    # close the connection file
     except Exception as e:
-        print("Socket error...", e, "Ignored at this time\n")
+        print("Socket error...", e, "Ignored at this time\n", file=sys.stderr)
     try:
         conn.commit()                       # commit the DB updates
         conn.close()                        # close the database
     except Exception as e:
-        print("Commit error...", e, datetime.now(), "Ignored at this time\n")
+        print("Commit error...", e, datetime.now(), "Ignored at this time\n", file=sys.stderr)
     local_time = datetime.now()         # report date and time now
     now = datetime.utcnow()    		# get the date
     print("\n\n=================================================\nQueue: ", len(queue), now, "\n\n")
@@ -179,11 +179,11 @@ def genreport(curs, DK):		# report of OGNTRKSTATUS table
         curs.execute(cmd)
     except MySQLdb.Error as e:
         try:
-            print(">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]))
+            print(">>>MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
         except IndexError:
-            print(">>>MySQL2 Error: %s" % str(e))
-            print(">>>MySQL3 error:", cmd)
-            print(">>>MySQL4 data :", s)
+            print(">>>MySQL2 Error: %s" % str(e), file=sys.stderr)
+            print(">>>MySQL3 error:", cmd, file=sys.stderr)
+            print(">>>MySQL4 data :", s, file=sys.stderr)
     for row in curs.fetchall():         # search for the first 20 the rows
         reccount += 1
         id1 = row[0]
@@ -246,7 +246,7 @@ if os.path.exists(config.DLYPIDfile):  # check if another process running
 #
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-APP = "DLYM2OGN"		# the application name
+APP = "DLYM"			# the application name
 SLEEP = 10			# sleep 10 seconds in between calls to the APRS
 DELAY = config.DELAY		# 20 minutes delay
 nerrors = 0			# number of errors in *funcs found
@@ -325,14 +325,14 @@ print("MySQL: Database:", DBname, " at Host:", DBhost)
 # build the table from the TRKDEVICES DB table
 ogntbuildtable(conn, ognttable, prt)
 # --------------------------------------#
-keypath="/home/angel/src/APRSsrc/"
+#keypath="/home/angel/src/APRSsrc/"
 keypath=kpath
 keyfile=keypath+kfile			# name where it is the keys encrypted
 keypriv=keypath+pkey			# name of the private key file (PEM)
 
 DK=[]					# decrypting keys
 if os.path.exists(keyfile):		# check for the encrypted keyfile
-    privkey=getprivatekey(keypriv)  # get the private key
+    privkey=getprivatekey(keypriv)  	# get the private key
     decKey=getkeyfromencryptedfile(keyfile, privkey).decode('utf-8')
     if prt:
         print("DKfile", decKey)
@@ -341,7 +341,7 @@ if os.path.exists(keyfile):		# check for the encrypted keyfile
         print(DK)
     print(DK)
 else:
-    print("ERROR: No key file found !!!", keyfile)
+    print("ERROR: No key file found !!!", keyfile, file=sys.stderr)
     exit(-1)
 # --------------------------------------#
 if report:
@@ -434,9 +434,9 @@ try:
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
 
             except Exception as e:
-                print(('Something\'s wrong with socket write. Exception type is %s' % (repr(e))))
+                print(('Something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
                 now = datetime.utcnow()		        # get the UTC time
-                print("UTC time is now: ", now, keepalive_count, run_time)
+                print("UTC time is now: ", now, keepalive_count, run_time, file=sys.stderr)
 
         now = datetime.utcnow()				# get the UTC time
         # number of second until beginning of the epoch
@@ -460,7 +460,7 @@ try:
             if prt:
                 print(packet_str)
         except socket.error:
-            print("Socket error on readline")
+            print("Socket error on readline", file=sys.stderr)
             continue
         if prt:
             print(packet_str)
@@ -469,9 +469,9 @@ try:
         if len(packet_str) == 0:
             numerr += 1				# increase error counter
             if numerr > maxnerrs:		# if too mane errors
-                print("Read returns zero length string. Failure.  Orderly closeout", numerr)
+                print("Read returns zero length string. Failure.  Orderly closeout", numerr, file=sys.stderr)
                 date = datetime.now()
-                print("UTC now is: ", date)
+                print("UTC now is: ", date, file=sys.stderr)
                 break
             else:
                 sleep(5) 			# wait 5 seconds
@@ -492,7 +492,7 @@ try:
             try:
                 beacon=parse(s)  		# parse the APRS message
             except Exception as e:
-                print("DLY: parse error >>>>", e, s, "<<<<\n")
+                print("DLY: parse error >>>>", e, s, "<<<<\n", file=sys.stderr)
                 continue			# nothing else to do !!
 
                 # check if it is a OGN tracker status messagea
@@ -506,7 +506,7 @@ try:
                 continue			# otherwise ignore it
             sp=comment.find(' ')		# look for the first space
             txt=comment[0:sp]			# that is the text to decode
-            rest=comment[sp:].rstrip("\n\r")  # save the rest: freq deviation, error bits, ...
+            rest=comment[sp:].rstrip("\n\r")    # save the rest: freq deviation, error bits, ...
             ident = beacon['name']		# tracker ID
             station = beacon['receiver_name'] 	# station
             #print ("Txt:>>>", len(txt), txt, ":::>", sp, rest, ":::>", s, "\n")
@@ -528,6 +528,12 @@ try:
                     continue			# nothing to do in case of competition
             else:
                 flarmid=ognttable[ident]	# just in case
+            ne=rest.find('kHz ')		# look for number of errors
+            if ne > 0:
+               nee=rest[ne+4:].find('e')
+               nerr=int(rest[ne+4:ne+4+nee])
+               if nerr > 10:			# if bigger than 10 is not worth the message
+                  continue
             jstring=" " 			# init the json string for receiving the decoded message
             if prt:
                 print("Decoding >>>>", jstring, ">>", txt, "<<", len(txt), ident, station, "<<<<")
@@ -546,13 +552,12 @@ try:
                 p1=ee.find("(char ")		# find the (char xxx) string
                 if p1 != -1:			# if found ???
                     errordet=jstring[p1-3:p1+3]  # extract the position
-                print("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, comment, "\n\n", file=sys.stderr)
+                print("DECODE Error:", e, ">>:", errordet, ":<<", ident, station, hora, jstring, comment, "\n\n",  file=sys.stderr)
                 numerrdeco += 1			# increse the counter
                 continue			# nothing else to do
             if len(jstring) > 0:		# if valid ???
                 numdecodes += 1			# increase the counter
                 jstring=jstring[0:jstring.find('}')+1]
-                #print ("Return:>>>>", len(jstring), jstring)
                 decode=json.loads(jstring)  # get the dict from the JSON string
                 #print ("DDD", decode)
                 if "msg" in decode:
@@ -568,16 +573,17 @@ try:
 
                 if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000:
                     if altitude == 0 or altitude > 15000:
-                        print("Altitude error:", ID, station, hora, altitude,  "<<<\n", file=sys.stderr)
+                        print("Altitude error:", ID, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
                     else:
-                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "<<<\n", file=sys.stderr)
+                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, file=sys.stderr)
                     if ID not in trkerrors:   	# did we see this tracker
                         trkerrors[ID] = 1    	# init the counter
                     else:
                         trkerrors[ID] += 1   	# increase the counter
                     numerrdeco += 1		# increase the counter of errors
                     continue
-
+                if prt:
+                   print ("Return:>>>>", len(jstring), jstring, "DECODE:", decode, "<<<<")
                 if ID not in lastloc:
                     lastloc[ID]=(latitude, longitude)
                 else:				# check now the distance from previous position

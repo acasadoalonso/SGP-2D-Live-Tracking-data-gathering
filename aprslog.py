@@ -36,14 +36,15 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the receiving buffer
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
+    date = datetime.utcnow()                # get the date
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
     if LASTFIX:				# if LASTFIX use the non filtered port
-        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152)
+        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
         #sock.connect(("aprs.glidernet.org", 10152))
     else:				# if not use the use from the configuration file
-        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT)
+        print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
     sock.send(login)			# send the login to the APRS server
@@ -553,6 +554,8 @@ try:
                 status = msg['status']		# get the status message
                 # and the station receiving that status report
                 station = msg['station']
+                if station == 'NEMO':
+                   continue
                 otime = datetime.utcnow()  # get the time from the system
                 if len(status) > 254:
                     status = status[0:254]

@@ -16,7 +16,6 @@ config/
 .idea/
 ss*
 sh/mailnames.txt
-kglid.py
 main/
 dockerfiles/BaseImage/.vagrant
 dockerfiles/.vagrant

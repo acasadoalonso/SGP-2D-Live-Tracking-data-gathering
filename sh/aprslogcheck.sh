@@ -11,6 +11,7 @@ SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
 alive=$DBpath"APRS"$(hostname)".alive"
 pid=$(echo  `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
+#echo $alive $pid $(cat $pid)
 if [ ! -f $alive ]
 then
                 logger  -t $0 "APRS Log is not alive"
@@ -33,16 +34,16 @@ then
 else
 		if [ ! -f $pid ]
 		then
-                	logger -t $0 "APRS NOPID yet Log is alive Process: "$alive
+                	logger -t $0 "APRS NOPID yet Log is alive Process: "$(cat $alive)
 		else
-                        pnum=$(pgrep -F $pid)
+                        pnum=$(pgrep -a -F $pid)
                         if [ $? -ne 0 ] # if aprsc is  not running
 		        then
                            bash $SCRIPTPATH/aprslog.sh
                            echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
-                           logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)
+                           logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)" -- "$(cat $alive)
                         else 
-                	   logger -t $0 "APRS Log is alive Process: "$(cat $pid)" "$alive
+                	   logger -t $0 "APRS Log is alive Process: "$(cat $pid)" -- "$(cat $alive)
 		        fi
 		fi
 		rm $alive 2>/dev/null
