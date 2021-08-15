@@ -9,6 +9,7 @@ import urllib.error
 import urllib.parse
 import json
 import os
+import sys
 import atexit
 import socket
 from datetime import datetime
@@ -69,7 +70,7 @@ aprssymtypes=[
 ]
 # --------------------------------------------------------------------------
 aprstypes=[
-    "Unkown",               # 0 = ?
+    "Unknown",              # 0 = ?
     "Glider",               # 1 = (moto-)glider (most frequent)
     "Plane",                # 2 = tow plane (often)
     "Helicopter",           # 3 = helicopter (often)
@@ -100,9 +101,9 @@ def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the 
         idx += 1
     # deal with the NEMO for the time being
     if sym1 == 'I' and sym2 == '&':
-       return ("UNKOWN")
-    print (">>> Unkown Acft Type", sym1, sym2, "<<<")
-    return ("UNKOWN")
+       return ("UNKNOWN")
+    print (">>> Unknown Acft Type", sym1, sym2, "<<<", file=sys.stderr)
+    return ("UNKNOWN")
 
 
 def isFloat(string):
@@ -254,7 +255,7 @@ def get_source(dstcallsign):
     if src in aprssources:
         return (aprssources[src])
     else:
-        print(">>> Unkown SOURCE:", src, "<<<")
+        print(">>> Unknown SOURCE:", src, "<<<", file=sys.stderr)
         return ("UNKW")
 # ########################################################################
 
@@ -401,7 +402,7 @@ def parseraprs(packet_str, msg):
         packet = parse(packet_str)
     except:
         return -1
-    # print (">>>Packet:", packet)
+    # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
         date = datetime.utcnow() 			# get the date
@@ -432,7 +433,7 @@ def parseraprs(packet_str, msg):
         # check if it is position report or status report
         msgtype = packet_str[ix +1:ix +2]
         if msgtype != '>' and msgtype != '/':   # only status or location messages
-            print("MMM>>>", aprstype, data)
+            print("MMM>>>", aprstype, data, file=sys.stderr)
         if (path == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
             if cc.isupper():
                 id = callsign
@@ -612,7 +613,7 @@ def parseraprs(packet_str, msg):
             if data[ix +1:ix +7] == "OGNTRK":
                 idx=data[ix +8:].find(',')
                 nsta=data[ix +8:ix +idx +8]
-                # print("SSS:", nsta, ix, idx, data)
+                # print("SSS:", nsta, ix, idx, data, file=sys.stderr)
                 msg['station']=nsta
                 msg['source']="DLYM"
                 msg['relay']="OGNDELAY*"

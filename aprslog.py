@@ -214,9 +214,10 @@ if LASTFIX:
                 lastfix.append(fid[0])
         except MySQLdb.Error as e:
             try:
-                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+     
+                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), datetime.utcnow()   , file=sys.stderr)
             except IndexError:
-                print(">>>>: MySQL Error2: [%s]" % str(e), file=sys.stderr)
+                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
         print("Number of IDs on the DB: ", len(lastfix))
 if DATA:
     config.LogData = True
@@ -457,14 +458,14 @@ try:
 
             if source == 'FANE' or source == 'UNKW':  # ignore those messages
                 continue
-            if source == 'ODLY':
+            if source == 'DLYM' and prt:
                 print("ODLY>>>>:", msg, "<<<<")
                 path = "tracker"
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
-                if acftt == "UNKOWN":
-                   if station != 'NEMO':
-                      print ("Wrong aircraft type:", packet_str)
+                if acftt == "UNKNOWN":
+                   if station != 'NEMO':	# temp patch
+                      print ("Wrong aircraft type:", packet_str, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
                     acfttype.append(acftt)
@@ -541,11 +542,11 @@ try:
                     curs.execute(inscmd)  # insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: [%s]" % str(e), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd, file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data, file=sys.stderr)
+                        print(">>>>: MySQL2 Error: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
                 cout += 1			# number of records saved
                 continue
 
@@ -569,9 +570,9 @@ try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (
                             e.args[0], e.args[1]))
                     except IndexError:
-                        print(">>>>: MySQL2 Error: %s" % str(e), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd, file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data, file=sys.stderr)
+                        print(">>>>: MySQL2 Error: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
 
                 cout += 1			# number of records saved
 
@@ -665,11 +666,11 @@ try:
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: [%s]" % str(e), file=sys.stderr)
-                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1, file=sys.stderr)
-                            print(">>>>: MySQL data :", data, file=sys.stderr)
+                                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1,datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
                         row = curs.fetchone()		# get the counter 0 or 1 ???
                         if row[0] == 0 and source != "UNKW":  # if not add the entry to the tablea
@@ -690,11 +691,11 @@ try:
                             curs.execute(cmd2)  # insert the data on the DB
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd2, file=sys.stderr)
-                            print(">>>>: MySQL data :", data, file=sys.stderr)
+                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
                     else:			# if found just update the entry on the table
                         try:
@@ -708,11 +709,11 @@ try:
                             curs.execute(cmd3)  # update the data on the DB
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd3, file=sys.stderr)
-                            print(">>>>: MySQL data :", data, file=sys.stderr)
+                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
                 else:				# if we just is normal option, just add the data to the OGNDATA table
@@ -728,11 +729,11 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), file=sys.stderr)
+                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                         except IndexError:
-                            print(">>>>: MySQL Error2: %s" % str(e), file=sys.stderr)
-                        print(">>>>: MySQL error3:", cout, addcmd, file=sys.stderr)
-                        print(">>>>: MySQL data :", data, file=sys.stderr)
+                            print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL error3:", cout, addcmd,datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                     conn.commit()		# commit to the DB  right away
 
                 cout += 1  # number of records saved
@@ -746,9 +747,9 @@ except SystemExit:
 except KeyboardInterrupt:
     print(">>>>: Keyboard Interupt <<<<<<\n\n")
 
-print(">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
+print(datetime.utcnow(),">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)  # close down everything
-print("Exit now ... Number of errors: ", err)
+print(datetime.utcnow(),"Exit now ... Number of errors: ", err)
 
 if err > maxnerrs:
     now = datetime.utcnow()			# get the UTC time

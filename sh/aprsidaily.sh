@@ -111,6 +111,7 @@ date														     >>APRSproc.log 2>/dev/null
 mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 								     2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      								     2>/dev/null
+mv aprserr.log  archive/APRSlogerr$(date +%y%m%d).log      							     2>/dev/null
 mv DATA*.log archive												     2>/dev/null
 mv APRS*.log archive  												     2>/dev/null
 rm APRS.alive  													     2>/dev/null
