@@ -94,6 +94,8 @@ def shutdown(sock, datafile):           # shutdown routine, close files and repo
     if os.path.exists(config.PIDfile):
         os.remove(config.PIDfile)  # remove it at exit
     atexit.unregister(lambda: os.remove(config.PIDfile))  # remove it at exit
+    sys.stdout.flush()			# flush the print messages
+    sys.stderr.flush()			# flush the print messages
     return                              # job done
 
 #######################################################################

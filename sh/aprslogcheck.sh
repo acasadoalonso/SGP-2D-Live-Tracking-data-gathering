@@ -1,5 +1,4 @@
 #!/bin/bash
-
 if [ -z $CONFIGDIR ]
 then 
      export CONFIGDIR=/etc/local/
@@ -9,6 +8,13 @@ DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
+if [ -f $SCRIPTPATH/param ]
+then
+   param=$(cat $SCRIPTPATH/param)
+else
+   param=''
+fi
+#echo $param
 alive=$DBpath"APRS"$(hostname)".alive"
 pid=$(echo  `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g')
 #echo $alive $pid $(cat $pid)
@@ -43,14 +49,14 @@ else
                            echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                            logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)" -- "$(cat $alive)
                         else 
-                           ps="python3 $SCRIPTPATH/../aprslog.py --MEM True --STATIONS True --LASTFIX True"
+                           ps="python3 $SCRIPTPATH/../aprslog.py "$param
                            pnum=$(pgrep -a -f -x -c "$ps")
                            if [ $pnum -ne 1 ] # if aprslog is  not running
 		           then
                               sudo kill $(cat $pid)
                               rm $pid 2>/dev/null
 #                             restart OGN data collector
-                              bash $SCRIPTPATH/aprslog.sh 
+                              bash $SCRIPTPATH/aprslog.sh $param 
                               echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                 	      logger -t $0 "APRS Log with multiple process: "$(cat $pid)" -- "$(cat $alive)" -- "$pnum
                            else
