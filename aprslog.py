@@ -112,7 +112,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.08'			# manually set the program version !!!
+programver = 'V2.09'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -227,24 +227,33 @@ with open(config.PIDfile, "w") as f:    # create the lock file
     f.close()
 atexit.register(lambda: os.remove(config.PIDfile))  # remove it at exit
 
-
-if OGNT and not LASTFIX:                # if we need aggregation of FLARM and OGN trackers data
-    ognttable = {}            	        # init the instance of the table
-    # build the table from the TRKDEVICES DB table
-    ogntbuildtable(conn, ognttable, prt)
-
-
 compfile = config.cucFileLocation + "competitiongliders.lst"
 
-if os.path.isfile(compfile) and not LASTFIX and not STATIONS:		# if we are in competition mode
-    print("Competition file:", compfile)  # we restrict only to the flamrs of the competition gliders
-    fd = open(compfile, 'r')
+ognttable = {}				# init the instance of the table
+clist=[]				# competition list 
+if os.path.isfile(compfile):
+    fd = open(compfile, 'r')  		# open and read the file
     j = fd.read()
-    if len(j) > 0:
-        clist = json.loads(j)		# load the list of flarms used on the competition
-    else:
-        clist = []
-    fd.close()
+    clist = json.loads(j)
+    fd.close()				# close it
+    if clist[1][0:3] == 'OGN':		# if the pairing is there on the competition table???
+       OGNT = False			# we do not need to use the TRACKERDEV DB table
+       tl=len(clist)			# check the number of entries ???
+       idx=0				# index into the table      
+       while idx < tl:			# scan the whole table
+          ognttable[clist[idx+1]]=clist[idx]
+          idx += 2
+       print ("OGN Tracker pair table:\n", ognttable, "\n\n")  
+
+elif OGNT and not LASTFIX:		# if we need aggregation of FLARM and OGN trackers data
+    					# build the table from the TRKDEVICES DB table
+       ogntbuildtable(conn, ognttable, prt=False)
+       print("OGN Tracker Pair table from DB:\n",ognttable)
+
+
+
+if len(clist) > 0 and not LASTFIX and not STATIONS:		# if we are in competition mode
+    print("Competition file:", compfile)  # we restrict only to the flamrs of the competition gliders
     afilter = "b/"			# filter to only those gliders in competition
     for f in clist:
         afilter += f		        # add the flarmid

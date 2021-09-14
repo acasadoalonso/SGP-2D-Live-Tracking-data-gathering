@@ -20,8 +20,8 @@ def ogntbuildtable(conn, ognttable, prt=False):  # conn is the DB connection id,
     cursG.execute("select id, flarmid, registration from TRKDEVICES where devicetype = 'OGNT' and active = 1; ")
     for rowg in cursG.fetchall(): 	# look for that registration on the OGN database
 
-        ogntid = rowg[0]		# OGN tracker ID
-        flarmid = rowg[1]		# Flarmid id to be linked
+        ogntid = rowg[0].upper()	# OGN tracker ID
+        flarmid = rowg[1].upper()	# Flarmid id to be linked
         registration = rowg[2]          # registration id to be linked
         if prt:
             print("OGNTtable:", ogntid, flarmid, registration)

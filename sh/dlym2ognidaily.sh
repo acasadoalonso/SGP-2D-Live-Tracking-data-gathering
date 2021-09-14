@@ -63,6 +63,7 @@ then
 else
         pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server --user=$DBuser --password=$DBpasswd >>DLYM.log 2>/dev/null
 fi
+rm /tmp/TRKDEVICES.sql >/dev/null 2>/dev/null
 echo "Done."     		     						                                     >>DLYM.log 2>/dev/null
 date														     >>DLYM.log 2>/dev/null
 mutt -a DLYM.log -s $hostname" DLYM daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)

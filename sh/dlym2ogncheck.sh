@@ -25,7 +25,7 @@ then
                 logger -t $0 "DLYM2OGN Log seems down, restarting"
                 echo $(date)" - "$(hostname)  >>$DBpath/.DLYMrestart.log
 else
-                if [ -f $pid]
+                if [ -f $pid ]
                 then
                 	logger -t $0 "DLYM2OGN Log is alive ... "$(cat $pid)" -- "$(cat $alive)
                 else

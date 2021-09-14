@@ -37,13 +37,25 @@ else
                 	logger -t $0 "APRS NOPID yet Log is alive Process: "$(cat $alive)
 		else
                         pnum=$(pgrep -a -F $pid)
-                        if [ $? -ne 0 ] # if aprsc is  not running
+                        if [ $? -ne 0 ] # if aprslog is  not running
 		        then
                            bash $SCRIPTPATH/aprslog.sh
                            echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                            logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)" -- "$(cat $alive)
                         else 
-                	   logger -t $0 "APRS Log is alive Process: "$(cat $pid)" -- "$(cat $alive)
+                           ps="python3 $SCRIPTPATH/../aprslog.py --MEM True --STATIONS True --LASTFIX True"
+                           pnum=$(pgrep -a -f -x -c "$ps")
+                           if [ $pnum -ne 1 ] # if aprslog is  not running
+		           then
+                              sudo kill $(cat $pid)
+                              rm $pid 2>/dev/null
+#                             restart OGN data collector
+                              bash $SCRIPTPATH/aprslog.sh 
+                              echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
+                	      logger -t $0 "APRS Log with multiple process: "$(cat $pid)" -- "$(cat $alive)" -- "$pnum
+                           else
+                	      logger -t $0 "APRS Log is alive Process: "$(cat $pid)" -- "$(cat $alive)" -- "$pnum
+		           fi
 		        fi
 		fi
 		rm $alive 2>/dev/null

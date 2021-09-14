@@ -82,7 +82,7 @@ if [ -d /var/www/html/files ]
 then
 	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql  2>/dev/null
 	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql 2>/dev/null
-	echo ".dump GLIDERS" | sqlite3 /nfs/OGN/DIRdata/SAROGN.db                  >/var/www/html/files/GLIDERS.dump 2>/dev/null
+	echo ".dump GLIDERS" | sqlite3 $DBpath/SAROGN.db                              >/var/www/html/files/GLIDERS.dump 2>/dev/null
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 if [[ $(hostname) == 'CHILEOGN' ]]
@@ -101,11 +101,11 @@ then
         sed "s/LOCK TABLES \`TRKDEVICES\`/-- LOCK TABLES/g" <TRKDEVICES.sql  | sed "s/UNLOCK TABLES;/-- UNLOCK TABLES/g" |  sed "s/\/*\!40000 /-- XXXX TABLES/g" | mysql -u $DBuser -p$DBpasswd -v APRSLOG		     >>APRSproc.log 2>/dev/null
 	echo "select * FROM TRKDEVICES ; "                     | mysql -u $DBuser -p$DBpasswd -v APRSLOG        	     >>APRSproc.log 2>/dev/null
 
-	rm /tmp/TRKDEVICES.sql
         mv      TRKDEVICES.sql archive
 else
         pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server --user=$DBuser --password=$DBpasswd >>APRSproc.log 2>/dev/null
 fi
+rm /tmp/TRKDEVICES.sql
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)
