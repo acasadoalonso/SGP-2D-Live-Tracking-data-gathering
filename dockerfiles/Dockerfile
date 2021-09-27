@@ -6,6 +6,7 @@ RUN export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8
 RUN apt-get install -y python3 python3-pymysql python3-mysqldb python3-openssl python3-dev python3-pip mutt wget python3-rsa python3-psutil iproute2 systemd git libarchive-dev  autoconf mc pkg-config vim inetutils-ping figlet ntpdate ssh sudo openssh-server sqlite3 libsqlite3-dev mariadb-client percona-toolkit				
 RUN git config --global user.email "acasadoalonso@gmail.com" 
 RUN git config --global user.name "Angel Casado"     
+RUN git config pull.ff only 
 RUN set -x \
     && pip3 install --upgrade pip \
     && pip3 install --upgrade setuptools \
@@ -49,7 +50,7 @@ RUN touch APRSinstallation.done
 RUN  service ssh start 
 RUN chmod 0755 /var/run/sshd
 
-RUN echo "Welcome to the SWS application container" > /etc/motd \
+RUN echo "Welcome to the APRSLOG application container" > /etc/motd \
     && cp -a /root /root.orig
 
 

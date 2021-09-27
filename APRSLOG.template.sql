@@ -123,30 +123,6 @@ CREATE TABLE `GLIDERS` (
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `GLIDERS_INFO`
---
-
-DROP TABLE IF EXISTS `GLIDERS_INFO`;
-CREATE TABLE `GLIDERS_INFO` (
-  `registration` char(6) NOT NULL,
-  `maker` varchar(50) NOT NULL,
-  `model` varchar(50) NOT NULL,
-  `owner` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `GLIDERS_PILOT`
---
-
-DROP TABLE IF EXISTS `GLIDERS_PILOT`;
-CREATE TABLE `GLIDERS_PILOT` (
-  `CN` varchar(10) NOT NULL,
-  `Pilot` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 -- --------------------------------------------------------
 
 --
@@ -452,18 +428,6 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`ogn`@`%` SQL SECURITY DEFINER VIEW `TRKSTA` 
 ALTER TABLE `GLIDERS`
   ADD UNIQUE KEY `idglider` (`idglider`),
   ADD UNIQUE KEY `GLIDERIDX` (`idglider`);
-
---
--- Indexes for table `GLIDERS_INFO`
---
-ALTER TABLE `GLIDERS_INFO`
-  ADD PRIMARY KEY (`registration`);
-
---
--- Indexes for table `GLIDERS_PILOT`
---
-ALTER TABLE `GLIDERS_PILOT`
-  ADD PRIMARY KEY (`CN`,`Pilot`);
 
 --
 -- Indexes for table `GLIDERS_POSITIONS`
