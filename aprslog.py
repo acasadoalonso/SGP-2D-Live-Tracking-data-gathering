@@ -114,7 +114,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.09'			# manually set the program version !!!
+programver = 'V2.10'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -197,12 +197,12 @@ parser.add_argument('-m', '--MEM', required=False,
                     dest='MEM', action='store', default=False)
 parser.add_argument('-s', '--STATIONS', required=False,
                     dest='STATIONS', action='store', default=False)
-args = parser.parse_args()
-prt = args.prt			# print on|off
-DATA = args.DATA			# data store on|off
-LASTFIX = args.LASTFIX			# LASTFIX on|off
-MEM = args.MEM			# MEM on|off
-STATIONS = args.STATIONS		# stations on|off
+args 		= parser.parse_args()
+prt 		= args.prt		# print on|off
+DATA 		= args.DATA		# data store on|off
+LASTFIX 	= args.LASTFIX		# LASTFIX on|off
+MEM 		= args.MEM		# MEM on|off
+STATIONS 	= args.STATIONS		# stations on|off
 if STATIONS:
     STD = False				# not need to record DATA
 print("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD", STD)
@@ -553,7 +553,7 @@ try:
                     curs.execute(inscmd)  # insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(),inscmd, file=sys.stderr)
                     except IndexError:
                         print(">>>>: MySQL2 Error: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
@@ -578,8 +578,7 @@ try:
                     curs.execute(inscmd)  # insert data into trackstatus table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (
-                            e.args[0], e.args[1]))
+                        print(">>>>: MySQL1 Error [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
                     except IndexError:
                         print(">>>>: MySQL2 Error: %s" % str(e),datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)

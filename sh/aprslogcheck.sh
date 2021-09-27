@@ -58,7 +58,8 @@ else
 #                             restart OGN data collector
                               bash $SCRIPTPATH/aprslog.sh $param 
                               echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
-                	      logger -t $0 "APRS Log with multiple process: "$(cat $pid)" -- "$(cat $alive)" -- "$pnum
+                              sleep 10
+                	      logger -t $0 "APRS Log with multiple process: "$pnum
                            else
                 	      logger -t $0 "APRS Log is alive Process: "$(cat $pid)" -- "$(cat $alive)" -- "$pnum
 		           fi

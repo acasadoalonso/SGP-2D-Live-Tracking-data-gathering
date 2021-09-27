@@ -1,0 +1,1 @@
+alias aprslogbash='docker exec -it aprslog /bin/bash'

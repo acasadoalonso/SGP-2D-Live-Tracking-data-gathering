@@ -19,6 +19,7 @@ sh/mailnames.txt
 main/
 dockerfiles/BaseImage/.vagrant
 dockerfiles/.vagrant
+dockerfiles/config.docker
 BasicAircraftLookup.sqb
 flightaware*
 keyfile.encrypt
