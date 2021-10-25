@@ -2,6 +2,12 @@ FROM debian
 ENV DEBIAN_FRONTEND=noninteractive 
 RUN apt-get update && apt-get -y upgrade 
 RUN apt-get install -y apt-utils software-properties-common python3-software-properties	 build-essential 
+# Set the locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8 
+RUN apt-get -y install locales
 RUN export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8	
 RUN apt-get install -y python3 python3-pymysql python3-mysqldb python3-openssl python3-dev python3-pip mutt wget python3-rsa python3-psutil iproute2 systemd git libarchive-dev  autoconf mc pkg-config vim inetutils-ping figlet ntpdate ssh sudo openssh-server sqlite3 libsqlite3-dev mariadb-client percona-toolkit				
 RUN git config --global user.email "acasadoalonso@gmail.com" 

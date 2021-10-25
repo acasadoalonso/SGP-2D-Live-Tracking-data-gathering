@@ -60,7 +60,7 @@ ksta = {
            "LFCQ"   : "Graulhet",
 	   "LFCS"   : "Bordeaux", 
            "LFDT"   : "Tarbes",
-           "LFDA"   : "Air sur l'Adour",
+           "LFDA"   : "Air sur Adour",
            "LFDH"   : "Auch",
            "LFDT2"  : "Tarbes",
            "LFIM"   : "Saint Gaudens",

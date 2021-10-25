@@ -44,6 +44,7 @@ echo								#
 cd /var/www/html/main						#
 sudo apt install -y mariadb-client				#
 sudo apt install -y libmariadb-dev				#
+sudo apt install -y python3-dev python3-pip 			#
 if [ $sql = 'MariaDB' ]						#
 then								#
      sudo apt install -y mariadb-server 			#
@@ -55,11 +56,10 @@ then								#
 	sudo apt policy mysql-server				#
 	sudo apt install mysql-server=5.7.32-1ubuntu18.04	#
 	sudo apt install mysql-client=5.7.32-1ubuntu18.04	#
-        sudo tasksel install lamp-server                                #
+        sudo tasksel install lamp-server                        #
 fi								#
 sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3 ntpdate				#
-sudo apt-get install -y python3-dev python3-pip 		#
 sudo apt-get install -y figlet inetutils-* 			#
 sudo apt-get install -y avahi-daemon libcurl4-openssl-dev       #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
@@ -81,7 +81,7 @@ sudo apt-get install -y neofetch				#
 sudo apt-get install -y python3-autopep8			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
-sudo a2enmod headers
+sudo a2enmod headers						#
 echo	""							#
 echo	""							#
 if [ $sql = 'MySQL' ]						#
@@ -92,7 +92,13 @@ then								#
     echo "================================================"     #
     echo "Running msqladmin .... assign root password ... "	#
     echo "================================================"     #
-    sudo mysqladmin -u root password ogn			#
+    if [ ! -f .DBpasswd    ]					#
+    then							#
+       echo "Type DB password ..."				#
+       read DBpasswd						#
+       echo $DBpasswd > .DBpasswd				#
+    fi								#
+    sudo mysqladmin -u root password $(cat .DBpasswd)		#
     sudo mysql_secure_installation				#
 fi								#
 echo								#
@@ -169,15 +175,21 @@ then								#
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
    stable"
-   sudo apt update
+   sudo apt update						#
    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-   sudo usermod -aG docker $USER
-   cp doc/.my.cnf ~/
-   sudo bash dockerfiles/mariadbnet.sh
-   sudo bash dockerfiles/mariadb.sh
-   sudo bash dockerfiles/mariadbpma.sh
-   sudo mysql -u root -pogn -h MARIADB <doc/adduser.sql	
-   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u root -pogn -h MARIADB
+   sudo usermod -aG docker $USER				#
+   cp doc/.my.cnf ~/						#
+   sudo bash dockerfiles/mariadbnet.sh				#
+   sudo bash dockerfiles/mariadb.sh				#
+   sudo bash dockerfiles/mariadbpma.sh				#
+   if [ ! -f .DBpasswd    ]					#
+   then								#
+      echo "Type DB password ..."				#
+      read DBpasswd						#
+      echo $DBpasswd > .DBpasswd				#
+   fi								#
+   sudo mysql -u root -p$(cat .DBpasswd) -h MARIADB <doc/adduser.sql	
+   echo "SET GLOBAL log_bin_trust_function_creators = 1; " | sudo mysql -u root -p$(cat .DBpasswd) -h MARIADB
    sudo mysql_secure_installation				#
 fi								#
 cd								#

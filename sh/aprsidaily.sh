@@ -13,6 +13,8 @@ fi
 DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')
 DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=`dirname $SCRIPT`
 
 cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
@@ -108,7 +110,7 @@ fi
 rm /tmp/TRKDEVICES.sql
 echo "Done."     		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
-mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat /home/angel/src/APRSsrc/sh/mailnames.txt)
+mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat $SCRIPTPATH/mailnames.txt)
 mv APRSproc.log  archive/APRSPROC$(date +%y%m%d).log 								     2>/dev/null
 mv aprs.log  archive/APRSlog$(date +%y%m%d).log      								     2>/dev/null
 mv aprserr.log  archive/APRSlogerr$(date +%y%m%d).log      							     2>/dev/null
