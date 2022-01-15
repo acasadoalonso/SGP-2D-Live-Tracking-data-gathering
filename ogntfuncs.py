@@ -25,7 +25,7 @@ def ogntbuildtable(conn, ognttable, prt=False):  # conn is the DB connection id,
         registration = rowg[2]          # registration id to be linked
         if prt:
             print("OGNTtable:", ogntid, flarmid, registration)
-        if flarmid == None or flarmid == '':  # if flarmid is not provided
+        if flarmid in (None, ''):       # if flarmid is not provided
             # get it from the registration
             flarmid = getflarmid(conn, registration)
         else:

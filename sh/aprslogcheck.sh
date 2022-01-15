@@ -49,7 +49,7 @@ else
                            echo $(date)" - "$(hostname)  >>$DBpath.APRSrestart.log
                            logger -t $0 "APRS Log seems down, restarting: old PID "$(cat $pid)" -- "$(cat $alive)
                         else 
-                           ps="python3 $SCRIPTPATH/../aprslog.py "$param
+                           ps="python3 $SCRIPTPATH/../aprslog.py"$param
                            pnum=$(pgrep -a -f -x -c "$ps")
                            if [ $pnum -ne 1 ] # if aprslog is  not running
 		           then

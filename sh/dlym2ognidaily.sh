@@ -69,7 +69,7 @@ fi
 rm /tmp/TRKDEVICES.sql >/dev/null 2>/dev/null
 echo "Done."     		     						                                     >>DLYM.log 2>/dev/null
 date														     >>DLYM.log 2>/dev/null
-mutt -a DLYM.log -s $hostname" DLYM daily report ..." -- $(cat SCRIPTPATH/mailnames.txt)
+mutt -a DLYM.log -s $hostname" DLYM daily report ..." -- $(cat $SCRIPTPATH/mailnames.txt)
 mv DLYM.log  archive/DLYMPROC$(date +%y%m%d).log 	2>/dev/null
 mv dlym2ogn.log  archive/DLYMlog$(date +%y%m%d).log    	2>/dev/null
 mv dlym2ognerr.log  archive/DLYMlogerr$(date +%y%m%d).log    	2>/dev/null

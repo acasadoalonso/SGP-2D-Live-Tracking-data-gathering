@@ -3,7 +3,6 @@
 # Parser functions for the OGN APRS applications
 #
 
-import ksta			# list of know stations
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -14,6 +13,7 @@ import atexit
 import socket
 from datetime import datetime
 from ogn.parser import parse
+import ksta			# list of know stations
 
 # --------------------------------------------------------------------------
 aprssources = {			# sources based on the APRS TOCALL
@@ -95,13 +95,13 @@ def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the 
 
     sym=sym1 +sym2
     idx=0
-    while idx < len(aprssymtypes): 
+    while idx < len(aprssymtypes):
         if sym == aprssymtypes[idx]:
             return (aprstypes[idx])
         idx += 1
     # deal with the NEMO for the time being
     if sym1 == 'I' and sym2 == '&':
-       return ("UNKNOWN")
+        return ("UNKNOWN")
     print (">>> Unknown Acft Type", sym1, sym2, "<<<", file=sys.stderr)
     return ("UNKNOWN")
 
@@ -135,7 +135,7 @@ def get_latitude(packet):
 
 
 def get_altitude(packet):
-    if 'altitude' in packet and packet['altitude'] != None:
+    if 'altitude' in packet and packet['altitude'] is not None:
         altitude = packet['altitude']
     else:
         altitude = -1
@@ -177,7 +177,7 @@ def get_course(packet):
 def get_relay(packet):
     if 'relay' in packet:
         relay = packet['relay']
-        if relay == None:
+        if relay is None:
             relay="NORELAY"
     else:
         relay = "NORELAY"
@@ -254,9 +254,8 @@ def get_source(dstcallsign):
     src = str(dstcallsign)
     if src in aprssources:
         return (aprssources[src])
-    else:
-        print(">>> Unknown SOURCE:", src, "<<<", file=sys.stderr)
-        return ("UNKW")
+    print(">>> Unknown SOURCE:", src, "<<<", file=sys.stderr)
+    return ("UNKW")
 # ########################################################################
 
 
@@ -278,8 +277,8 @@ def gdatar(data, typer):               	# get data on the  right
         return (" ")
     p = p +len(typer)
     pb = p
-    max = len(data) -1
-    while (pb < max):
+    maxd = len(data) -1
+    while (pb < maxd):
         if data[pb] == ' ' or data[pb] == '\n' or data[pb] == '\r':
             pb += 1
             break
@@ -293,7 +292,7 @@ def gdatar(data, typer):               	# get data on the  right
 
 
 def spanishsta(station):                # return true if is an Spanish station
-    if (station) == None:
+    if (station) is None:
         return False
     if station[0:2] == 'LE' or station[0:2] == "LP" or	\
             station[0:5] == 'CREAL'     or 	\
@@ -333,12 +332,11 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:8] == 'PORTAINE'  or      \
             station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
         return True
-    else:
-        return False
+    return False
 
 
 def frenchsta(station):                # return true if is an French station
-    if (station) == None:
+    if (station) is None:
         return False
     if station[0:2] == 'LF' or \
        station[0:4] == 'BRAM' or \
@@ -347,8 +345,7 @@ def frenchsta(station):                # return true if is an French station
        station[0:7] == 'FONTROMEU' or \
        station[0:7] == 'ROCAUDE':
         return True
-    else:
-        return False
+    return False
 # ########################################################################
 
 
@@ -407,8 +404,8 @@ def parseraprs(packet_str, msg):
     if len(packet_str) > 0 and packet_str[0] != "#":
         date = datetime.utcnow() 			# get the date
         if 'name' in packet:
-            callsign = packet['name']               # get the call sign FLARM ID or station name
-            id = callsign                  	        # id
+            callsign = packet['name']               	# get the call sign FLARM ID or station name
+            gid = callsign                  	        # id
         else:
             return -1
         longitude = get_longitude(packet)
@@ -436,10 +433,10 @@ def parseraprs(packet_str, msg):
             print("MMM>>>", aprstype, data, file=sys.stderr)
         if (path == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
             if cc.isupper():
-                id = callsign
+                gid = callsign
             else:
-                id = cc
-            station = id
+                gid = cc
+            station = gid
             # scan for the body of the APRS message
             p = data.find(' v0.')                       # the comment side
             if aprstype == 'status':
@@ -493,7 +490,7 @@ def parseraprs(packet_str, msg):
                 msg['ntp_error'] = packet['ntp_error']
             else:
                 msg['ntp_error'] = ''
-            msg['id'] = id	        # return the parsed data into the dict
+            msg['id'] = gid	        # return the parsed data into the dict
             msg['path'] = path
             msg['relay'] = relay
             msg['station'] = station
@@ -580,8 +577,8 @@ def parseraprs(packet_str, msg):
 
         msg['path'] = path			# return the data parsed in the dict
         msg['relay'] = relay			# return the data parsed in the dict
-        msg['idflarm'] = id
-        msg['id'] = id
+        msg['idflarm'] = gid
+        msg['id'] = gid
         msg['date'] = dte
         msg['time'] = hora
         msg['station'] = station
@@ -649,18 +646,18 @@ def SRSSgetapidata(url):                    # get the data from the API server
     return j_obj                            # return the JSON object
 
 
-def SRSSgetjsondata(lat, lon, object='sunset', prt=False):
+def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
 
-    ts = 0                                    	# init the return time since epoch
+    ts = 0                                  # init the return time since epoch
     url = "http://api.sunrise-sunset.org/json?lat=" +lat +"&lng=" +lon +"&formatted=0"
-    jsondata = SRSSgetapidata(url)             	# get the data from the web
+    jsondata = SRSSgetapidata(url)          # get the data from the web
     # print jsondata
-    if prt:                                 	# if print requested
+    if prt:                                 # if print requested
         print(json.dumps(jsondata, indent=4))
-    if jsondata['status'] == "OK":          	# only if results are OK
-        results = jsondata["results"]     	# get the reults part
-        timeref = results[object]         	# get the object that we need
-        print(jsondata['status'], object, timeref)
+    if jsondata['status'] == "OK":          # only if results are OK
+        results = jsondata["results"]       # get the reults part
+        timeref = results[obj]         	    # get the object that we need
+        print(jsondata['status'], obj, timeref)
         # convert to time format
         ttt = datetime.strptime(timeref, "%Y-%m-%dT%H:%M:%S+00:00")
         # number of second until beginning of the day

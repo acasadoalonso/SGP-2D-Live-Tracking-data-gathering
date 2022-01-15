@@ -15,6 +15,9 @@ DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
+SARpath=$(echo    `grep '^DBpath '   $CONFIGDIR/SARconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
+#SARpath='/nfs/OGN/DIRdata/'
+
 
 cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
@@ -84,7 +87,10 @@ if [ -d /var/www/html/files ]
 then
 	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table APRSLOG GLIDERS  >/var/www/html/files/GLIDERS.sql  2>/dev/null
 	mysqldump -u $DBuser -p$DBpasswd -h $server --add-drop-table OGNDB   STATIONS >/var/www/html/files/STATIONS.sql 2>/dev/null
-	echo ".dump GLIDERS" | sqlite3 $DBpath/SAROGN.db                              >/var/www/html/files/GLIDERS.dump 2>/dev/null
+        if [ -f $SARpath/SAROGN.db ]
+        then 
+	   echo ".dump GLIDERS" | sqlite3 $SARpath/SAROGN.db                          >/var/www/html/files/GLIDERS.dump 2>/dev/null
+        fi
 	ls -la /var/www/html/files/										     >>APRSproc.log 2>/dev/null
 fi
 if [[ $(hostname) == 'CHILEOGN' ]]
