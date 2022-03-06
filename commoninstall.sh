@@ -19,6 +19,7 @@ export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8		#
 sudo apt-get install -y software-properties-common 		#
 sudo apt-get install -y python3-software-properties 		#
 sudo apt-get install -y build-essential 			#
+sudo apt-get install -y python-is-python3			#
 echo								#
 echo " "							#
 echo "=================================================="	#

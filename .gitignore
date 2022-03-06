@@ -23,7 +23,7 @@ dockerfiles/config.docker
 BasicAircraftLookup.sqb
 flightaware*
 keyfile.encrypt
-Keys.py
+Keysfuncs.py
 ADSBreg.py
 sh/APRSlogcheck.sh
 sh/APRSlog.sh

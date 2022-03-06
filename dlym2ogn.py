@@ -24,7 +24,7 @@ from parserfuncs import deg2dmslat, deg2dmslon, dao, alive
 from ognddbfuncs import getognreg, getogncn
 from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
-from Keys import getprivatekey, getkeyfromencryptedfile, getkeys
+from Keysfuncs import getprivatekey, getkeyfromencryptedfile, getkeys
 from collections import deque
 
 #########################################################################

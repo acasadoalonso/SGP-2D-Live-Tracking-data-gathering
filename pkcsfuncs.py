@@ -1,14 +1,15 @@
 #!/usr/bin/python3
-from Crypto.PublicKey import RSA
-from Crypto.PublicKey import DSA
-from Crypto.PublicKey import ECC
-from Crypto.Hash import SHA256
-from Crypto.Hash import MD5
-# from Crypto.Signature import DSS
-from Crypto.Signature import pss
-# from Crypto.Random import get_random_bytes
-#from Crypto.Cipher import AES
-from Crypto.Cipher import PKCS1_OAEP
+from Crypto           import PublicKey
+#from Crypto.PublicKey import RSA
+#from Crypto.PublicKey import DSA
+#from Crypto.PublicKey import ECC
+from Crypto            import Hash
+#from Crypto.Hash import SHA256
+#from Crypto.Hash import MD5
+from Crypto             import Signature
+#from Crypto.Signature import DSS
+from Crypto             import Cipher
+#from Crypto.Cipher import PKCS1_OAEP
 RSAkeylen = 3072
 DSAkeylen = 3072
 
@@ -17,8 +18,8 @@ def getsignature(message, privkey, pemfile):		# sign a message providing either 
     if pemfile:
         privkey=getprivatekey(pemfile)
     else:
-        privkey = RSA.import_key(privkey)
-    h = SHA256.new(message)
+        privkey = PublicKey.RSA.import_key(privkey)
+    h = Hash.SHA256.new(message)
     return(pss.new(privkey).sign(h))
 
 
@@ -26,8 +27,8 @@ def valsignature(message, signature, pubkey, pemfile):  # validate a signature p
     if pemfile:
         pubkey=getpublickey(pemfile)
     else:
-        pubkey = RSA.import_key(pubkey)
-    h = SHA256.new(message)
+        pubkey = PublicKey.RSA.import_key(pubkey)
+    h = Hash.SHA256.new(message)
     verifier = pss.new(pubkey)
     try:
         verifier.verify(h, signature)
@@ -39,7 +40,7 @@ def valsignature(message, signature, pubkey, pemfile):  # validate a signature p
 def getfromencryptedfile(kfile, privkey):		# get the data form an encrypted file providing the private key
     with open(kfile, mode='rb') as keyfile:
         data = keyfile.read()
-    cipher_rsa = PKCS1_OAEP.new(privkey)
+    cipher_rsa = Cipher.PKCS1_OAEP.new(privkey)
     return(cipher_rsa.decrypt(data))
 
 
@@ -47,19 +48,19 @@ def getprivatekey(pemfile):				# get the private key form a PEM file
 
     with open(pemfile, mode='rb') as privatefile:
         keydata = privatefile.read().decode('ascii').rstrip('\n')
-    privkey = RSA.import_key(keydata)
+    privkey = PublicKey.RSA.import_key(keydata)
     return(privkey)
 
 
 def getpublickey(pemfile):				# get the public key from a PEM file
     with open(pemfile, mode='rb') as privatefile:
         keydata = privatefile.read().decode('ascii').rstrip('\n')
-    publkey = RSA.import_key(keydata)
+    publkey = PublicKey.RSA.import_key(keydata)
     return(publkey)
 
 
 def RSAgenkeypair(keylen):				# gen a RSA key pair public/private
-    keyPair = RSA.generate(keylen)
+    keyPair = PublicKey.RSA.generate(keylen)
     pubKey = keyPair.publickey()
     pubKeyPEM = pubKey.exportKey()
     privKeyPEM = keyPair.exportKey()
@@ -71,7 +72,7 @@ def RSAgenkeypair(keylen):				# gen a RSA key pair public/private
 
 
 def ECCgenkeypair():
-    keyPair = ECC.generate(curve='P-256')
+    keyPair = PublicKey.ECC.generate(curve='P-256')
     pubKey = keyPair.public_key()
     #print("ECC Size:", sys.getsizeof(pubKey))
     privKeyPEM = keyPair.export_key(format='PEM')
@@ -82,7 +83,7 @@ def ECCgenkeypair():
 
 
 def DSAgenkeypair(DSAkeylen):
-    keyPair = DSA.generate(DSAkeylen)
+    keyPair = PublicKey.DSA.generate(DSAkeylen)
     pubKey = keyPair.publickey()
     pubKeyPEM = pubKey.export_key()
     privKeyPEM = keyPair.export_key()
@@ -141,12 +142,12 @@ def DSAgenlistofkp(listofkp, limit, keylen=DSAkeylen):
 
 
 def MD5getdigest(message):
-    h = MD5.new()
+    h = Hash.MD5.new()
     h.update(message)
     return (h.hexdigest())
 
 
 def SHAgetdigest(message):
-    h = SHA256.new()
+    h = Hash.SHA256.new()
     h.update(message)
     return (h.hexdigest())
