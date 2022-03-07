@@ -483,7 +483,7 @@ try:
         msg = {}
 
         # if not a heartbeat from the server
-        if len(packet_str) > 0 and packet_str[0] != "#":
+        if len(packet_str) > 0 and packet_str[0] != "#" and packet_str[ix+1:ix+7] != "OGNFNT":
             #########################################################################################
             # deal with a normal APRS message
             s=packet_str
