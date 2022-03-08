@@ -188,15 +188,15 @@ print("MySQL: Database:", DBname, " at Host:", DBhost)
 #----------------------aprslog.py start-----------------------#
 parser = argparse.ArgumentParser(description="OGN receive the messages from the APRS network and store it on the MySQL database")
 parser.add_argument('-p', '--print', required=False,
-                    dest='prt', action='store', default=False)
+                    dest='prt', action='store', default=False, help='print ON|off')
 parser.add_argument('-d', '--DATA', required=False,
-                    dest='DATA', action='store', default=False)
+                    dest='DATA', action='store', default=False, help='Get all data')
 parser.add_argument('-l', '--LASTFIX', required=False,
-                    dest='LASTFIX', action='store', default=False)
+                    dest='LASTFIX', action='store', default=False, help='Get only the LASTFIX')
 parser.add_argument('-m', '--MEM', required=False,
-                    dest='MEM', action='store', default=False)
+                    dest='MEM', action='store', default=False, help='Keep a list in memory')
 parser.add_argument('-s', '--STATIONS', required=False,
-                    dest='STATIONS', action='store', default=False)
+                    dest='STATIONS', action='store', default=False, help='Get only the stations')
 args 		= parser.parse_args()
 prt 		= args.prt		# print on|off
 DATA 		= args.DATA		# data store on|off
