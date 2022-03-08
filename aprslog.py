@@ -762,12 +762,18 @@ shutdown(sock, datafile)  # close down everything
 print(datetime.utcnow(),"Exit now ... Number of errors: ", err)
 
 if err > maxnerrs:
-    now = datetime.utcnow()			# get the UTC time
-    print("Restarting python program ...", now, sys.executable, "\n\n", file=sys.stderr)
+    now = datetime.utcnow()	# get the UTC time
+    print("Restarting the python program ...", now, sys.executable, file=sys.stderr)
+    print("==================================================\n\n", file=sys.stderr)
     sys.stdout.flush()		# flush the print messages
     sys.stderr.flush()		# flush the print messages
+    if os.path.exists(config.PIDfile):
+        print ("Removing the PID file: ", config.PIDfile, "\n\n", file=sys.stderr)
+        os.remove(config.PIDfile)  # remove now
     os.execv(__file__, sys.argv)  # restart the program
+    # ================================================= #
     # we should not reach here !!!!
     # python = sys.executable
     #os.execl(python, python, * sys.argv)
+
 os._exit(0)
