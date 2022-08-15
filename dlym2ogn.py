@@ -249,7 +249,7 @@ if os.path.exists(config.DLYPIDfile):  # check if another process running
 #
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-APP = "DLYM"			# the application name
+APP = "DLYM2OGN"		# the application name
 SLEEP = 10			# sleep 10 seconds in between calls to the APRS
 DELAY = config.DELAY		# 20 minutes delay
 nerrors = 0			# number of errors in *funcs found

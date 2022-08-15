@@ -9,7 +9,7 @@ DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
-alive=$DBpath/DLYM.alive
+alive=$DBpath/DLYM2OGN.alive
 pid=$(echo  `grep '^dlypid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^dlypid//g')
 
 if [ ! -f $alive ]
