@@ -224,7 +224,7 @@ def genreport(curs, DK):		# report of OGNTRKSTATUS table
 #
 ########################################################################
 #
-programver = 'V1.2'
+programver = 'V1.4'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
@@ -233,6 +233,9 @@ print("==========================================")
 date = datetime.utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
+location_latitude=config.location_latitude
+location_longitude=config.location_longitude
+print("Location coordinates:", location_latitude, location_longitude, "at: ", config.location_name)
 date = datetime.now()			# local time
 
 # --------------------------------------#
@@ -571,8 +574,8 @@ try:
                 altitude =decode["Alt"]
                 Acft =decode["Acft"]
 
-                if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000:
-                    if altitude == 0 or altitude > 15000:
+                if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000 or altitude < 0:
+                    if altitude == 0 or altitude > 15000 or altitude < 0:
                         print("Altitude error:", ID, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
                     else:
                         print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, file=sys.stderr)
@@ -598,7 +601,18 @@ try:
                             trkerrors[ID] += 1  # increase the counter
                         numerrdeco += 1		# increase the counter of errors
                         continue
-                        # everything seems to be OK, so lets place the entry on the queue
+                
+                distance=geodesic((latitude, longitude), (location_latitude,location_longitude)).km
+                if distance > 250.0:		# very unlikely that the tracker moved 25 kms from previous position
+                        print("Dist error from home:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
+                        if ID not in trkerrors: # did we see this tracker
+                            trkerrors[ID] = 1   # init the counter
+                        else:
+                            trkerrors[ID] += 1  # increase the counter
+                        numerrdeco += 1		# increase the counter of errors
+                        continue
+
+                # everything seems to be OK, so lets place the entry on the queue
                 now = datetime.utcnow()  	# get the UTC time
 						# ------------------------------------------------------------------------------------- #
                 # place it on the queue

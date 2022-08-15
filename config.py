@@ -178,7 +178,7 @@ except:
 try:
     DDBurl1 = cfg.get('server', 'DDBurl1').strip("'")
 except:
-    DDBurl1 = 'http://acasado.es:60082/download/?j=2'
+    DDBurl1 = 'http://ddb.acasado.name:60082/download/?j=2'
 
 try:
     DDBurl2 = cfg.get('server', 'DDBurl2').strip("'")

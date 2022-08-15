@@ -20,6 +20,7 @@ ksta = {
  	   "LESU"   : "La Seu de Urgel, Lerida ",
  	   "LEGY"   : "Garray, Soria ",
  	   "LEPA1"  : "Palma de Mallorca, Baleares ",
+ 	   "LETC"   : "Matilla de los Caños, Valladolid ",
            "PWLERM" : "Robledillo de Mohernando",
            "ALCAZAREN" : "Alcazaren, Valladolid ",
            "ANDORRA": "Andorra ",
