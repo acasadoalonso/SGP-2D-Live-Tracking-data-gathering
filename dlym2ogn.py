@@ -604,7 +604,7 @@ try:
                 
                 distance=geodesic((latitude, longitude), (location_latitude,location_longitude)).km
                 if distance > 250.0:		# very unlikely that the tracker moved 25 kms from previous position
-                        print("Dist error from home:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
+                        print("Dist error from home: ", distance, ID, station, hora, latitude, longitude,  ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
                             trkerrors[ID] = 1   # init the counter
                         else:
