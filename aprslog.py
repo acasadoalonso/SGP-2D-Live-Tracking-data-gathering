@@ -230,6 +230,7 @@ with open(config.PIDfile, "w") as f:    # create the lock file
 atexit.register(lambda: os.remove(config.PIDfile))  # remove it at exit
 
 compfile = config.cucFileLocation + "competitiongliders.lst"
+print("Competition file: ", compfile)
 
 ognttable = {}				# init the instance of the table
 clist=[]				# competition list 
