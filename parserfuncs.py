@@ -355,7 +355,7 @@ def dao(dd):  				# return the 3 digit of the decimal minutes
     #print(dd1)
     decmin="%08.5f" % dd1
     #print(decmin)
-    if dd > 99.99:
+    if dd1 > 99.99:
        return decmin[8]			# just return the last digit in case of bigger than 100
     else:
        return decmin[7]			# just return the last digit
