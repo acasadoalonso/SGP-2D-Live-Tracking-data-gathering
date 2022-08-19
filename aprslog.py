@@ -114,7 +114,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.10'			# manually set the program version !!!
+programver = 'V2.11'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -239,14 +239,15 @@ if os.path.isfile(compfile):
     j = fd.read()
     clist = json.loads(j)
     fd.close()				# close it
-    if clist[1][0:3] == 'OGN':		# if the pairing is there on the competition table???
+    if clist[0][0:3] != 'OGN' and clist[1][0:3] == 'OGN':		# if the pairing is there on the competition table???
        OGNT = False			# we do not need to use the TRACKERDEV DB table
        tl=len(clist)			# check the number of entries ???
        idx=0				# index into the table      
        while idx < tl:			# scan the whole table
           ognttable[clist[idx+1]]=clist[idx]
           idx += 2
-       print ("OGN Tracker pair table:\n", ognttable, "\n\n")  
+       if prt:
+          print ("OGN Tracker pair table:\n", ognttable, "\n\n")  
 
 elif OGNT and not LASTFIX:		# if we need aggregation of FLARM and OGN trackers data
     					# build the table from the TRKDEVICES DB table
@@ -433,24 +434,25 @@ try:
 
         ix = packet_str.find('>')
         cc = packet_str[0:ix]
-        packet_str = cc.upper() + packet_str[ix:]		# conver the ID to uppercase
+        packet_str = cc.upper() + packet_str[ix:]	# convert the ID to uppercase
         msg = {}
         # if not a heartbeat from the server
-        if len(packet_str) > 0 and packet_str[0] != "#":
-
+        if len(packet_str) > 0 and packet_str[0] != "#": # a comment ??
+            if packet_str[0:3] == "RND":		# if a random message ... just ignore it
+                continue
+#           ========================================== 	# PARSE the APRS
             msg = parseraprs(packet_str, msg)		# parse the APRS message
-            if msg == -1:
+            if msg == -1:				# if errors
                 continue
             data = packet_str
             if prt:
-
                 print("MSG:  ", msg)
             if 'id' in msg:
                 ident = msg['id']                      	# id
             else:
                 print(">>>>: Missing ID:>>>", data)
                 continue
-            aprstype = msg['aprstype']		# APRS msg type
+            aprstype = msg['aprstype']			# APRS msg type
             longitude = msg['longitude']
             latitude = msg['latitude']
             altitude = msg['altitude']
@@ -462,21 +464,21 @@ try:
             if prt:
                 print('Packet returned is: ', packet_str)
                 print('Callsign is: ', ident, path, otime, aprstype)
-            cin += 1                            # one more file to create
-            if source not in fsour:	    	# did we see this source
-                fsour[source] = 1	    	# init the counter
+            cin += 1                            	# one more file to create
+            if source not in fsour:	    		# did we see this source
+                fsour[source] = 1	    		# init the counter
             else:
-                fsour[source] += 1	    	# increase the counter
+                fsour[source] += 1	    		# increase the counter
 
-            if source == 'FANE' or source == 'UNKW':  # ignore those messages
+            if source == 'FANE' or source == 'UNKW':  	# ignore those messages
                 continue
-            if source == 'DLYM' and prt:
-                print("ODLY>>>>:", msg, "<<<<")
+            if source == 'DLYM' and prt:		# DELAY and PRINT ???
+                print("OGNT DLY>>>>:", msg, "<<<<")
                 path = "tracker"
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
-                   if station != 'NEMO':	# temp patch
+                   if station != 'NEMO':		# temp patch
                       print ("Wrong aircraft type:", packet_str, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
@@ -485,44 +487,44 @@ try:
             # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
                 #           RECEIVER CASE ------------------------------------------------------#
-                status = msg['status']		# get the full status message
+                status = msg['status']			# get the full status message
                 if len(status) > 254:
                     status = status[0:254]
                 if 'temp' in msg:
-                    temp = msg['temp']  	# station temperature
+                    temp = msg['temp']  		# station temperature
                     if temp == None or type(temp) == None:
                         temp = -1.0
                 else:
                     temp = -1.0
                 if 'version' in msg:
-                    version = msg['version']  	# station SW version
+                    version = msg['version']  		# station SW version
                     if type(version) == None:
                         version = ' '
                 else:
                     version = ' '
-                if 'cpu' in msg:                # station CPU load
-                    cpu = msg['cpu']  		# CPU load
+                if 'cpu' in msg:                	# station CPU load
+                    cpu = msg['cpu']  			# CPU load
                     if type(cpu) == None:
                         cpu = 0
                 else:
                     cpu = 0
-                if 'rf' in msg:                 #
-                    rf = msg['rf']	        # RF sensitibity load
+                if 'rf' in msg:                 	#
+                    rf = msg['rf']	        	# RF sensitibity load
                     if type(rf) == None:
                         rf = '0'
                 else:
                     rf = '0'
 
                 if longitude == -1 and latitude == -1:  # if the status report
-                    if ident not in fslla:  	# in the rare case that we got the status report but not the position report
-                        continue  		# in that case just continue
-                                                # we get tle lon/lat/alt from the table
+                    if ident not in fslla:  		# in the rare case that we got the status report but not the position report
+                        continue  			# in that case just continue
+                                                	# we get tle lon/lat/alt from the table
                     latitude = fslla[ident]
                     longitude = fsllo[ident]
                     altitude = fslal[ident]
                     otime = datetime.utcnow()
                     # print "TTT:", ident, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
-                if ident not in fslod:		# if we not have it yeat on the table
+                if ident not in fslod:			# if we not have it yeat on the table
                     # save the location of the station
                     fslla[ident] = latitude
                     # save the location of the station
@@ -531,16 +533,16 @@ try:
                     fslal[ident] = altitude
                     # save the location of the station
                     fslod[ident] = (latitude, longitude)
-                    fsmax[ident] = 0.0             # initial coverage zero
-                    fsalt[ident] = 0               # initial coverage zero
-                if data.find(":/") != -1:       # it is the position report ??
+                    fsmax[ident] = 0.0             	# initial coverage zero
+                    fsalt[ident] = 0               	# initial coverage zero
+                if data.find(":/") != -1:       	# it is the position report ??
                     # we do not want that message ... we want the status report ...
                     continue
-                if data.find(":)") != -1:       # it is the message report ??
+                if data.find(":)") != -1:       	# it is the message report ??
                     print(">>> :)>>>", data)
                     # we do not want that message ... we want the status report ...
                     continue
-                ccchk = cc[0:4]                   # just the first 4 chars
+                ccchk = cc[0:4]                   	# just the first 4 chars
                 if ccchk == "BSKY" or ccchk == "FNB1" or ccchk == "AIRS":    # useless sta
                     continue
 
@@ -551,7 +553,7 @@ try:
                     print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
 
                 try:
-                    curs.execute(inscmd)  # insert data into RECEIVERS table
+                    curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
                         print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(),inscmd, file=sys.stderr)
@@ -559,24 +561,24 @@ try:
                         print(">>>>: MySQL2 Error: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
-                cout += 1			# number of records saved
+                cout += 1				# number of records saved
                 continue
 
-            if aprstype == 'status':		# if status report
+            if aprstype == 'status':			# if status report
                 #           TRACKER STATUS CASE ------------------------------------------------------#
-                status = msg['status']		# get the status message
+                status = msg['status']			# get the status message
                 # and the station receiving that status report
                 station = msg['station']
                 if station == 'NEMO':
                    continue
-                otime = datetime.utcnow()  # get the time from the system
+                otime = datetime.utcnow()  		# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
                 #print ("Status report:", ident, station, otime, status)
                 inscmd = "insert into OGNTRKSTATUS values ('%s', '%s', '%s', '%s' ,'%s' )" %\
                     (ident, station, otime, status, 'APRS')
                 try:
-                    curs.execute(inscmd)  # insert data into trackstatus table
+                    curs.execute(inscmd)  		# insert data into trackstatus table
                 except MySQLdb.Error as e:
                     try:
                         print(">>>>: MySQL1 Error [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
@@ -585,16 +587,16 @@ try:
                     print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
 
-                cout += 1			# number of records saved
+                cout += 1				# number of records saved
 
-            if path == 'qAC':			# the case of a qAC message that is not a TCPIP*
+            if path == 'qAC':				# the case of a qAC message that is not a TCPIP*
                 print(">>>qAC>>>:", data)
-                continue                        # the case of the TCP IP as well
-            if longitude == -1 or latitude == -1:  # if no position like in the status report
-                continue			# that is the case of the ogn trackers status reports
+                continue                        	# the case of the TCP IP as well
+            if longitude == -1 or latitude == -1:  	# if no position like in the status report
+                continue				# that is the case of the ogn trackers status reports
 
 #           FLARM OR OGN FIXES  CASE ------------------------------------------------------#
-            # if std records FLARM or OGN
+            						# if std records FLARM or OGN
             #
             if 'speed' in msg:
                 speed = msg['speed']
@@ -603,7 +605,7 @@ try:
             course = msg['course']
             uniqueid = msg['uniqueid']
             if len(uniqueid) > 16:
-                uniqueid = uniqueid[0:16]  # limit to 16 chars
+                uniqueid = uniqueid[0:16]  		# limit to 16 chars
             extpos = msg['extpos']
             roclimb = msg['roclimb']
             rot = msg['rot']
@@ -611,21 +613,21 @@ try:
             gps = msg['gps']
             if len(gps) > 6:
                 gps = gps[0:6]
-            hora = msg['time']		# timestamp
-            altim = altitude                    # the altitude in meters
+            hora = msg['time']				# timestamp
+            altim = altitude                    	# the altitude in meters
             if altim > 15000 or altim < 0:
                 altim = 0
-                alti = '%05d' % altim           # convert it to an string
-            dist = -1				# the case of when did not receive the station YET
-            if station in fslod and source == 'OGN':  # if we have the station coordinates yet
+                alti = '%05d' % altim           	# convert it to an string
+            dist = -1					# the case of when did not receive the station YET
+            if station in fslod and source == 'OGN':  	# if we have the station coordinates yet
                 # distance to the station
                 distance = geodesic((latitude, longitude), fslod[station]).km
                 dist = distance
-                if distance > 400.0 and not LASTFIX:  # if nore than 400 kms
+                if distance > 400.0 and not LASTFIX:  	# if nore than 400 kms
                     if ident not in fdistcheck:
                         print("distcheck: ", distance, data)  # report it only once
                     fdistcheck[ident] = distance
-            if source != 'OGN':			# in the case of a NON OGN we use the base as reference point
+            if source != 'OGN':				# in the case of a NON OGN we use the base as reference point
                 vitlat = config.location_latitude
                 vitlon = config.location_longitude
                 # distance to the BASE
@@ -636,43 +638,43 @@ try:
                 print("RoC", roclimb, "RoT", rot, "Sens", sensitivity, gps, uniqueid, dist, extpos, source, ":::")
 
 #           -----------------------------------------------------------------
-                # write the DB record
+                					# write the DB record
 
-            if (DATA or LASTFIX or STD):        # if we need to store on the database
+            if (DATA or LASTFIX or STD):        	# if we need to store on the database
                 # if we have OGN tracker aggregation and is an OGN tracker
                 if OGNT and ident[0:3] == 'OGN' and not LASTFIX:
 
-                    if ident in ognttable:  # if the device is on the list
+                    if ident in ognttable:  	# if the device is on the list
                         # substitude the OGN tracker ID for the related FLARMID
                         ident = ognttable[ident]
 
                         # get the date from the system as the APRS packet does not contain the date
                         # get the date from the system as the APRS packet does not contain the date
                 dateutc = datetime.utcnow()
-                dte = dateutc.strftime("%y%m%d")  # today's date
+                dte = dateutc.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
-                    source = source[0:4]  # restrict the length to 4 chars
-                dtype = ident[0:3]		# device type: ICAO, FLARM, OGNT
-                if dtype in fdtcnt:		# set the counters by device type
-                    fdtcnt[dtype] += 1		# increase the counter
+                    source = source[0:4]  		# restrict the length to 4 chars
+                dtype = ident[0:3]			# device type: ICAO, FLARM, OGNT
+                if dtype in fdtcnt:			# set the counters by device type
+                    fdtcnt[dtype] += 1			# increase the counter
                 else:
-                    fdtcnt[dtype] = 1 		# init the counter
+                    fdtcnt[dtype] = 1 			# init the counter
 
-                if LASTFIX:			# we we need just to store LASTFIX of the glider
+                if LASTFIX:				# we we need just to store LASTFIX of the glider
                     #                   LASTFIX   CASE ------------------------------------------------------#
                     flastfix[ident] = msg		# save it in memory for the time being
 
-                    if MEM:			# if we use the memory option
+                    if MEM:				# if we use the memory option
                         if ident in lastfix:
                             recfound = True		# mark as found
                         else:
                             recfound = False
                             if prt:
                                 print("New ID: ", ident)
-                            lastfix.append(ident)  # add it to the list
+                            lastfix.append(ident)  	# add it to the list
 
-                    else:			# if we use the DB option
-                        try:			# first try to see if we have that device on the GLIDER_POSITION table
+                    else:				# if we use the DB option
+                        try:				# first try to see if we have that device on the GLIDER_POSITION table
                             cmd1 = "SELECT count(flarmId) FROM GLIDERS_POSITIONS WHERE flarmId='" + ident + "'; "
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
@@ -689,7 +691,7 @@ try:
                         else:
                             recfound = True
 
-                    if not recfound:		# if we never saw this ID ... insert it on the DB
+                    if not recfound:			# if we never saw this ID ... insert it on the DB
                         try:
                             #print    ("CMD2", ident, latitude, longitude, altim, course, dte, hora, "ROT", rot, speed, dist, "ROC", roclimb, station, "SENS", sensitivity, gps, otime, source)
                             cmd2 = "INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
@@ -699,7 +701,7 @@ try:
                         if prt:
                             print("CMD2>>>", cmd2)
                         try:
-                            curs.execute(cmd2)  # insert the data on the DB
+                            curs.execute(cmd2)  	# insert the data on the DB
                         except MySQLdb.Error as e:
                             try:
                                 print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
@@ -708,7 +710,7 @@ try:
                             print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
                             print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
-                    else:			# if found just update the entry on the table
+                    else:				# if found just update the entry on the table
                         try:
                             cmd3 = "UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
                                 (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
@@ -717,7 +719,7 @@ try:
                         if prt:
                             print("CMD3>>>", cmd3)
                         try:
-                            curs.execute(cmd3)  # update the data on the DB
+                            curs.execute(cmd3)  	# update the data on the DB
                         except MySQLdb.Error as e:
                             try:
                                 print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
@@ -727,7 +729,7 @@ try:
                             print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
 #               STD  CASE NOT LASTFIX ------------------------------------------------------#
-                else:				# if we just is normal option, just add the data to the OGNDATA table
+                else:					# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + \
                         str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                         str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
@@ -745,36 +747,36 @@ try:
                             print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
                         print(">>>>: MySQL error3:", cout, addcmd,datetime.utcnow(), file=sys.stderr)
                         print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
-                    conn.commit()		# commit to the DB  right away
+                    conn.commit()			# commit to the DB  right away
 
-                cout += 1  # number of records saved
+                cout += 1  				# number of records saved
 
 #
 # end of infinity while
 # --------------------------------------------------------------------------------------
 except SystemExit:
-    print(">>>>: System Exit <<<<<<\n\n")
+    print(datetime.utcnow(),">>>>: System EXIT <<<<<<\n\n")
     os._exit(1)
 except KeyboardInterrupt:
-    print(">>>>: Keyboard Interupt <<<<<<\n\n")
+    print(datetime.utcnow(),">>>>: Keyboard Interrupt <<<<<<\n\n")
 
 print(datetime.utcnow(),">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
-shutdown(sock, datafile)  # close down everything
-print(datetime.utcnow(),"Exit now ... Number of errors: ", err)
+shutdown(sock, datafile)  				# close down everything
+print(datetime.utcnow(),"Exit now ... Number of errors: ", err, "\n")
 
 if err > maxnerrs:
-    now = datetime.utcnow()	# get the UTC time
-    print("Restarting the python program ...", now, sys.executable, file=sys.stderr)
-    print("==================================================\n\n", file=sys.stderr)
-    sys.stdout.flush()		# flush the print messages
-    sys.stderr.flush()		# flush the print messages
+    now = datetime.utcnow()				# get the UTC time
+    print("\nRestarting the python program ...", now, sys.executable, file=sys.stderr)
+    print("==================================================\n\n",   file=sys.stderr)
     if os.path.exists(config.PIDfile):
         print ("Removing the PID file: ", config.PIDfile, "\n\n", file=sys.stderr)
-        os.remove(config.PIDfile)  # remove now
-    os.execv(__file__, sys.argv)  # restart the program
+        os.remove(config.PIDfile)  			# remove now
+    sys.stdout.flush()					# flush the print messages
+    sys.stderr.flush()					# flush the print messages
+    os.execv(__file__, sys.argv)  			# restart the program
     # ================================================= #
-    # we should not reach here !!!!
-    # python = sys.executable
-    #os.execl(python, python, * sys.argv)
+    # 							we should not reach here !!!!
+    # 							python = sys.executable
+    #							os.execl(python, python, * sys.argv)
 
-os._exit(0)
+os._exit(0)						# nothing else to do

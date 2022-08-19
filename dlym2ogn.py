@@ -148,6 +148,7 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
     ccc = "%03d" % int(course)
     sss = "%03d" % int(speed)
     daotxt="!W"+dao(latitude)+dao(longitude)+"!"  # the extended precision
+    #print ("DAO",daotxt, latitude, longitude)
 
     DOP=10+DOP
     HorPrec=int((DOP*2+5)/10)
