@@ -127,12 +127,6 @@ print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
 print("Time now is: ", date, " Local time")
 
-# --------------------------------------#
-#
-if os.path.exists(config.PIDfile):  # check if this program is aleady running !!!
-    raise RuntimeError("APRSlog already running !!!")
-    exit(-1)
-#
 APP = "APRS"				# the application name
 cin = 0                                 # input record counter
 cout = 0                                # output file counter
@@ -197,15 +191,18 @@ parser.add_argument('-m', '--MEM', required=False,
                     dest='MEM', action='store', default=False, help='Keep a list in memory')
 parser.add_argument('-s', '--STATIONS', required=False,
                     dest='STATIONS', action='store', default=False, help='Get only the stations')
+parser.add_argument('-t', '--TRKSTATUS', required=False,
+                    dest='TRKSTATUS', action='store', default=False, help='Store TRK STATUS messages')
 args 		= parser.parse_args()
 prt 		= args.prt		# print on|off
 DATA 		= args.DATA		# data store on|off
 LASTFIX 	= args.LASTFIX		# LASTFIX on|off
 MEM 		= args.MEM		# MEM on|off
 STATIONS 	= args.STATIONS		# stations on|off
+TRKSTATUS 	= args.TRKSTATUS	# trkstatus on|off
 if STATIONS:
     STD = False				# not need to record DATA
-print("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD", STD)
+print("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD:", STD, "TRKSTATUS:", TRKSTATUS)
 
 if LASTFIX:
     if MEM:
@@ -224,6 +221,13 @@ if LASTFIX:
 if DATA:
     config.LogData = True
 
+# --------------------------------------#
+#
+if os.path.exists(config.PIDfile):  # check if this program is aleady running !!!
+    print ("Bye ... Another APRSLOG process running ...\n\n")
+    raise RuntimeError("APRSlog already running !!!")
+    exit(-1)
+#
 with open(config.PIDfile, "w") as f:    # create the lock file
     f.write(str(os.getpid()))		# to avoid running the same program twice
     f.close()
@@ -564,7 +568,7 @@ try:
                 cout += 1				# number of records saved
                 continue
 
-            if aprstype == 'status':			# if status report
+            if aprstype == 'status' and TRKSTATUS:			# if status report
                 #           TRACKER STATUS CASE ------------------------------------------------------#
                 status = msg['status']			# get the status message
                 # and the station receiving that status report
