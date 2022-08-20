@@ -349,14 +349,14 @@ def frenchsta(station):                # return true if is an French station
 # ########################################################################
 
 
-
-def dao(dd):  				# return the 3 digit of the decimal minutes
-    dd1 = round(abs(float(dd)), 5)
+def dao(dd):                           	# return the 3 digit of the decimal minutes
+    print (dd)
+    dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
     minsec = mmss *60.0
-    decmin="%06.3f" % minsec
-    return decmin[5]			# just return the last digita
+    decmin= "%03.3d%06.3f" % (cdeg, minsec)
+    return decmin[8]			# just return the last digit
 
 
 def deg2dmslat(dd):  			# convert degrees float in degrees and decimal minutes (to two decimal places)
