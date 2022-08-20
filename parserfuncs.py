@@ -350,7 +350,6 @@ def frenchsta(station):                # return true if is an French station
 
 
 def dao(dd):                           	# return the 3 digit of the decimal minutes
-    print (dd)
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)

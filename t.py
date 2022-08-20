@@ -31,7 +31,7 @@ def deg2dmslat(dd):                     # convert degrees float in degrees and d
         cdeg = cdeg * -1
     return "%03.2d%06.3f" % (cdeg, minsec)
 
-print ("DD.MMmm",deg2dmslat(52.98765), dao2(52.98765))
-print ("DD.MMmm",deg2dmslat(123.345678), dao2(123.345678))
-print ("DD.MMmm",deg2dmslat(-1.12345678), dao2(-1.12345678))
-print ("DD.MMmm",deg2dmslat(-123.456789), dao2(-123.456789))
+print ("DD.MMmm",deg2dmslat(52.98765), dao1(52.98765))
+print ("DD.MMmm",deg2dmslat(123.345678), dao1(123.345678))
+print ("DD.MMmm",deg2dmslat(-1.12345678), dao1(-1.12345678))
+print ("DD.MMmm",deg2dmslat(-123.456789), dao1(-123.456789))
