@@ -47,5 +47,5 @@ def deg2dmslon(dd):                     # convert degrees float in degrees and d
 
 print ("DD.MMmm",deg2dmslat(52.98765), dao2(52.98765))
 print ("DD.MMmm",deg2dmslon(123.345678), dao2(123.345678))
-print ("DD.MMmm",deg2dmslat(-1.12345678), dao2(-1.12345678))
-print ("DD.MMmm",deg2dmslon(-123.456789), dao2(-123.456789))
+print ("DD.MMmm",deg2dmslat(abs(-1.12345678)), dao2(-1.12345678))
+print ("DD.MMmm",deg2dmslon(abs(-123.456789)), dao2(-123.456789))
