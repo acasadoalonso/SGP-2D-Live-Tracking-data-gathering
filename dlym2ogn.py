@@ -613,7 +613,6 @@ try:
                 else:				# check now the distance from previous position
                     prevloc=lastloc[ID]		# remember what was the last location for reporting.
                     distance=geodesic((latitude, longitude), lastloc[ID]).km
-                    lastloc[ID]=(latitude, longitude)  # register the last localtion
                     if distance > 25.0:		# very unlikely that the tracker moved 25 kms from previous position
                         print("Dist error:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
@@ -622,6 +621,7 @@ try:
                             trkerrors[ID] += 1  # increase the counter
                         numerrdeco += 1		# increase the counter of errors
                         continue
+                    lastloc[ID]=(latitude, longitude)  # register the last localtion
                 
                 distance=geodesic((latitude, longitude), (location_latitude,location_longitude)).km
                 if distance > 250.0:		# very unlikely that the tracker moved 25 kms from previous position
