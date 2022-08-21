@@ -28,7 +28,13 @@ from Keysfuncs import getprivatekey, getkeyfromencryptedfile, getkeys
 from collections import deque
 
 #########################################################################
-
+#
+def is_still_connected(sock):		# check if the sock is still valid
+        try:
+           sock.sendall(b"# ping")
+           return True
+        except:
+           return False
 
 def prtrep(trk, hdr):
     print(hdr)
@@ -41,15 +47,17 @@ def prtrep(trk, hdr):
 
 def shutdown(sock, conn, prt=False):    # shutdown routine, close files and report on activity
     # shutdown before exit
+    DQUEUE = False
     global numaprsmsg
+    if is_still_connected(sock):
+        try:
+           sock.shutdown(0)             # shutdown the connection
+           sock.close()                 # close the connection file
+        except:
+           print ("Ignore SOCK errors at this time...")
     try:
-        sock.shutdown(0)                # shutdown the connection
-        sock.close()                    # close the connection file
-    except Exception as e:
-        print("Socket error...", e, "Ignored at this time\n", file=sys.stderr)
-    try:
-        conn.commit()                       # commit the DB updates
-        conn.close()                        # close the database
+        conn.commit()                   # commit the DB updates
+        conn.close()                    # close the database
     except Exception as e:
         print("Commit error...", e, datetime.now(), "Ignored at this time\n", file=sys.stderr)
     local_time = datetime.now()         # report date and time now
@@ -61,13 +69,14 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
         print(i, now-etime, "==>", etime, e['ID'], e['station'], e['hora'], e['rest'])
         if (prt):
             print(json.dumps(e['DECODE'], skipkeys=True, indent=4))
-        aprsmsg=genaprsmsg(e)  # gen the APRS message
-        aprsmsg += " %ddly \n" %delta.seconds  # include information about the delay
+        aprsmsg=genaprsmsg(e)  		# gen the APRS message
+        aprsmsg += " %ddly WARNING TIME \n" %delta.seconds  # include information about the delay
         print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
-        config.SOCK_FILE.write(aprsmsg)  # send it to the APRS server
-        i += 1			# one more to delete from table
-        numaprsmsg += 1		# counter of published APRS msgs
-    print("Shutdown now, Time now:", local_time, " Local time.")
+        if DQUEUE and is_still_connected(sock):
+           sock_file.write(aprsmsg)  	# send it to the APRS server
+        i += 1				# one more to delete from table
+        numaprsmsg += 1			# counter of published APRS msgs
+    print("Shutdown now, Time now:", local_time, " Local time. \n")
     mem = process.memory_info().rss/(1024*1024)  	# in M bytes
     print("Memory available:      ", mem)
     prtrep(trackers, "Encrypting trackers msgs:")  # report the encrypted messages
@@ -225,7 +234,8 @@ def genreport(curs, DK):		# report of OGNTRKSTATUS table
 #
 ########################################################################
 #
-programver = 'V1.4'
+
+programver = 'V1.5'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
@@ -375,7 +385,7 @@ print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
 config.APRS_USER='DLY2APRS'
 config.APRS_PASSCODE='32159'
 
-login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/TTN3OGN p/TTN3OGN \n")
+login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
 login=login.encode(encoding='utf-8', errors='strict')
 sock.send(login)
 
@@ -433,14 +443,18 @@ try:
             keepalive_time = current_time
             keepalive_count = keepalive_count + 1       # just a control
 
+
             try:					# lets send a message to the APRS for keep alive
                 rtn = sock_file.write("#Python ogn dly2ogn App\n\n")
+                time.sleep(200/1000)
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
+                time.sleep(200/1000)
 
             except Exception as e:
                 print(('Something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
                 now = datetime.utcnow()		        # get the UTC time
                 print("UTC time is now: ", now, keepalive_count, run_time, file=sys.stderr)
+                exit(1)
 
         now = datetime.utcnow()				# get the UTC time
         # number of second until beginning of the epoch
@@ -464,7 +478,7 @@ try:
             if prt:
                 print(packet_str)
         except socket.error:
-            print("Socket error on readline", file=sys.stderr)
+            print("Socket error on readline :", inputrec, file=sys.stderr)
             continue
         if prt:
             print(packet_str)
@@ -580,10 +594,12 @@ try:
 
                 if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000 or altitude < 0:
                     if ID not in trkerrors:
+                       reg=getognreg(ID[3:])
+                       cn =getognreg(ID[3:])
                        if altitude == 0 or altitude > 15000 or altitude < 0:
-                           print("Altitude error:", ID, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
+                           print("Altitude error:", ID, reg, cn, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
                        else:
-                           print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, file=sys.stderr)
+                           print("Coord error:",    ID, reg, cn, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, "::::", file=sys.stderr)
                     if ID not in trkerrors:   	# did we see this tracker
                         trkerrors[ID] = 1    	# init the counter
                     else:
@@ -651,9 +667,12 @@ try:
                 aprsmsg += " %ddly \n" %delta.seconds  # include information about the delay
                 if prt:
                     print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
-                logfile.write(aprsmsg)  	# log into file
-                rtn = config.SOCK_FILE.write(aprsmsg)  # send it to the APRS server
-                config.SOCK_FILE.flush()	# Make sure gets sent. If not flushed then buffered
+                rtn = sock_file.write(aprsmsg)  # send it to the APRS server
+                time.sleep(500/1000)
+                sock_file.flush()	        # Make sure gets sent. If not flushed then buffereda
+                logfile.write(aprsmsg)  	# log into filea
+                print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
+
                 idx += 1			# one more to delete from table
                 numaprsmsg += 1			# counter of published APRS msgs
             else:
@@ -688,3 +707,4 @@ shutdown(sock,conn)					# shotdown tasks
 logfile.close()
 print("Exit now ...          ", nerrors)
 exit(0)
+
