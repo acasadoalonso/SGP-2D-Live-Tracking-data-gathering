@@ -491,6 +491,9 @@ try:
             #########################################################################################
             # deal with a normal APRS message
             s=packet_str
+            ph=s.find(":/______")
+            if ph > 0:
+               continue				# no time ... ignore it
             ph=s.find(":>")
             hora=s[ph+2:ph+9]			# get the hora as: hhmmssh
             try:

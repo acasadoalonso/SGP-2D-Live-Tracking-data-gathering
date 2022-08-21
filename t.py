@@ -29,9 +29,23 @@ def deg2dmslat(dd):                     # convert degrees float in degrees and d
     minsec = mmss *60.0
     if dd < 0:
         cdeg = cdeg * -1
-    return "%03.2d%06.3f" % (cdeg, minsec)
+    decmin= "%2.2d%05.3f" % (cdeg, minsec)
+    print("Dm", decmin)
+    return decmin[0:7]
 
-print ("DD.MMmm",deg2dmslat(52.98765), dao1(52.98765))
-print ("DD.MMmm",deg2dmslat(123.345678), dao1(123.345678))
-print ("DD.MMmm",deg2dmslat(-1.12345678), dao1(-1.12345678))
-print ("DD.MMmm",deg2dmslat(-123.456789), dao1(-123.456789))
+
+def deg2dmslon(dd):                     # convert degrees float in degrees and decimal minutes (to two decimal places)
+    dd1 = round(abs(float(dd)), 4)
+    cdeg = int(dd1)
+    mmss = dd1 - float(cdeg)
+    minsec = mmss *60.0
+    if dd < 0:
+        cdeg = cdeg * -1
+    decmin= "%3.3d%05.3f" % (cdeg, minsec)
+    print("Dm", decmin)
+    return decmin[0:8]
+
+print ("DD.MMmm",deg2dmslat(52.98765), dao2(52.98765))
+print ("DD.MMmm",deg2dmslon(123.345678), dao2(123.345678))
+print ("DD.MMmm",deg2dmslat(-1.12345678), dao2(-1.12345678))
+print ("DD.MMmm",deg2dmslon(-123.456789), dao2(-123.456789))

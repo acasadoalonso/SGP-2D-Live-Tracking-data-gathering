@@ -329,6 +329,7 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:8] == 'SMuerdo'   or	\
             station[0:9] == 'SSALVADOR' or	\
             station[0:9] == 'SSalvador' or	\
+            station[0:9] == 'RinconCie' or	\
             station[0:8] == 'PORTAINE'  or      \
             station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
         return True
@@ -358,24 +359,28 @@ def dao(dd):                           	# return the 3 digit of the decimal minu
     return decmin[8]			# just return the last digit
 
 
-def deg2dmslat(dd):  			# convert degrees float in degrees and decimal minutes (to two decimal places)
+def deg2dmslat(dd):                     # convert degrees float in degrees and decimal minutes (to two decimal places)
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
     minsec = mmss *60.0
     if dd < 0:
         cdeg = cdeg * -1
-    return "%2.2d%05.2f" % (cdeg, minsec)
+    decmin= "%2.2d%05.3f" % (cdeg, minsec)
+    i#print("Dm", decmin)
+    return decmin[0:7]
 
 
-def deg2dmslon(dd):  			# convert degrees float in degrees and decimal minutes (to two decimal places)
+def deg2dmslon(dd):                     # convert degrees float in degrees and decimal minutes (to two decimal places)
     dd1 = round(abs(float(dd)), 4)
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
     minsec = mmss *60.0
     if dd < 0:
         cdeg = cdeg * -1
-    return "%3.3d%05.2f" % (cdeg, minsec)
+    decmin= "%3.3d%05.3f" % (cdeg, minsec)
+    #print("Dm", decmin)
+    return decmin[0:8]
 
 
 def decdeg2dms(dd):			# convert degress float into DDMMSS
