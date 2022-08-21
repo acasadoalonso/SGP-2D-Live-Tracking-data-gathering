@@ -375,7 +375,7 @@ print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
 config.APRS_USER='DLY2APRS'
 config.APRS_PASSCODE='32159'
 
-login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
+login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/TTN3OGN p/TTN3OGN \n")
 login=login.encode(encoding='utf-8', errors='strict')
 sock.send(login)
 
@@ -579,10 +579,11 @@ try:
                 Acft =decode["Acft"]
 
                 if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000 or altitude < 0:
-                    if altitude == 0 or altitude > 15000 or altitude < 0:
-                        print("Altitude error:", ID, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
-                    else:
-                        print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, file=sys.stderr)
+                    if ID not in trkerrors:
+                       if altitude == 0 or altitude > 15000 or altitude < 0:
+                           print("Altitude error:", ID, station, hora, altitude,   "::::", packet_str,  file=sys.stderr)
+                       else:
+                           print("Coord error:", ID, station, hora, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), "::::", packet_str, file=sys.stderr)
                     if ID not in trkerrors:   	# did we see this tracker
                         trkerrors[ID] = 1    	# init the counter
                     else:

@@ -364,9 +364,7 @@ def deg2dmslat(dd):                     # convert degrees float in degrees and d
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
     minsec = mmss *60.0
-    if dd < 0:
-        cdeg = cdeg * -1
-    decmin= "%2.2d%05.3f" % (cdeg, minsec)
+    decmin= "%2.2d%05.2f" % (cdeg, minsec)
     #print("Dm", decmin)
     return decmin[0:7]
 
@@ -376,9 +374,7 @@ def deg2dmslon(dd):                     # convert degrees float in degrees and d
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
     minsec = mmss *60.0
-    if dd < 0:
-        cdeg = cdeg * -1
-    decmin= "%3.3d%05.3f" % (cdeg, minsec)
+    decmin= "%3.3d%05.2f" % (cdeg, minsec)
     #print("Dm", decmin)
     return decmin[0:8]
 
