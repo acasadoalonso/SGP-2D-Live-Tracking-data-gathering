@@ -29,12 +29,6 @@ from collections import deque
 
 #########################################################################
 #
-def is_still_connected(sock):		# check if the sock is still valid
-        try:
-           sock.sendall(b"# ping")
-           return True
-        except:
-           return False
 
 def prtrep(trk, hdr):
     print(hdr)
@@ -49,11 +43,10 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
     # shutdown before exit
     DQUEUE = False
     global numaprsmsg
-    if is_still_connected(sock):
-        try:
+    try:
            sock.shutdown(0)             # shutdown the connection
            sock.close()                 # close the connection file
-        except:
+    except:
            print ("Ignore SOCK errors at this time...")
     try:
         conn.commit()                   # commit the DB updates
@@ -72,7 +65,7 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
         aprsmsg=genaprsmsg(e)  		# gen the APRS message
         aprsmsg += " %ddly WARNING TIME \n" %delta.seconds  # include information about the delay
         print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
-        if DQUEUE and is_still_connected(sock):
+        if DQUEUE :
            sock_file.write(aprsmsg)  	# send it to the APRS server
         i += 1				# one more to delete from table
         numaprsmsg += 1			# counter of published APRS msgs
@@ -231,8 +224,49 @@ def genreport(curs, DK):		# report of OGNTRKSTATUS table
     return
 
 
+def connect_aprs(programver, sock=0, firsttime=False, prt=False):
+   if not firsttime:
+        try:				# reconnect
+            sock.shutdown(0)            # shutdown the connection
+            sock.close()                # close the connection file
+        except:
+            print("Ignore SOCK errors at this time -- reconnect")
+            # create socket & connect to server
+
+# create socket & connect to server
+   server=config.APRS_SERVER_PUSH
+   #server="aprs.glidernet.org"
+   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   if prt or firsttime:
+        print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the rec
+        print("Default SNDBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF))  # get the size of the rec
+   sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)
+   sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2097152) 
+   sock.connect((server, config.APRS_SERVER_PORT))
+   print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
+
+# logon to OGN APRS network
+   config.APRS_USER='DLY2APRS'
+   config.APRS_PASSCODE='32159'
+
+   login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
+   login=login.encode(encoding='utf-8', errors='strict')
+   sock.send(login)
+
+# Make the connection to the server
+   sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
+
+   config.SOCK = sock
+   config.SOCK_FILE = sock_file
+   print("APRS Version:", sock_file.readline())
+   sleep(2)
+   print("APRS Login request:", login)
+   print("APRS Login reply:  ", sock_file.readline())
+   sleep(2)
+   return (sock_file)
+
 #
-########################################################################
+###################   MAIN Program  #####################################################
 #
 
 programver = 'V1.5'
@@ -374,33 +408,8 @@ atexit.register(lambda: os.remove(config.DLYPIDfile))
 logfile=open(log, "a")   		# set the log file
 logfile.write(">>: ProcessID"+str(os.getpid())+' '+str(date)+'<<:\n')
 logfile.flush()
-# create socket & connect to server
-server=config.APRS_SERVER_PUSH
-#server="aprs.glidernet.org"
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((server, config.APRS_SERVER_PORT))
-print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
-
-# logon to OGN APRS network
-config.APRS_USER='DLY2APRS'
-config.APRS_PASSCODE='32159'
-
-login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
-login=login.encode(encoding='utf-8', errors='strict')
-sock.send(login)
-
-# Make the connection to the server
-sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
-
-config.SOCK = sock
-config.SOCK_FILE = sock_file
-print("APRS Version:", sock_file.readline())
-sleep(2)
-print("APRS Login request:", login)
-print("APRS Login reply:  ", sock_file.readline())
-
-
-# Initialise libfap.py for parsing returned lines
+sock_file=connect_aprs(programver, firsttime=True)
+sock=config.SOCK
 start_time = time.time()
 local_time = datetime.now()
 keepalive_count = 1
@@ -439,6 +448,7 @@ try:
             rec += " ;;; Nrec: %d NTrksta: %d NDecodes: %d N.APRSmsgs: %d NErrDecodes %d ;;;\n" % (inputrec, numtrksta, numdecodes, numaprsmsg, numerrdeco)
             logfile.write(rec)				# mark the time
             logfile.flush()				# write the records
+            print (rec)
             run_time = time.time() - start_time
             keepalive_time = current_time
             keepalive_count = keepalive_count + 1       # just a control
@@ -608,7 +618,7 @@ try:
                     continue
                 distancehome=geodesic((latitude, longitude), (location_latitude,location_longitude)).km
                 if distancehome > 250.0:	# very unlikely that the tracker moved 25 kms from previous position
-                        print("Dist error from home: ", distance, ID, station, hora, latitude, longitude,  ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
+                        print("Dist error from home: ", distancehome, ID, station, hora, latitude, longitude,  ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
                             trkerrors[ID] = 1   # init the counter
                         else:
@@ -667,11 +677,17 @@ try:
                 aprsmsg += " %ddly \n" %delta.seconds  # include information about the delay
                 if prt:
                     print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
-                rtn = sock_file.write(aprsmsg)  # send it to the APRS server
-                time.sleep(500/1000)
-                sock_file.flush()	        # Make sure gets sent. If not flushed then buffereda
-                logfile.write(aprsmsg)  	# log into filea
-                print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
+                try:
+                   rtn = sock_file.write(aprsmsg)  # send it to the APRS server
+                   time.sleep(500/1000)
+                   logfile.write(aprsmsg)  	# log into filea
+                   print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
+                except:
+                   connect_aprs(programver, sock, firsttime=False)
+                   rtn = sock_file.write(aprsmsg)  # send it to the APRS server
+                   time.sleep(500/1000)
+                   logfile.write(aprsmsg)  	# log into file
+                   print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
 
                 idx += 1			# one more to delete from table
                 numaprsmsg += 1			# counter of published APRS msgs
@@ -679,6 +695,12 @@ try:
                 nqueue.append(e)		# keep that entry on the table
                 if ddd == 0:			# if first on the queue
                     ddd = dts			# remember that
+            time.sleep(500/1000)		# wait  0.5 secs
+            try:
+               sock_file.flush()	       	# Make sure gets sent. If not flushed then buffered
+            except:
+               connect_aprs(programver, sock, firsttime=False)
+
         # end of for loop of dequeuing messages
 #       =============================================================================================================
 
