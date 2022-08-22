@@ -679,7 +679,7 @@ try:
                     print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 try:
                    rtn = sock_file.write(aprsmsg)  # send it to the APRS server
-                   time.sleep(500/1000)
+                   time.sleep(200/1000)
                    logfile.write(aprsmsg)  	# log into filea
                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 except:
