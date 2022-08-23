@@ -679,7 +679,7 @@ try:
                     print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 try:
                    rtn = sock_file.write(aprsmsg)  # send it to the APRS server
-                   time.sleep(200/1000)
+                   time.sleep(1/100)
                    logfile.write(aprsmsg)  	# log into filea
                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 except:
@@ -695,11 +695,11 @@ try:
                 nqueue.append(e)		# keep that entry on the table
                 if ddd == 0:			# if first on the queue
                     ddd = dts			# remember that
-            time.sleep(500/1000)		# wait  0.5 secs
-            try:
-               sock_file.flush()	       	# Make sure gets sent. If not flushed then buffered
-            except:
-               connect_aprs(programver, sock, firsttime=False)
+        time.sleep(100/1000)			# wait  0.1 secs
+        try:
+            sock_file.flush()	       		# Make sure gets sent. If not flushed then buffered
+        except:
+             connect_aprs(programver, sock, firsttime=False)
 
         # end of for loop of dequeuing messages
 #       =============================================================================================================
