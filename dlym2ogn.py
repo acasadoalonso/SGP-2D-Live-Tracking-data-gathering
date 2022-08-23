@@ -91,6 +91,7 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
 
 def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
+    sock=config.SOCK
     shutdown(sock,conn) 			# shutdown orderly
     logfile.close()
     sys.exit(0)
@@ -464,7 +465,8 @@ try:
                 print(('Something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
                 now = datetime.utcnow()		        # get the UTC time
                 print("UTC time is now: ", now, keepalive_count, run_time, file=sys.stderr)
-                exit(1)
+                connect_aprs(programver, sock, firsttime=False)
+                continue
 
         now = datetime.utcnow()				# get the UTC time
         # number of second until beginning of the epoch
@@ -590,18 +592,21 @@ try:
                 numdecodes += 1			# increase the counter
                 jstring=jstring[0:jstring.find('}')+1]
                 decode=json.loads(jstring)  # get the dict from the JSON string
+                if prt:
+                   print ("Return:>>>>", len(jstring), jstring, "DECODE:", decode, "<<<<")
                 #print ("DDD", decode)
                 if "msg" in decode:
                     print(">>>>>>> message on decode string:", decode)
                     continue
                 ID=beacon["name"]		# tracker ID
-                station=beacon["receiver_name"]  # station
+                station=beacon["receiver_name"] # station
 
-                latitude =decode["Lat"]
+                latitude  =decode["Lat"]
                 longitude =decode["Lon"]
-                altitude =decode["Alt"]
-                Acft =decode["Acft"]
+                altitude  =decode["Alt"]
+                Acft      =decode["Acft"]
 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
                 if latitude > 90.0 or latitude < -90.0 or latitude == 0.0 or longitude > 180.0 or longitude < -180.0 or (Acft != 1 and Acft != 14) or altitude == 0 or altitude > 15000 or altitude < 0:
                     if ID not in trkerrors:
                        reg=getognreg(ID[3:])
@@ -616,18 +621,20 @@ try:
                         trkerrors[ID] += 1   	# increase the counter
                     numerrdeco += 1		# increase the counter of errors
                     continue
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
                 distancehome=geodesic((latitude, longitude), (location_latitude,location_longitude)).km
-                if distancehome > 250.0:	# very unlikely that the tracker moved 25 kms from previous position
-                        print("Dist error from home: ", distancehome, ID, station, hora, latitude, longitude,  ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
+                if distancehome > 250.0:	# very unlikely that the tracker is away from home more than 250 kms.
+                        reg=getognreg(ID[3:])
+                        cn =getognreg(ID[3:])
+                        print("Dist error from home: ", distancehome, ID, reg, cn, station, hora, latitude, longitude,  ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
                             trkerrors[ID] = 1   # init the counter
                         else:
                             trkerrors[ID] += 1  # increase the counter
                         numerrdeco += 1		# increase the counter of errors
                         continue
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-                if prt:
-                   print ("Return:>>>>", len(jstring), jstring, "DECODE:", decode, "<<<<")
                 if ID not in lastloc:
                     lastloc[ID]=(latitude, longitude)
                 else:				# check now the distance from previous position
@@ -635,7 +642,9 @@ try:
                     distance=geodesic((latitude, longitude), lastloc[ID]).km
                     lastloc[ID]=(latitude, longitude)  # register the last location
                     if distance > 25.0:		# very unlikely that the tracker moved 25 kms from previous position
-                        print("Dist error from prev loc:", distance, ID, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
+                        reg=getognreg(ID[3:])
+                        cn =getognreg(ID[3:])
+                        print("Dist error from prev loc:", distance, ID, reg, cn, station, hora, latitude, longitude, prevloc, ">>>:", txt, ogndecode.ogn_decode_func(txt, DK[0], DK[1], DK[2], DK[3]), file=sys.stderr)
                         if ID not in trkerrors: # did we see this tracker
                             trkerrors[ID] = 1   # init the counter
                         else:
@@ -643,6 +652,7 @@ try:
                         numerrdeco += 1		# increase the counter of errors
                         continue
                 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
                 # everything seems to be OK, so lets place the entry on the queue
                 now = datetime.utcnow()  	# get the UTC time
 						# ------------------------------------------------------------------------------------- #
@@ -680,7 +690,7 @@ try:
                 try:
                    rtn = sock_file.write(aprsmsg)  # send it to the APRS server
                    time.sleep(1/100)
-                   logfile.write(aprsmsg)  	# log into filea
+                   logfile.write(aprsmsg)  	# log into file
                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 except:
                    connect_aprs(programver, sock, firsttime=False)

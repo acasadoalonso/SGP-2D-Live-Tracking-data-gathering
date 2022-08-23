@@ -350,34 +350,32 @@ def frenchsta(station):                # return true if is an French station
 # ########################################################################
 
 
+
 def dao(dd):                           	# return the 3 digit of the decimal minutes
-    dd1 = round(abs(float(dd)), 4)
+    dd1 = abs(float(dd))
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss *60.0
-    decmin= "%03.3d%06.3f" % (cdeg, minsec)
-    return decmin[8]			# just return the last digit
+    minsec = round(mmss *60.0,4)
+    decmin= "%06.3f" % (minsec)
+    return decmin[5]			# just return the last digit
 
 
 def deg2dmslat(dd):                     # convert degrees float in degrees and decimal minutes (to two decimal places)
-    dd1 = round(abs(float(dd)), 4)
+    dd1 = abs(float(dd))
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss *60.0
+    minsec = round(mmss *60.0,4)
     decmin= "%2.2d%06.3f" % (cdeg, minsec)
-    #print("Dm", decmin)
     return decmin[0:7]
 
 
 def deg2dmslon(dd):                     # convert degrees float in degrees and decimal minutes (to two decimal places)
-    dd1 = round(abs(float(dd)), 4)
+    dd1 = abs(float(dd))
     cdeg = int(dd1)
     mmss = dd1 - float(cdeg)
-    minsec = mmss *60.0
+    minsec = round(mmss *60.0,4)
     decmin= "%3.3d%06.3f" % (cdeg, minsec)
-    #print("Dm", decmin)
     return decmin[0:8]
-
 
 def decdeg2dms(dd):			# convert degress float into DDMMSS
     is_positive = dd >= 0
