@@ -6,6 +6,7 @@ import urllib.error
 import urllib.parse
 import requests
 import config
+from ping3 import ping
 
 global _ogninfo_                            # the OGN info data
 _ogninfo_ = {}                              # the OGN info data
@@ -20,6 +21,20 @@ DDB_URL2 	=config.DDBurl2		    # second choice
 prt		=config.prt
 
 ####################################################################
+
+def findfastestaprs():
+
+   aprs=["glidern1.glidernet.org", "glidern2.glidernet.org", "glidern3.glidernet.org", "glidern4.glidernet.org","glidern5.glidernet.org"]
+   p=999
+   url=''
+   for u in aprs:
+       pp=ping(u)
+       if pp < p:
+          p=pp
+          url=u
+   return(url)
+####################################################################
+
 def servertest(host, port):
 
     args = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
@@ -33,6 +48,7 @@ def servertest(host, port):
             s.close()
             return True
 
+####################################################################
 
 def getddbdata():                           # get the data from the API server
 
@@ -43,6 +59,7 @@ def getddbdata():                           # get the data from the API server
         DDB_URL=DDB_URL2
     if prt:
         print("DDB Connecting with: ", DDB_URL, HOST, PORT)
+        print("PING time: ", ping(HOST))
     req = urllib.request.Request(DDB_URL)
     req.add_header("Accept", "application/json")  # it return a JSON string
     req.add_header("Content-Type", "application/hal+json")
@@ -53,6 +70,7 @@ def getddbdata():                           # get the data from the API server
     _ogninfo_ = j_obj                       # save the data on the global storage
     return j_obj                            # return the JSON objecta
 
+####################################################################
 
 def getogninfo(devid):			    # return the OGN DDB infor for this device
 
@@ -66,6 +84,7 @@ def getogninfo(devid):			    # return the OGN DDB infor for this device
     return "NOInfo"  			    # if not found !!!
 
 
+####################################################################
 def getognreg(devid):                       # get the ogn registration from the flarmID
 
     global _ogninfo_                        # the OGN info data
@@ -77,6 +96,7 @@ def getognreg(devid):                       # get the ogn registration from the 
             return dev["registration"]  # return the registration
     return "NOReg  "  # if not found !!!
 
+####################################################################
 
 def getognchk(devid):                       # Check if the FlarmID exist or NOT
 
@@ -90,6 +110,7 @@ def getognchk(devid):                       # Check if the FlarmID exist or NOT
 
     return False
 
+####################################################################
 
 def getognflarmid(registration):            # get the FlarmID based on the registration
 
@@ -111,6 +132,7 @@ def getognflarmid(registration):            # get the FlarmID based on the regis
 
     return "NOFlarm"                        # if not found !!!
 
+####################################################################
 
 def getogncn(devid):                        # get the ogn competition ID from the flarmID
 
@@ -124,6 +146,7 @@ def getogncn(devid):                        # get the ogn competition ID from th
 
     return "NID"                            # if not found !!!
 
+####################################################################
 
 def getognmodel(devid):                     # get the ogn aircraft model from the flarmID
 
@@ -151,6 +174,7 @@ def get_ddb_devices():
                        'tracked': device['tracked'] == 'Y'})
         yield device
 
+####################################################################
 
 def get_by_dvt(devdvt, dvt):
     global _ogninfo_                        # the OGN info dataa
@@ -163,3 +187,4 @@ def get_by_dvt(devdvt, dvt):
             devdvt.append(device)
             cnt += 1
     return (cnt)
+####################################################################

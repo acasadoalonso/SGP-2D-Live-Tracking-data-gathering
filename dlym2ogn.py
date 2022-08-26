@@ -21,7 +21,7 @@ from time import sleep                  # use the sleep function
 from datetime import datetime, timedelta
 from ogn.parser import parse
 from parserfuncs import deg2dmslat, deg2dmslon, dao, alive
-from ognddbfuncs import getognreg, getogncn
+from ognddbfuncs import getognreg, getogncn, findfastestaprs
 from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
 from Keysfuncs import getprivatekey, getkeyfromencryptedfile, getkeys
@@ -64,7 +64,8 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
             print(json.dumps(e['DECODE'], skipkeys=True, indent=4))
         aprsmsg=genaprsmsg(e)  		# gen the APRS message
         aprsmsg += " %ddly WARNING TIME \n" %delta.seconds  # include information about the delay
-        print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
+        if (prt):
+           print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
         if DQUEUE :
            sock_file.write(aprsmsg)  	# send it to the APRS server
         i += 1				# one more to delete from table
@@ -236,13 +237,18 @@ def connect_aprs(programver, sock=0, firsttime=False, prt=False):
 
 # create socket & connect to server
    server=config.APRS_SERVER_PUSH
+   if server == ' ':
+      server=findfastestaprs()
    #server="aprs.glidernet.org"
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the rec
         print("Default SNDBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF))  # get the size of the rec
-   sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)
+   sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 256 * 1024)
    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2097152) 
+   if prt or firsttime:
+        print("New RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the rec
+        print("New SNDBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF))  # get the size of the rec
    sock.connect((server, config.APRS_SERVER_PORT))
    print("Socket sock connected to: ", server, ":", config.APRS_SERVER_PORT)
 
@@ -689,13 +695,13 @@ try:
                     print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 try:
                    rtn = sock_file.write(aprsmsg)  # send it to the APRS server
-                   time.sleep(1/100)
+                   time.sleep(1/100)		# wait  0.01 secs
                    logfile.write(aprsmsg)  	# log into file
                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
                 except:
                    connect_aprs(programver, sock, firsttime=False)
                    rtn = sock_file.write(aprsmsg)  # send it to the APRS server
-                   time.sleep(500/1000)
+                   time.sleep(500/1000)		# wait  0.5 secs
                    logfile.write(aprsmsg)  	# log into file
                    print("APRSMSG: ", e["NumDec"], aprsmsg)  # print for debugging
 
