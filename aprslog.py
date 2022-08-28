@@ -234,11 +234,11 @@ with open(config.PIDfile, "w") as f:    # create the lock file
 atexit.register(lambda: os.remove(config.PIDfile))  # remove it at exit
 
 compfile = config.cucFileLocation + "competitiongliders.lst"
-print("Competition file: ", compfile)
 
 ognttable = {}				# init the instance of the table
 clist=[]				# competition list 
 if os.path.isfile(compfile):
+    print("Competition file: ", compfile)
     fd = open(compfile, 'r')  		# open and read the file
     j = fd.read()
     clist = json.loads(j)
@@ -483,10 +483,10 @@ try:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
                    if station != 'NEMO':		# temp patch
-                      print ("Wrong aircraft type:", packet_str, file=sys.stderr)
+                      print ("Wrong aircraft type:", acftt, packet_str, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
-                    acfttype.append(acftt)
+                   acfttype.append(acftt)
 
             # handle the TCPIP only for position or status reports
             if (path == 'aprs_receiver' or relay == 'TCPIP*' or path == 'receiver') and (aprstype == 'position' or aprstype == 'status'):
