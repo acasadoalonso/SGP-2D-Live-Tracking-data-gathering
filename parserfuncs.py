@@ -47,6 +47,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNXCG": "XCG",		# Cross Country Guide
     "OGNMAV": "NMAV",		# MAV link
     "OGNEMO": "NEMO",		# Canadian NEMO
+    "OGNFNO": "NEURONE",	# Neurone
     "OGNDELAY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------

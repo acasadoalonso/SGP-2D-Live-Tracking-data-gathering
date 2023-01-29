@@ -49,6 +49,8 @@ ksta = {
            "PCarrasco" : "Puerto de la Carrascosa, Soria ",
            "SSalvador" : "San Salvador, el Cuculo, Huesca ",
            "SSALVADOR" : "San Salvador, el Cuculo, Huesca ",
+           "RACE"      : "Race in Cuatro Vuentos, Madrid ",
+           "PWRACE"    : "Race in Cuatro Vuentos, Madrid ",
 # french airports
            "LFBM"   : "Mont de Marsan",
 	   "LFBA"   : "La Garomme", 

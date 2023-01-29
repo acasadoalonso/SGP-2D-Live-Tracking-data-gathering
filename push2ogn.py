@@ -219,7 +219,6 @@ print("APRS Login request:", login)
 print("APRS Login reply:  ", sock_file.readline())
 
 
-# Initialise libfap.py for parsing returned lines
 start_time = time.time()
 local_time = datetime.now()
 keepalive_count = 1

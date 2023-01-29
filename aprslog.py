@@ -36,10 +36,10 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the receiving buffer
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
-    date = datetime.utcnow()                # get the date
+    date = datetime.utcnow()            # get the date
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-    if LASTFIX:				# if LASTFIX use the non filtered port
+    if LASTFIX or FULL:			# if LASTFIX use the non filtered port
         print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
         #sock.connect(("aprs.glidernet.org", 10152))
@@ -114,7 +114,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.11'			# manually set the program version !!!
+programver = 'V2.12'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -136,15 +136,16 @@ day = 0				        # day of running
 commentcnt = 0				# counter of comment lines
 maxnerrs = 99                           # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
-comment = False			# comment line from APRS server
+comment = False				# comment line from APRS server
 datafile = False			# use the datafile on|off
 COMMIT = True				# commit every keep lives
 COMMITEM = True				# commit every minute
 COMMITMIN = 0				# commit minute
-prt = False			# use the configuration values
+prt = False				# use the configuration values
 DATA = True				# use the configuration values
-MEM = False			# built the lastfix flarmId table in memory
+MEM = False				# built the lastfix flarmId table in memory
 STATIONS = False			# get the stations info
+FULL = False				# get the stations info
 STD = True				# Std case
 OGN_DATA = ''
 
@@ -193,6 +194,8 @@ parser.add_argument('-s', '--STATIONS', required=False,
                     dest='STATIONS', action='store', default=False, help='Get only the stations')
 parser.add_argument('-t', '--TRKSTATUS', required=False,
                     dest='TRKSTATUS', action='store', default=False, help='Store TRK STATUS messages')
+parser.add_argument('-f', '--FULL', required=False,
+                    dest='FULL', action='store', default=False, help='Store the totality of the APRS messages')
 args 		= parser.parse_args()
 prt 		= args.prt		# print on|off
 DATA 		= args.DATA		# data store on|off
@@ -200,11 +203,12 @@ LASTFIX 	= args.LASTFIX		# LASTFIX on|off
 MEM 		= args.MEM		# MEM on|off
 STATIONS 	= args.STATIONS		# stations on|off
 TRKSTATUS 	= args.TRKSTATUS	# trkstatus on|off
+FULL     	= args.FULL		# FULL on|off
 if STATIONS:
     STD = False				# not need to record DATA
-print("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD:", STD, "TRKSTATUS:", TRKSTATUS)
+print("Options: prt:", prt, ",DATA:", DATA, ",MEM:", MEM, ",LASTFIX:", LASTFIX, ",STATIONS:", STATIONS, ",STD:", STD, "TRKSTATUS:", TRKSTATUS, "FULL", FULL)
 
-if LASTFIX:
+if LASTFIX :
     if MEM:
         try:
             curs.execute("select flarmId from GLIDERS_POSITIONS;")
@@ -260,7 +264,7 @@ elif OGNT and not LASTFIX:		# if we need aggregation of FLARM and OGN trackers d
 
 
 
-if len(clist) > 0 and not LASTFIX and not STATIONS:		# if we are in competition mode
+if len(clist) > 0 and not LASTFIX and not STATIONS and not FULL: # if we are in competition mode
     print("Competition file:", compfile)  # we restrict only to the flamrs of the competition gliders
     afilter = "b/"			# filter to only those gliders in competition
     for f in clist:
@@ -279,9 +283,8 @@ else:
     # normal case either STD or STATIONS
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 
-if LASTFIX:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
+if LASTFIX or FULL:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
-
 login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 
 # -----------------------------------------------------------------
@@ -475,6 +478,10 @@ try:
                 fsour[source] += 1	    		# increase the counter
 
             if source == 'FANE' or source == 'UNKW':  	# ignore those messages
+                if source == 'UNKW':
+                   print("SOURCE Error: >>>>", source,msg, packet_str) 
+                   sys.stdout.flush()					# flush the print messages
+                   sys.stderr.flush()					# flush the print messages
                 continue
             if source == 'DLYM' and prt:		# DELAY and PRINT ???
                 print("OGNT DLY>>>>:", msg, "<<<<")
@@ -556,6 +563,10 @@ try:
                 except:
                     print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
 
+                #if cc == "SpainMobi":
+                #    print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
+                #    sys.stdout.flush()					# flush the print messages
+                #    sys.stderr.flush()					# flush the print messages
                 try:
                     curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
@@ -644,7 +655,7 @@ try:
 #           -----------------------------------------------------------------
                 					# write the DB record
 
-            if (DATA or LASTFIX or STD):        	# if we need to store on the database
+            if (DATA or LASTFIX or STD or FULL):       	# if we need to store on the database
                 # if we have OGN tracker aggregation and is an OGN tracker
                 if OGNT and ident[0:3] == 'OGN' and not LASTFIX:
 
@@ -665,7 +676,7 @@ try:
                     fdtcnt[dtype] = 1 			# init the counter
 
                 if LASTFIX:				# we we need just to store LASTFIX of the glider
-                    #                   LASTFIX   CASE ------------------------------------------------------#
+                    #                   		LASTFIX   CASE ------------------------------------------------------#
                     flastfix[ident] = msg		# save it in memory for the time being
 
                     if MEM:				# if we use the memory option
@@ -732,7 +743,7 @@ try:
                             print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
                             print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
-#               STD  CASE NOT LASTFIX ------------------------------------------------------#
+#               STD   and FULL CASE NOT LASTFIX ------------------------------------------------------#
                 else:					# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + \
                         str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
