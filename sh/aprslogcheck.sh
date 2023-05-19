@@ -34,7 +34,7 @@ then
                 if [ -f $pid ] # if OGN repo interface is  not running
                 then
 			pnum=$(cat $pid)
-                	logger -t $0 "APRS killing Process0: "$pnum" - "$alive
+                	logger -t $0 "APRS killing Process0: "$pid $pnum" - "$alive
                         sudo kill $pnum 
                         rm $pid 2>/dev/null
                 fi
@@ -47,7 +47,7 @@ then
                 then
                    logger -t $0 "APRS Log seems down, restarting: "$(cat $pid)
                 else
-                   logger -t $0 "APRS Log seems down, restarting, no PID yet "
+                   logger -t $0 "APRS Log seems down, restarting, no PID yet "$alive
                 fi
 else
 		if [ ! -f $pid ]

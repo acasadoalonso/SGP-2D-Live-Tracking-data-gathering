@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# = 0 ]; then
-	server='localhost'
+	server='mariadb'
 else
 	server=$1
 fi

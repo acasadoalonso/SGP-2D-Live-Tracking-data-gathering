@@ -163,8 +163,8 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
         VerPrec=63
     gpstxt="gps"+str(HorPrec)+"x"+str(VerPrec)
 
-    aprsmsg = ID+">OGNTRK,OGNDELAY*,"+station+":/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
-    aprsmsg = ID+">OGNTRK,"+station+",OGNDELAY*:/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
+    aprsmsg = ID+">OGNTRK,OGNDLY*,"+station+":/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
+    aprsmsg = ID+">OGNTRK,"+station+",OGNDLY*:/" + hora+lat+"/"+lon+"'"+ccc+"/"+sss+"/"
     if altitude > 0:
         altitude=int(altitude*3.28084)		# convert to feet
         aprsmsg += "A=%06d" % altitude

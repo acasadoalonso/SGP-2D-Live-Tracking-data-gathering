@@ -29,6 +29,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNHEL": "HELI",		# helium LoRaWan
     "OGOBS":  "OBS",		# OBS LoRaWan
     "OGADSB": "ADSB",		# ADSB
+    "OGADSL": "ADSL",		# ADS-L
     "OGNFNT": "FANE",		# FANET
     "OGFNT":  "FANE",		# FANET
     "OGNPAW": "PAW",		# PilotAware
@@ -48,7 +49,8 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNMAV": "NMAV",		# MAV link
     "OGNEMO": "NEMO",		# Canadian NEMO
     "OGNFNO": "NEURONE",	# Neurone
-    "OGNDELAY": "DLYM"		# Delayed fixes (IGC mandated)
+    "OGNSXR": "OGNB",	   	# OGNbase
+    "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------
 aprssymtypes=[
@@ -416,7 +418,7 @@ def parseraprs(packet_str, msg):
         speed = get_speed(packet)                       # ground_speed
         course = get_course(packet)                     # track
         path = get_path(packet)                         # aprs_receiver, tracker, aprs_aircraft
-        relay = get_relay(packet)                       # relay TCPIP, OGN123456*, RELAY* , OGNDELAY*
+        relay = get_relay(packet)                       # relay TCPIP, OGN123456*, RELAY* , OGNDLY*
         aprstype = get_aprstype(packet)                 # aprs type: status or position
         dst_callsign = get_dst_callsign(packet)         # APRS, OGNTRK,
         source = get_source(dst_callsign)               # convert to SOURCE
@@ -613,7 +615,7 @@ def parseraprs(packet_str, msg):
                 # print("SSS:", nsta, ix, idx, data, file=sys.stderr)
                 msg['station']=nsta
                 msg['source']="DLYM"
-                msg['relay']="OGNDELAY*"
+                msg['relay']="OGNDLY*"
 
         if 'symboltable' in packet and 'symbolcode' in packet:
             msg['acfttype']=get_aircraft_type(packet['symboltable'], packet['symbolcode'])
