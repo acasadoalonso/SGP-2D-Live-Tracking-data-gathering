@@ -4,7 +4,7 @@ MySQL-python==1.2.5
 ogn_client==1.2.1
 psutil==5.8.0
 pycryptodome==3.13.0
-requests==2.25.1
+requests==2.31.0
 rsa==4.8
 setuptools==65.5.1
 sphinx_rtd_theme==1.0.0
