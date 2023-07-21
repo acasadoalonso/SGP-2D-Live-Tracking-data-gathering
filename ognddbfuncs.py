@@ -172,7 +172,7 @@ def get_ddb_devices():
         DDB_URL=DDB_URL1
     else:
         DDB_URL=DDB_URL2
-    r = requests.get(DDB_URL)
+    r = requests.get(DDB_URL, allow_redirects=False)
     for device in r.json()['devices']:
         device.update({'identified': device['identified'] == 'Y',
                        'tracked': device['tracked'] == 'Y'})

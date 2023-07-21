@@ -35,7 +35,7 @@ then
                 then
 			pnum=$(cat $pid)
                 	logger -t $0 "APRS killing Process0: "$pid $pnum" - "$alive
-                        sudo kill $pnum 
+                        sudo kill -9 $pnum 
                         rm $pid 2>/dev/null
                 fi
 #               restart OGN data collector

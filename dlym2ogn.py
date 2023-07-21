@@ -168,7 +168,7 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
     if altitude > 0:
         altitude=int(altitude*3.28084)		# convert to feet
         aprsmsg += "A=%06d" % altitude
-    aprsmsg += " "+daotxt+" id06"+ID[3:]+" %+04dfpm " % (int(roclimb))+"%+04.1frot" % (float(RoT)) +rt+" "+gpstxt
+    aprsmsg += " "+daotxt+" id07"+ID[3:]+" %+04dfpm " % (int(roclimb))+"%+04.1frot" % (float(RoT)) +rt+" "+gpstxt
 
     return(aprsmsg)
 ########################################################################
@@ -256,7 +256,7 @@ def connect_aprs(programver, sock=0, firsttime=False, prt=False):
    config.APRS_USER='DLY2APRS'
    config.APRS_PASSCODE='32159'
 
-   login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
+   login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/TTN3OGN p/TTN3OGN \n")
    login=login.encode(encoding='utf-8', errors='strict')
    sock.send(login)
 
