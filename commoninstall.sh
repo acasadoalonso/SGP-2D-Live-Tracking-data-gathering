@@ -162,6 +162,7 @@ sudo -H python3 -m pip install flake8               		#
 sudo -H python3 -m pip install httpx               		#
 sudo -H python3 -m pip install mysqlclient			#
 sudo -H python3 -m pip install timezonefinder zoneinfo		#
+sudo -H python3 -m pip install airsportsdata			#
 if [ $sql = 'MySQL' ]						#	
 then								#
 	sudo -H pip3 uninstall mysqlclient			#

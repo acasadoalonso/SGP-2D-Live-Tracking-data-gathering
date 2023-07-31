@@ -11,6 +11,7 @@ import os
 import sys
 import atexit
 import socket
+import airportsdata
 from datetime import datetime
 from ogn.parser import parse
 import ksta			# list of know stations
@@ -50,6 +51,8 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNEMO": "NEMO",		# Canadian NEMO
     "OGNFNO": "NEURONE",	# Neurone
     "OGNSXR": "OGNB",	   	# OGNbase
+    "OGAIRM": "AIRM",	   	# Airmate
+    "OGNMYC": "MYC",	   	# My cloud base
     "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------
@@ -144,6 +147,12 @@ def get_altitude(packet):
         altitude = -1
     return altitude
 
+def getinfoairport(icao):
+    airports = airportsdata.load()  # key is the ICAO identifier (the default)
+    if icao in airports:
+       return(airports[icao])
+    else:
+       return (None)
 
 # def get_daodatum(packet):
     # try:

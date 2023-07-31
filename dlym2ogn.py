@@ -26,6 +26,7 @@ from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
 from Keysfuncs import getprivatekey, getkeyfromencryptedfile, getkeys
 from collections import deque
+from parserfuncs import getinfoairport
 
 #########################################################################
 #
@@ -285,8 +286,14 @@ print("==========================================")
 date = datetime.utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
-location_latitude=config.location_latitude
-location_longitude=config.location_longitude
+if getinfoairport (config.location_name) != None:
+   print(getinfoairport (config.location_name))
+   location_latitude = getinfoairport (config.location_name)['lat']
+   location_longitude = getinfoairport (config.location_name)['lon']
+   
+else:
+   location_latitude=config.location_latitude
+   location_longitude=config.location_longitude
 print("Location coordinates:", location_latitude, location_longitude, "at: ", config.location_name)
 date = datetime.now()			# local time
 
