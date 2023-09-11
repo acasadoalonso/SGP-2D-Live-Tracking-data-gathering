@@ -19,7 +19,7 @@ from time import sleep                  # use the sleep function
 from geopy.distance import geodesic     # use the Vincenty algorithm^M
 import MySQLdb                          # the SQL data base routines^M
 import config				# import the configuration details
-from parserfuncs import alive, parseraprs  # the ogn/ham parser functions
+from parserfuncs import alive, parseraprs, getinfoairport  # the ogn/ham parser functions
 
 #########################################################################
 
@@ -459,15 +459,15 @@ try:
             else:
                 print(">>>>: Missing ID:>>>", data)
                 continue
-            aprstype = msg['aprstype']			# APRS msg type
+            aprstype  = msg['aprstype']			# APRS msg type
             longitude = msg['longitude']
-            latitude = msg['latitude']
-            altitude = msg['altitude']
-            path = msg['path']
-            relay = msg['relay']
-            otime = msg['otime']
-            source = msg['source']
-            station = msg['station']
+            latitude  = msg['latitude']
+            altitude  = msg['altitude']
+            path      = msg['path']
+            relay     = msg['relay']
+            otime     = msg['otime']
+            source    = msg['source']
+            station   = msg['station']
             if prt:
                 print('Packet returned is: ', packet_str)
                 print('Callsign is: ', ident, path, otime, aprstype)
@@ -489,8 +489,8 @@ try:
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
-                   if station != 'NEMO':		# temp patch
-                      print ("Wrong aircraft type:", acftt, packet_str, file=sys.stderr)
+                   if station != 'NEMO' and relay != 'TCPIP*':		# temp patch
+                      print ("Wrong aircraft type:", acftt, packet_str, msg, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
                    acfttype.append(acftt)
@@ -643,8 +643,16 @@ try:
                         print("distcheck: ", distance, data)  # report it only once
                     fdistcheck[ident] = distance
             if source != 'OGN':				# in the case of a NON OGN we use the base as reference point
-                vitlat = config.location_latitude
-                vitlon = config.location_longitude
+                if getinfoairport (config.location_name) != None:
+                  #print(getinfoairport (config.location_name))
+                  location_latitude = getinfoairport (config.location_name)['lat']
+                  location_longitude = getinfoairport (config.location_name)['lon']
+                else:
+                  location_latitude=config.location_latitude
+                  location_longitude=config.location_longitude
+
+                vitlat = location_latitude
+                vitlon = location_longitude
                 # distance to the BASE
                 dist = geodesic((latitude, longitude), (vitlat, vitlon)).km
 #           -----------------------------------------------------------------
@@ -711,39 +719,43 @@ try:
                             #print    ("CMD2", ident, latitude, longitude, altim, course, dte, hora, "ROT", rot, speed, dist, "ROC", roclimb, station, "SENS", sensitivity, gps, otime, source)
                             cmd2 = "INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
                                 (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
-                        except TypeError:
-                            print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                            try:
+                               curs.execute(cmd2)  	# insert the data on the DB
+                            except MySQLdb.Error as e:
+                               try:
+                                   print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                               except IndexError:
+                                   print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
+                        except TypeError:		# type error building the INSERT cmd
+                            if source != 'NEMO' and source != 'OGNB':		# temp patch
+                               print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, "::",source,"::")
                         if prt:
                             print("CMD2>>>", cmd2)
-                        try:
-                            curs.execute(cmd2)  	# insert the data on the DB
-                        except MySQLdb.Error as e:
-                            try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
-                            except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
                     else:				# if found just update the entry on the table
                         try:
                             cmd3 = "UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
                                 (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
+                            try:
+                                curs.execute(cmd3)  	# update the data on the DB
+                            except MySQLdb.Error as e:
+                                try:
+                                    print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                                except IndexError:
+                                    print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                         except TypeError:
-                            print(">>>>cmd3:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                            if source != 'NEMO' and source != 'OGNB':		# temp patch
+                               print(">>>>cmd3:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                         if prt:
                             print("CMD3>>>", cmd3)
-                        try:
-                            curs.execute(cmd3)  	# update the data on the DB
-                        except MySQLdb.Error as e:
-                            try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
-                            except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
 #               STD   and FULL CASE NOT LASTFIX ------------------------------------------------------#
+
+
                 else:					# if we just is normal option, just add the data to the OGNDATA table
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + \
                         str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
@@ -777,7 +789,7 @@ except KeyboardInterrupt:
 
 print(datetime.utcnow(),">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)  				# close down everything
-print(datetime.utcnow(),"Exit now ... Number of errors: ", err, "\n")
+print(datetime.utcnow(),"Exit now ... Number of errors: ", err, "Number of records saved:", cout, "\n")
 
 if err > maxnerrs:
     now = datetime.utcnow()				# get the UTC time

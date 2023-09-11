@@ -9,6 +9,7 @@
 import socket
 import os
 from configparser import ConfigParser
+from parserfuncs import  getinfoairport  # the ogn/ham parser functions
 configdir = os.getenv('CONFIGDIR')
 if configdir == None:
     configdir = '/etc/local/'
@@ -46,15 +47,26 @@ try:
 except:
     PUSH2OGNtext = "False"
 
-location_latitude = cfg.get(
-    'location', 'location_latitude').strip("'").strip('"')
-location_longitude = cfg.get(
-    'location', 'location_longitud').strip("'").strip('"')
+try:
+    location_name = cfg.get('location', 'location_name').strip("'").strip('"')
+except:
+    location_name = ' '
+if getinfoairport (location_name) != None:
+    #print(getinfoairport (config.location_name))
+    location_latitude  = getinfoairport (location_name)['lat']
+    location_longitude = getinfoairport (location_name)['lon']
+    FLOGGER_LATITUDE   = location_latitude
+    FLOGGER_LONGITUDE  = location_longitude
+else:
+    location_latitude = cfg.get(
+        'location', 'location_latitude').strip("'").strip('"')
+    location_longitude = cfg.get(
+        'location', 'location_longitud').strip("'").strip('"')
 
-FLOGGER_LATITUDE = cfg.get(
-    'location', 'location_latitude').strip("'").strip('"')
-FLOGGER_LONGITUDE = cfg.get(
-    'location', 'location_longitud').strip("'").strip('"')
+    FLOGGER_LATITUDE = cfg.get(
+        'location', 'location_latitude').strip("'").strip('"')
+    FLOGGER_LONGITUDE = cfg.get(
+        'location', 'location_longitud').strip("'").strip('"')
 
 try:
     cucFileLocation = cfg.get('server', 'cucFileLocation').strip("'").strip('"')
@@ -66,10 +78,6 @@ try:
 except:
     DELAY = 1200				# default 20 munutes = 1200 seconds
 
-try:
-    location_name = cfg.get('location', 'location_name').strip("'").strip('"')
-except:
-    location_name = ' '
 try:
     SPOTtext = cfg.get('location', 'SPOT').strip("'").strip('"')
 except:

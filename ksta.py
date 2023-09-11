@@ -67,7 +67,7 @@ ksta = {
            "SSalvador" : "San Salvador, el Cuculo, Huesca ",
            "SSALVADOR" : "San Salvador, el Cuculo, Huesca ",
            "RINCONCIE" : "Cerler Sky Station, Huesca ",
-           "RinconCie" : "Cerler Sky Station, Huesca ",
+           "Rinconcie" : "Cerler Sky Station, Huesca ",
            "Girolibre" : "Ainsa, Huesca ",
            "GIROLIBRE" : "Ainsa, Huesca ",
            "RACE"      : "Race in Cuatro Vuentos, Madrid ",

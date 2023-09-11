@@ -30,6 +30,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNHEL": "HELI",		# helium LoRaWan
     "OGOBS":  "OBS",		# OBS LoRaWan
     "OGADSB": "ADSB",		# ADSB
+    "ONADSB": "ADSB",		# ADSB
     "OGADSL": "ADSL",		# ADS-L
     "OGNFNT": "FANE",		# FANET
     "OGFNT":  "FANE",		# FANET
@@ -107,8 +108,8 @@ def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the 
         idx += 1
     # deal with the NEMO for the time being
     if sym1 == 'I' and sym2 == '&':
-        return ("UNKNOWN")
-    print (">>> Unknown Acft Type", sym1, sym2, "<<<", file=sys.stderr)
+        return ("Station")
+    print (">>> Unknown or Wrong Acft Type", sym1, sym2, "<<<", file=sys.stderr)
     return ("UNKNOWN")
 
 
