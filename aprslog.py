@@ -114,7 +114,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.12'			# manually set the program version !!!
+programver = 'V2.13'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -483,6 +483,8 @@ try:
                    sys.stdout.flush()					# flush the print messages
                    sys.stderr.flush()					# flush the print messages
                 continue
+            if source == 'NEMO' :		  	# ignore those messages
+                continue
             if source == 'DLYM' and prt:		# DELAY and PRINT ???
                 print("OGNT DLY>>>>:", msg, "<<<<")
                 path = "tracker"
@@ -571,10 +573,10 @@ try:
                     curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(),inscmd, file=sys.stderr)
+                        print(">>>>: MySQL1 Error1a [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(),inscmd, file=sys.stderr)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL2 Error1a: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error1a:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
                 cout += 1				# number of records saved
                 continue
@@ -596,10 +598,10 @@ try:
                     curs.execute(inscmd)  		# insert data into trackstatus table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
+                        print(">>>>: MySQL1 Error2a [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL2 Error2a: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error2a:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
                     print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
 
                 cout += 1				# number of records saved
@@ -617,15 +619,29 @@ try:
                 speed = msg['speed']
             else:
                 print("MMMMM>>>>", msg)
-            course = msg['course']
-            uniqueid = msg['uniqueid']
+            course = 0
+            if 'course' in msg:
+               course = msg['course']
+            uniqueid = 'NOID'
+            if 'uniqueid' in msg:
+                uniqueid = msg['uniqueid']
             if len(uniqueid) > 16:
                 uniqueid = uniqueid[0:16]  		# limit to 16 chars
-            extpos = msg['extpos']
-            roclimb = msg['roclimb']
-            rot = msg['rot']
-            sensitivity = msg['sensitivity']
-            gps = msg['gps']
+            extpos = 'W00'
+            if 'extpos' in msg:
+                extpos = msg['extpos']
+            roclib = 0
+            if 'roclimb' in msg:
+                roclimb = msg['roclimb']
+            rot = 0
+            if 'rot' in msg:
+                rot = msg['rot']
+            sensitivity = 0
+            if 'sensitivyty' in msg:
+                sensitivity = msg['sensitivity']
+            gps = 'NOGPS'
+            if 'gps' in msg:
+                gps = msg['gps']
             if len(gps) > 6:
                 gps = gps[0:6]
             hora = msg['time']				# timestamp
@@ -702,10 +718,10 @@ try:
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                                print(">>>>: MySQL Error1c [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1,datetime.utcnow(), file=sys.stderr)
+                                print(">>>>: MySQL Error2c: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3c [count & cmd] :", cout, cmd1,datetime.utcnow(), file=sys.stderr)
                             print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
 
                         row = curs.fetchone()		# get the counter 0 or 1 ???
@@ -723,10 +739,10 @@ try:
                                curs.execute(cmd2)  	# insert the data on the DB
                             except MySQLdb.Error as e:
                                try:
-                                   print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL Error1d [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                                except IndexError:
-                                   print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                                   print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL Error2d: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL error3d:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
                                    print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                         except TypeError:		# type error building the INSERT cmd
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
@@ -742,10 +758,10 @@ try:
                                 curs.execute(cmd3)  	# update the data on the DB
                             except MySQLdb.Error as e:
                                 try:
-                                    print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL Error1e [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                                 except IndexError:
-                                    print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                                    print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL Error2e: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL error3e:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
                                     print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                         except TypeError:
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
@@ -757,6 +773,16 @@ try:
 
 
                 else:					# if we just is normal option, just add the data to the OGNDATA table
+                    if course == None:
+                       course = 0
+                    if speed == None:
+                       speed = 0
+                    if roclimb == None:
+                       roclimb = 0
+                    if rot == None:
+                       rot = 0
+                    if sensitivity == None:
+                       sensitivity = 0
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + \
                         str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                         str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
@@ -769,10 +795,10 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL Error1f [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
                         except IndexError:
-                            print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                        print(">>>>: MySQL error3:", cout, addcmd,datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL Error2f: %s" % str(e),datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL error3f:", cout, addcmd,datetime.utcnow(), file=sys.stderr)
                         print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                     conn.commit()			# commit to the DB  right away
 
