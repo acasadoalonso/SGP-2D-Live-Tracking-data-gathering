@@ -751,6 +751,17 @@ try:
                             print("CMD2>>>", cmd2)
 
                     else:				# if found just update the entry on the table
+
+                        if course == None:
+                           course = 0
+                        if speed == None:
+                           speed = 0
+                        if roclimb == None:
+                           roclimb = 0
+                        if rot == None:
+                           rot = 0
+                        if sensitivity == None:
+                           sensitivity = 0
                         try:
                             cmd3 = "UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
                                 (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
@@ -765,9 +776,9 @@ try:
                                     print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
                         except TypeError:
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
-                               print(">>>>cmd3:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                               print(">>>>cmd3e:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
                         if prt:
-                            print("CMD3>>>", cmd3)
+                            print("CMD3e>>>", cmd3)
 
 #               STD   and FULL CASE NOT LASTFIX ------------------------------------------------------#
 
