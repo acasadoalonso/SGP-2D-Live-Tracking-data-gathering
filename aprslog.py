@@ -36,18 +36,18 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the receiving buffer
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
-    date = datetime.utcnow()            # get the date
+    date = datetime.utcnow()        # get the date
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-    if LASTFIX or FULL:			# if LASTFIX use the non filtered port
+    if LASTFIX or FULL:			    # if LASTFIX use the non filtered port
         print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
         #sock.connect(("aprs.glidernet.org", 10152))
-    else:				# if not use the use from the configuration file
+    else:				            # if not use the use from the configuration file
         print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
-    sock.send(login)			# send the login to the APRS server
+    sock.send(login)			    # send the login to the APRS server
 
     # Make the connection to the server
     sock_file = sock.makefile(mode='rw')  # make read/write as we need to send the keep_alive
@@ -56,7 +56,7 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
         # for control print the login sent and get the response
         print("APRS Login request:", login)  # print the login command for control
         print("APRS Login reply:  ", sock_file.readline(), "\n")  # report the APRS reply
-    sleep(2)				# just wait to receive the login command
+    sleep(1)				        # just wait to receive the login command
     return (sock, sock_file)		# return sock and sockfile
 
 #########################################################################
@@ -134,19 +134,19 @@ loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 commentcnt = 0				# counter of comment lines
-maxnerrs = 99                           # max number of error before quiting
+maxnerrs = 9                # max number of error before quiting
 SLEEPTIME = 2				# time to sleep in case of errors
 comment = False				# comment line from APRS server
 datafile = False			# use the datafile on|off
 COMMIT = True				# commit every keep lives
 COMMITEM = True				# commit every minute
 COMMITMIN = 0				# commit minute
-prt = False				# use the configuration values
-DATA = True				# use the configuration values
-MEM = False				# built the lastfix flarmId table in memory
+prt = False				    # use the configuration values
+DATA = True				    # use the configuration values
+MEM = False				    # built the lastfix flarmId table in memory
 STATIONS = False			# get the stations info
 FULL = False				# get the stations info
-STD = True				# Std case
+STD = True				    # Std case
 OGN_DATA = ''
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
@@ -155,9 +155,9 @@ fslal = {'NONE  ': 0.0}                 # station location altitude
 fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
 fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
-fsour = {}			 	# sources
+fsour = {}			 	    # sources
 acfttype = []			 	# aircraft types
-fdtcnt = {}			 	# device type counter
+fdtcnt = {}			 	    # device type counter
 flastfix = {}				# table with the LAST FIXES
 lastfix = []				# list of last fix from DB
 fdistcheck = {}				# table with device with distance more than 400 kms
@@ -351,7 +351,8 @@ try:
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 5 * 60:  # keepalives every 5 mins
             # and mark that we are still alive
-            alive(config.APP + hostname)  # set the mark on the aliave file
+            alive(config.APP + hostname, keepalive=keepalive_count)  # set the mark on the alive file
+            print("Alive#", keepalive_count, "\n\n\n")  # end of UTC day
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
@@ -374,6 +375,9 @@ try:
                     date = datetime.now()
                     break
                 sleep(SLEEPTIME) 	# wait X seconds
+                keepalive_time = current_time
+                keepalive_count = keepalive_count + 1
+                now = datetime.utcnow()  # get the UTC time
                 continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                 # rebuild the table from the TRKDEVICES DB table
@@ -383,11 +387,11 @@ try:
             sys.stderr.flush()		# flush the print messages
             if COMMIT:
                 conn.commit()		# commit to the DB every 5 minutes
-            continue			# next APRSMSG
+            continue			    # next APRSMSG
 
         if prt:
             print("In main loop. Count= ", loopcnt)
-        loopcnt += 1			# just keep a count of number of request to the APRS server
+        loopcnt += 1			    # just keep a count of number of request to the APRS server
         if COMMITEM and COMMITMIN != now.minute:
                 conn.commit()		# commit to the DB every 1 minutes
                 COMMITMIN = now.minute	# remember when we made commit

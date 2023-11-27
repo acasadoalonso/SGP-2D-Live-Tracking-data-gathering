@@ -14,7 +14,6 @@ import socket
 import airportsdata
 from datetime import datetime
 from ogn.parser import parse
-import ksta			# list of know stations
 
 # --------------------------------------------------------------------------
 aprssources = {			# sources based on the APRS TOCALL
@@ -305,6 +304,8 @@ def gdatar(data, typer):               	# get data on the  right
 
 
 def spanishsta(station):                # return true if is an Spanish station
+    
+    import ksta				# list of know stations
     if (station) is None:
         return False
     if station[0:2] == 'LE' or station[0:2] == "LP" or	\
@@ -680,7 +681,7 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
 # ########################################################################
 
 
-def alive(app, first='no', register=False):
+def alive(app, keepalive=0, first='no', register=False):
 
     alivename = app +".alive"
     hostname = socket.gethostname()
@@ -695,7 +696,7 @@ def alive(app, first='no', register=False):
         alivefile = open(alivename, 'a')
     local_time = datetime.now()
     alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
-    alivefile.write(alivetime +":" +hostname +"\n")  # write the time as control
+    alivefile.write(alivetime +":" +hostname +" "+str(keepalive)+" \n")  # write the time as control
     alivefile.close()               # close the alive file
     return()
 # ########################################################################

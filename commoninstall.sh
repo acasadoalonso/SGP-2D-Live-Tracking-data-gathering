@@ -85,7 +85,7 @@ then								#
 fi								#
 sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3 ntpdate				#
-sudo apt-get install -y figlet inetutils-* 			#
+sudo apt-get install -y figlet inetutils-* nmap net-tools	#
 sudo apt-get install -y avahi-daemon libcurl4-openssl-dev       #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt vim		# 
@@ -158,11 +158,11 @@ sudo -H python3 -m pip install molecule               		#
 sudo -H python3 -m pip install docker               		#
 sudo -H python3 -m pip install yamllint               		#
 sudo -H python3 -m pip install setuptools 			#
-sudo -H python3 -m pip install flake8               		#
+sudo -H python3 -m pip install flake8 icecream         		#
 sudo -H python3 -m pip install httpx               		#
 sudo -H python3 -m pip install mysqlclient			#
-sudo -H python3 -m pip install timezonefinder zoneinfo		#
-sudo -H python3 -m pip install airsportsdata			#
+sudo -H python3 -m pip install timezonefinder 			#
+sudo -H python3 -m pip install airportsdata			#
 if [ $sql = 'MySQL' ]						#	
 then								#
 	sudo -H pip3 uninstall mysqlclient			#
