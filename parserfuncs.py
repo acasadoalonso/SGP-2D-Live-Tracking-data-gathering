@@ -53,6 +53,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNSXR": "OGNB",	   	# OGNbase
     "OGAIRM": "AIRM",	   	# Airmate
     "OGNMYC": "MYC",	   	# My cloud base
+    "FXCAPP": "FXC",	   	# FXC 
     "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------
