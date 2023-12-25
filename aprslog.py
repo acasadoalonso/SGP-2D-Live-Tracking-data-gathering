@@ -24,7 +24,7 @@ from parserfuncs import alive, parseraprs, getinfoairport  # the ogn/ham parser 
 #########################################################################
 
 
-def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS server
+def aprsconnect(sock, login, firsttime=False, prt=True):  # connect to the APRS server
     if not firsttime:
         try:				# reconnect
             sock.shutdown(0)                # shutdown the connection
@@ -48,10 +48,11 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
         sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
     sock.send(login)			    # send the login to the APRS server
+    #print("Socket send login done")
 
     # Make the connection to the server
     sock_file = sock.makefile(mode='rw')  # make read/write as we need to send the keep_alive
-    if prt or firsttime:
+    if prt or firsttime :
         print("APRS Version:", sock_file.readline())  # report the APRS version
         # for control print the login sent and get the response
         print("APRS Login request:", login)  # print the login command for control
@@ -114,7 +115,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.13'			# manually set the program version !!!
+programver = 'V2.14'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
 print("==================================================================================")
@@ -134,19 +135,19 @@ loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 commentcnt = 0				# counter of comment lines
-maxnerrs = 9                # max number of error before quiting
-SLEEPTIME = 2				# time to sleep in case of errors
+maxnerrs = 99		                # max number of error before quiting
+SLEEPTIME = 5				# time to sleep in case of errors
 comment = False				# comment line from APRS server
 datafile = False			# use the datafile on|off
 COMMIT = True				# commit every keep lives
 COMMITEM = True				# commit every minute
 COMMITMIN = 0				# commit minute
-prt = False				    # use the configuration values
-DATA = True				    # use the configuration values
-MEM = False				    # built the lastfix flarmId table in memory
+prt = False				# use the configuration values
+DATA = True				# use the configuration values
+MEM = False				# built the lastfix flarmId table in memory
 STATIONS = False			# get the stations info
 FULL = False				# get the stations info
-STD = True				    # Std case
+STD = True				# Std case
 OGN_DATA = ''
 
 fsllo = {'NONE  ': 0.0}                 # station location longitude
@@ -293,8 +294,10 @@ login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 sock = False
 Ntries = 0
 (sock, sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
+print("Initial sock creation  ...\n\n")
 if sock == False:
     while Ntries < 10:
+        print("Initial sock false ... error\n")
         (sock, sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
         if sock != False:
             break
@@ -352,7 +355,7 @@ try:
         if (current_time - keepalive_time) > 5 * 60:  # keepalives every 5 mins
             # and mark that we are still alive
             alive(config.APP + hostname, keepalive=keepalive_count)  # set the mark on the alive file
-            print("Alive#", keepalive_count, "\n\n\n")  # end of UTC day
+            print("Alive#", keepalive_count, current_time, keepalive_time, "\n\n\n")  # end of UTC day
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
@@ -406,17 +409,19 @@ try:
         except socket.error as e:
             err += 1
             print(">>>>: Socket error on readline: ", loopcnt, packet_str, current_time, file=sys.stderr)
-            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))), file=sys.stderr)
-            (sock, sock_file) = aprsconnect(sock, login, prt=prt)
+            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))), sock, sock_file, file=sys.stderr)
+            if (not sock or not sock_file):
+               (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             continue
         except KeyboardInterrupt:
             print("Keyboard input received, Bye Bye", file=sys.stderr)
             shutdown(sock, datafile)
             print("Bye ...\n\n\n")
             os._exit(0)
-        except:
+        except Exception as errt:
             print(">>>>: Error on readline", now, file=sys.stderr)
-            print(">>>>: ", packet_str, file=sys.stderr)
+            print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), "<<<<", len(packet_str), file=sys.stderr)
+            print(f"{type(errt).__name__} was raised: {errt}", file=sys.stderr)
             rtn = sock_file.write("# Python APRSLOG App\n")
             continue
 
@@ -430,9 +435,11 @@ try:
 
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
-        if len(packet_str) == 0:  # socket error ?
+        if len(packet_str) == 0:  		# socket error ?
             err += 1
-            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err, file=sys.stderr)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err, "\n",  file=sys.stderr)
+            sleep(SLEEPTIME) 			# wait 5 seconds
+            print("Reconnecting ...Nerrs:", err)
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             if err > maxnerrs:
                 print(">>>>: Too many errors reading APRS messages.  Orderly closeout", file=sys.stderr)
@@ -440,7 +447,6 @@ try:
                 print("UTC now is: ", date)
                 break
             else:
-                sleep(SLEEPTIME) 		# wait 5 seconds
                 continue
 
         ix = packet_str.find('>')
