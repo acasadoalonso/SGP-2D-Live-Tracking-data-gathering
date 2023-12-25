@@ -64,8 +64,13 @@ mv cuc/*lst  cuc/archive	2>/dev/null
 cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
-sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 							     >/dev/null     2>/dev/null
-sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
+if [ "$(id -u)" != "0" ]; then
+   sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
+   sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
+elif
+   sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
+   sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
+fi
 date														     >>APRSproc.log 2>/dev/null
 echo "clean OGNDATA in APRSLOG"							                                     >>APRSproc.log 2>/dev/null
 echo "DELETE FROM RECEIVERS WHERE otime < date('"$(date +%Y-%m-%d)"')-3;" | mysql -u $DBuser -p$DBpasswd -v -h $server APRSLOG >>APRSproc.log 2>/dev/null
@@ -123,6 +128,8 @@ mv aprserr.log   archive/APRSlogerr$(date +%y%m%d).log      							     2>/dev/n
 mv DATA*.log     archive											     2>/dev/null
 mv APRS*.log     archive  											     2>/dev/null
 rm APRS.alive  													     2>/dev/null
-sudo  rm   /var/www/html/node/nohup.out	     							    		     >/dev/null 2>/dev/null
+if [ "$(id -u)" != "0" ]; then
+   sudo  rm   /var/www/html/node/nohup.out     							    		     >/dev/null 2>/dev/null
+fi
 cd
 
