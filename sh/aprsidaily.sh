@@ -62,7 +62,7 @@ mv cuc/*json cuc/archive	2>/dev/null
 mv cuc/*tsk  cuc/archive	2>/dev/null
 mv cuc/*lst  cuc/archive	2>/dev/null
 mv cuc/*csv  cuc/archive	2>/dev/null
-if [ $SARpath != '' ]; then
+if [[ $SARpath != '' ]]; then
 	cd /var/www/html/SWS
 	mv cuc/*json cuc/archive	2>/dev/null
 	mv cuc/*tsk  cuc/archive	2>/dev/null
