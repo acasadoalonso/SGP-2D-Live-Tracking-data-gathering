@@ -16,7 +16,11 @@ DBpath=$(echo    `grep '^DBpath '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBname=$(echo    `grep '^DBname '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBname //g' | sed 's/ //g' )
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
-SARpath=$(echo    `grep '^DBpath '  $CONFIGDIR/SARconfig.ini` | sed 's/=//g'  | sed 's/^DBpath //g' | sed 's/ //g' )
+if [ -f $CONFIGDIR/SARconfig.ini ]; then
+	SARpath=$(echo    `grep '^DBpath '  $CONFIGDIR/SARconfig.ini` | sed 's/=//g'  | sed 's/^DBpath //g' | sed 's/ //g' )
+else     
+        SARpath=''
+fi
 #SARpath='/nfs/OGN/DIRdata/'
 
 
@@ -58,17 +62,19 @@ mv cuc/*json cuc/archive	2>/dev/null
 mv cuc/*tsk  cuc/archive	2>/dev/null
 mv cuc/*lst  cuc/archive	2>/dev/null
 mv cuc/*csv  cuc/archive	2>/dev/null
-cd /var/www/html/SWS
-mv cuc/*json cuc/archive	2>/dev/null
-mv cuc/*tsk  cuc/archive	2>/dev/null
-mv cuc/*lst  cuc/archive	2>/dev/null
+if [ $SARpath != '' ]; then
+	cd /var/www/html/SWS
+	mv cuc/*json cuc/archive	2>/dev/null
+	mv cuc/*tsk  cuc/archive	2>/dev/null
+	mv cuc/*lst  cuc/archive	2>/dev/null
+fi
 cd $DBpath
 date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
 if [ "$(id -u)" != "0" ]; then
    sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
    sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
-elif
+else
    sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
    sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
 fi
