@@ -37,7 +37,7 @@ then
                 	logger -t $0 "APRS killing Process0: "$pid $pnum" - "$alive
                         if [ "$(id -u)" != "0" ]; then
                            sudo kill -9 $pnum 
-                        elif
+                        else
                            kill -9 $pnum 
                         fi
                         rm $pid 2>/dev/null
@@ -79,7 +79,7 @@ else
 		           then
                               if [ "$(id -u)" != "0" ]; then
                                  sudo kill $(cat $pid)
-                              elif
+                              else
                                  kill $(cat $pid)
                               fi
                 	      logger -t $0 "APRS killing Process1: "$pnum" - "
