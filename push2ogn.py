@@ -1,7 +1,10 @@
 #!/usr/bin/python3
+
+# --------------------------------------------------------------------------------------------- #
 #
-# Python code to push into the OGN APRS the data from SPOT/SPIDER/CAPTURS/LT24/SKYLINES
+# Python code to push into the OGN APRS the data from SPOT/SPIDER/CAPTURS/LT24/SKYLINES/AvioniX
 #
+# --------------------------------------------------------------------------------------------- #
 
 import config                           # get the configuration data
 from datetime import datetime, timedelta
@@ -13,7 +16,7 @@ import os
 import os.path
 import signal
 import atexit
-from parserfuncs import alive               # the ogn/ham parser functions
+from parserfuncs import alive           # the ogn/ham parser functions
 from time import sleep                  # use the sleep function
 from flarmfuncs import *		# import the functions delaing with the Flarm ID
 import argparse
@@ -22,7 +25,7 @@ import traceback
 #########################################################################
 
 
-def shutdown(sock):		        # shutdown routine, close files and report on activity
+def shutdown(sock, count=-1):		        # shutdown routine, close files and report on activity
     # shutdown before exit
     try:
         sock.shutdown(0)                # shutdown the connection
@@ -30,20 +33,16 @@ def shutdown(sock):		        # shutdown routine, close files and report on activ
     except Exception as e:
         print("Socket error...", e, "ignored \n")
     if conn:
-        conn.commit()                    # commit the DB updates
-        conn.close()                     # close the database
+        conn.commit()                   # commit the DB updates
+        conn.close()                    # close the database
     local_time = datetime.now()         # report date and time now
-    print("Shutdown now, Time now:", local_time, " Local time.")
+    print("Shutdown now, Time now:", local_time, " Local time. Count:", count)
     if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
-        # delete the mark of being alive
+        				# delete the mark of being alive
         os.remove(config.DBpath+"PUSH2OGN.alive")
-    #if os.path.exists(config.PIDfile+".PUSH2OGN"):
-    #   os.remove(config.PIDfile+".PUSH2OGN")
     return                              # job done
 
-#########################################################################
 
-#########################################################################
 #########################################################################
 
 
@@ -52,6 +51,7 @@ def signal_term_handler(signal, frame):
     shutdown(sock) 			# shutdown orderly
     sys.exit(0)
 
+#########################################################################
 
 # ......................................................................#
 signal.signal(signal.SIGTERM, signal_term_handler)
@@ -65,10 +65,15 @@ def prttime(unixtime):
 
 
 #
-########################################################################
-programver = 'V2.3'
-print("\n\nStart PUSH2OGN "+programver)
-print("===================")
+#########################################################################
+#########################################################################
+#
+
+
+programver = 'V2.4'					# January 2024
+
+print("\n\nStart PUSH2OGN: "+programver)
+print(    "=====================")
 
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
@@ -78,19 +83,22 @@ print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", o
 date = datetime.now()                   # local time
 print("Time now is: ", date, " Local time")
 
+#
 # --------------------------------------#
 #
-# get the SPIDER TRACK  & SPOT & InReach ... information
+# get the SPIDER TRACK  & SPOT & InReach & ADSB ... information
 #
 # --------------------------------------#
 #
 APP = "PUSH2OGN"		# the application name
 SLEEP = 10			# sleep 10 seconds in between calls to the APRS
-nerrors = 0				# number of errors in *funcs found
+nerrors = 0			# number of errors in *funcs found
 day = 0				# day of running
-TimeSPOTSPIDERINREACH = 300           # time in second from each run
-TimeCAPTUR = 150           # time in second from each run
-TimeLT24SKYL = 60           # time in second from each run
+TimeSPOTSPIDERINREACH = 300     # time in second from each run
+TimeCAPTUR            = 150    	# time in second from each run
+TimeLT24SKYL          = 60     	# time in second from each run
+TimeADSB              = SLEEP	# time in second from each run
+TimeAVX               = SLEEP  	# time in second from each run
 
 # --------------------------------------#
 DBpath = config.DBpath
@@ -119,6 +127,8 @@ parser.add_argument('-a', '--ADSB', required=False,
                     dest='ADSB', action='store', default=False)
 parser.add_argument('-u', '--USEDDB', required=False,
                     dest='USEDDB', action='store', default=False)
+parser.add_argument('-x', '--AVX', required=False,
+                    dest='AVX', action='store', default=False)
 
 args 	= parser.parse_args()
 prt 	= args.prt			# print on|off
@@ -130,18 +140,20 @@ SKYLINE = args.SKYLINE
 LT24 	= args.LT24
 ADSB 	= args.ADSB
 USEDDB  = args.USEDDB
+AVX     = args.AVX
 # --------------------------------------#
 if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
-print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "\n")
+
+print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "\n")
 # --------------------------------------#
 
 if SPIDER:
     from spifuncs import *
     spiusername = config.SPIuser
     spipassword = config.SPIpassword
-    spisysid = config.SPISYSid
+    spisysid    = config.SPISYSid
 
 if SPOT:
     from spotfuncs import *
@@ -171,11 +183,16 @@ if LT24:
     LT24path = DBpath+"LT24/"
     LT24login = False
     LT24firsttime = True
+if AVX:
+    from avxfuncs import getsizeadsbcache, avxsetrec
+    from avxfuncs import *
+
 
 # --------------------------------------#
 
 
 # -----------------------------------------------------------------#
+
 if not USEDDB:
     import MySQLdb                          # the SQL data base routines^M
     conn = MySQLdb.connect(host=DBhost, user=DBuser, passwd=DBpasswd, db=DBname)
@@ -229,9 +246,9 @@ alive(config.DBpath+APP, first='yes')
 # Initialise API for SPIDER & SPOT & INREACH & LT24
 #-----------------------------------------------------------------#
 #
-now = datetime.utcnow()			# get the UTC timea
+now  = datetime.utcnow()		# get the UTC time
 min5 = timedelta(seconds=300)		# 5 minutes ago
-now = now-min5				# now less 5 minutes
+now  = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
 td = now-datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
@@ -243,11 +260,12 @@ ttcapt = 0				# time between capturs request
 ttltsk = 0				# time between lt24/skyl request
 lt24ts = ts                             # the same
 adsbts = ts                             # the same
+avxts  = ts                             # the same
 spispotcount = 0			# loop counter
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
 day = now.day				# day of the month
-print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "\n\n")
+print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "for AVX:", TimeAVX, "\n\n")
 if LT24:
     # login into the LiveTrack24 server
     lt24login(LT24path, lt24username, lt24password)
@@ -277,9 +295,13 @@ try:
 
             try:					# lets send a message to the APRS for keep alive
                 rtn = sock_file.write("#Python ogn aprspush App\n\n")
+							# in addition if ADSB or AVX send the position of the dummy receiver
                 if ADSB:
                     func='ADSB'
                     adsbsetrec(sock_file, prt=prt, store=False, aprspush=True)
+                if AVX:
+                    func='AVX'
+                    avxsetrec(sock_file, prt=prt, store=False, aprspush=True)
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
 
             except Exception as e:
@@ -302,21 +324,21 @@ try:
                     func='SPIDER'
                     ttime = spifindspiderpos(ttime, conn, spiusername, spipassword, spisysid, prt=prt, store=False, aprspush=True)
                 else:
-                    # format required by SPIDER
+                    					# format required by SPIDER
                     ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
                 if SPOT:			        # if we have the SPOT according with the configuration
                     func='SPOT'
                     ts = spotfindpos(ts, conn, prt=prt, store=False, aprspush=True)
                 else:
-                    # number of second until beginning of the day
+                    					# number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ts = int(td.total_seconds())
                 if INREACH:			        # if we have the INREACH according with the configuration
                     func='INREACH'
                     tr = inreachfindpos(tr, conn, prt=prt, store=False, aprspush=True)
                 else:
-                    # number of second until beginning of the day
+                    					# number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tr = int(td.total_seconds())
                 ttspid = tt
@@ -326,7 +348,7 @@ try:
                     func='CAPTUR'
                     tc = captfindpos(tc, conn, prt=prt, store=False, aprspush=True)
                 else:
-                    # number of second until beginning of the day
+                    					# number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     tc = int(td.total_seconds())
                 ttcapt = tt
@@ -336,36 +358,45 @@ try:
                     func='SKYLINE'
                     ty = skylfindpos(ty, conn, prt=prt, store=False, aprspush=True)
                 else:
-                    # number of second until beginning of the day
+                    					# number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     ty = int(td.total_seconds())
                 if LT24:				# if we have the LT24 according with the configuration
-                    # find the position and add it to the DDBB
+                    					# find the position and add it to the DDBB
                     func='LT24'
                     lt24ts = lt24findpos(lt24ts, conn, LT24firsttime, prt=prt, store=False, aprspush=True)
                     LT24firsttime = False		# only once the addpos
                 else:
-                    # number of second until beginning of the day
+                    					# number of second until beginning of the day
                     td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
                     lt24ts = int(td.total_seconds())
                 ttltsk = tt
 
             if ADSB:					# if we have the ADSB according with the configuration
-                # find the position and add it to the DDBB
+                					# find the position and add it to the DDBB or APRS
                 func='ADSB'
                 adsbts = adsbfindpos(adsbts, conn, prt=prt, store=False, aprspush=True)
             else:
-                # number of second until beginning of the day
-                td = now-datetime(1970, 1, 1) 	# Unix time - seconds from the epoch
+                					# number of second until beginning of the day
+                td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
                 adsbts = int(td.total_seconds())
+
+            if AVX:					# if we have the ADSB according with the configuration
+                					# find the position and add it to the DDBB
+                func='AVX'
+                avxts = avxfindpos(avxts, conn, prt=prt, store=False, aprspush=True)
+            else:
+                					# number of second until beginning of the day
+                td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
+                avxts = int(td.total_seconds())
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX:
 
                 print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
                     tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
-            if ADSB and spispotcount % 10 == 0:
+            if (ADSB or AVX) and spispotcount % 10 == 0:
 
                 print("ADSB Cache size", getsizeadsbcache())
 
@@ -373,14 +404,14 @@ try:
             print(traceback.format_exc())
             print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB:
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX:
                 print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat())
 
             nerrors += 1
             if nerrors > 100:
-                shutdown(sock)		                # way to many errors
+                shutdown(sock, spispotcount)            # way to many errors
                 sys.exit(-1)		                # and bye ...
-
+							# end of except
         sys.stdout.flush()				# flush the print messages
         sleep(SLEEP)					# sleep n seconds
 
@@ -389,6 +420,7 @@ except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
 
-shutdown(sock)
+shutdown(sock, spispotcount)
+
 print("Exit now ...", nerrors)
 exit(0)

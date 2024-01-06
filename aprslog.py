@@ -117,7 +117,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 ########################################################################
 programver = 'V2.14'			# manually set the program version !!!
 
-print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
+print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and LT24 logging: " + programver)
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))

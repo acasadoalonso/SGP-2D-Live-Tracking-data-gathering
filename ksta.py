@@ -72,6 +72,9 @@ ksta = {
            "GIROLIBRE" : "Ainsa, Huesca ",
            "RACE"      : "Race in Cuatro Vuentos, Madrid ",
            "PWRACE"    : "Race in Cuatro Vuentos, Madrid ",
+           "Aljarafe"  : "La Juliana, LEJI Sevilla ",
+           "ALJARAFE"  : "La Juliana, LEJI Sevilla ",
+           "Pagalajar" : "Parapente Jaen ",
 # french airports
            "LFBM"   : "Mont de Marsan",
 	   "LFBA"   : "La Garomme", 

@@ -68,10 +68,10 @@ def adsbgetapidata(adsbfile): 	            # get the data from the API server
     j_obj = json.loads(js)                  # convert to JSON
     r.close()				    # close the file now
     return j_obj                            # return the JSON object
+
 #-------------------------------------------------------------------------------------------------------------------#
-
-    # extract the data of the last know position from the JSON object
-
+# extract the data of the last know position from the JSON object
+#-------------------------------------------------------------------------------------------------------------------#
 
 def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
 
@@ -81,10 +81,10 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
             flg = msg['flight']
         else:
             continue
-        aid = "ICA"+msg['hex'].upper()	    # aircraft ID
-        ttt=adsbnow-msg['seen']		    # when the aircraft was seen
-        # number of second until beginning of the day
-        ts = int(ttt)       		    # Unix time - seconds from the epoch
+        aid = "ICA"+msg['hex'].upper()	    	# aircraft ID
+        ttt=adsbnow-msg['seen']		    	# when the aircraft was seen
+        					# number of second until beginning of the day
+        ts = int(ttt)       		    	# Unix time - seconds from the epoch
         t=datetime.utcfromtimestamp(ts)
         #print ("TTT:", t, ts, (adsbnow-ts) , adsbnow, msg)
         if "lon" in msg:
@@ -92,7 +92,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
         else:
             continue
         if "lat" in msg:
-            lat = msg['lat'] 		    # extract the longitude and latitude
+            lat = msg['lat']			# extract the longitude and latitude
         else:
             continue
         gps = "NO"
@@ -134,13 +134,15 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
         pos = {"ICAOID": aid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
                "dist": distance, "course": dir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, "flight": flg}
         #print "SSS:", ts, ttime, pos
-        if ts < ttime+3:		    # check if the data is from before
-            continue		            # in that case nothing to do
-        adsbpos['adsbpos'].append(pos)      # and store it on the dict
+        if ts < ttime+3:		    	# check if the data is from before
+            continue		            	# in that case nothing to do
+        if alt < int(config.ADSBfl):		# filter by FL
+
+           adsbpos['adsbpos'].append(pos)       # and store it on the dict
         if prt:
             print("adsbPOS :", round(lat, 4), round(lon, 4), alt, aid, round(distance, 4), ts, date, tme, flg)
 
-    return(foundone) 			    # indicate that we added an entry to the dict
+    return(foundone) 			    	# indicate that we added an entry to the dict
 
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -149,8 +151,10 @@ def adsbopensky(adsbpos, ttime, prt=True):
 
     foundone = False
     from opensky_api import OpenSkyApi
-
-    api = OpenSkyApi()			    # open the API
+    if len(config.ADSBOpenSkyName) > 0:
+       api = OpenSkyApi(username=config.ADSBOpenSkyName, password=config.ADSBOpenSkyPswd)		    # open the API
+    else:
+       api = OpenSkyApi()		    # open the API
 
     BBox= (float(config.ADSBOpenSkyBox1),   # build the BOX
            float(config.ADSBOpenSkyBox2),
@@ -160,6 +164,8 @@ def adsbopensky(adsbpos, ttime, prt=True):
     # bbox = (min latitude, max latitude, min longitude, max longitude)
     states = api.get_states(bbox=BBox)	    # get the sky vectors
     #
+    if states == None:
+       return(False)
     for s in states.states:		    # scan all the VECTORS
 
         if prt:

@@ -1,5 +1,5 @@
 #-------------------------------------
-# OGN-SAR Spain interface --- Settings
+# OGN-APRSLOG Spain interface --- Settings
 #-------------------------------------
 #
 #-------------------------------------
@@ -163,6 +163,42 @@ try:
     ADSBOpenSkyBox4 = cfg.get('location', 'ADSBOpenSkyBox4').strip("'").strip('"')
 except:
     ADSBOpenSkyBox4 = ''
+try:
+    ADSBOpenSkyName = cfg.get('location', 'ADSBOpenSkyName').strip("'").strip('"')
+except:
+    ADSBOpenSkyName = ''
+try:
+    ADSBOpenSkyPswd = cfg.get('location', 'ADSBOpenSkyPswd').strip("'").strip('"')
+except:
+    ADSBOpenSkyPswd = ''
+try:
+    ADSBfl = cfg.get('location', 'ADSBfl').strip("'").strip('"')
+except:
+    ADSBfl = '15000'
+
+
+
+try:
+    AVXtext = cfg.get('location', 'AVX').strip("'").strip('"')
+except:
+    AVXtext = 'False'
+try:
+    AVXhost = cfg.get('location', 'AVXHOST').strip("'").strip('"')
+except:
+    AVXhost = 'localhost'
+try:
+    AVXname = cfg.get('location', 'AVXname').strip("'").strip('"')
+except:
+    AVXname = 'AVXrecvr'
+try:
+    AVXloc = cfg.get('location', 'AVXloc').strip("'").strip('"')
+except:
+    AVXloc = ''
+try:
+    AVXfl = cfg.get('location', 'AVXfl').strip("'").strip('"')
+except:
+    AVXfl = '15000'
+
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
@@ -251,6 +287,10 @@ if (ADSBtext == 'True'):
     ADSB = True
 else:
     ADSB = False
+if (AVXtext == 'True'):
+    AVX = True
+else:
+    AVX = False
 if (ADSBregt == 'True'):
     ADSBreg = True
 else:
@@ -277,7 +317,7 @@ if 'USER' in os.environ and prt:
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
     print("Config APRS values:  ", APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky)
+    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0
