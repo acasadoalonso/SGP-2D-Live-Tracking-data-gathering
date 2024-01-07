@@ -13,6 +13,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import psutil
+import ICAO_ranges
 import config
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -255,7 +256,7 @@ def avxaprspush(datafix, conn, prt=False):
             aprsmsg += "reg"+reg+" model"+model+" \n"
         else:
             aprsmsg += " \n"
-        print("APRSMSG: ", aprsmsg)
+        print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
         rtn = config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
         if rtn == 0:
