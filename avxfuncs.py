@@ -119,7 +119,9 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         rot=0
         dir=0
         spd=0
-        src='ADSB'					# ADSB is the default
+        FL=0
+        cat=''
+        src='ADSB'				# ADSB is the default
         if "vrt" in msg:
                 roc = msg['vrt']
         if "spd" in msg:
@@ -129,11 +131,13 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         else:
                 print ("AVX No alt")
                 continue
-        if "hgt" in msg:
-                alt = msg["hgt"]+alt 		# and the altitude in feet
-
+        if "hgt" in msg:			# barometric altitude
+                FL = msg['hgt']+alt
+                print("FL", FL)
         if "trk" in msg:
             dir = msg['trk']
+        if "cat" in msg:
+            cat = msg['cat']
         if "src" in msg:			# check the source ADS-B or ADS-L
             if msg['src'] == 'O':
                src='OGN'
@@ -150,7 +154,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
         pos = {"ICAOID": aid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
                "dist": distance, "course": dir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, 
-               "flight": flg, "source": src}
+               "flight": flg, "FL" : FL, "source": src, "cat": cat}
         #print "SSS:", ts, ttime, pos
         if alt < int(config.AVXfl) or src == 'OGN':	# filter by source or FL
            avxpos['avxpos'].append(pos)      	# and store it on the dict
@@ -209,24 +213,26 @@ def avxstoreitindb(datafix, curs, conn):   	# store the fix into the database
 def avxaprspush(datafix, conn, prt=False):
 
     for fix in datafix['avxpos']:	    # for each fix on the dict
-        id = fix['ICAOID']		    # extract the information
-        dte = fix['date']
-        hora = fix['time']
-        station = config.location_name
+        id       = fix['ICAOID']		    # extract the information
+        dte      = fix['date']
+        hora     = fix['time']
+        station  = config.location_name
         latitude = fix['Lat']
-        longitude = fix['Long']
+        longitude= fix['Long']
         altitude = fix['altitude']
-        speed = fix['speed']
-        course = fix['course']
-        roclimb = fix['roc']
-        rot = fix['rot']
+        speed    = fix['speed']
+        course   = fix['course']
+        roclimb  = fix['roc']
+        rot      = fix['rot']
         sensitivity = 0
-        gps = fix['GPS']
+        gps      = fix['GPS']
         uniqueid = fix["UnitID"]
         uniqueid = '25'+uniqueid[3:]
-        dist = fix['dist']
-        extpos = fix['extpos']
-        flight = fix['flight']
+        dist     = fix['dist']
+        extpos   = fix['extpos']
+        flight   = fix['flight']
+        FL       = fix['FL']
+        cat      = fix['cat']
         # build the APRS message
         lat = deg2dmslat(abs(latitude))
         if latitude > 0:
@@ -248,8 +254,12 @@ def avxaprspush(datafix, conn, prt=False):
             aprsmsg += "A=%06d" % int(altitude)
         else:
             continue								# ignore the traffic with no altitude
-        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot fn"+flight+" "
+        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot " 
+        if flight != '':
+           aprsmsg += "fn"+cat+":"+flight+" "
         regmodel = getadsbreg(id[3:9])
+        if FL > 0 :
+           aprsmsg += " FL%03d " % int(FL)
         if regmodel:
             reg =regmodel['Reg']
             model=regmodel['Model']
