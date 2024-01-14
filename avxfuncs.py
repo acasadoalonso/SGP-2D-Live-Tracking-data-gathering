@@ -100,9 +100,10 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
             continue
         aid = "ICA"+msg['hex'].upper()	    	# aircraft ID
         ttt=msg['uti']		    		# when the aircraft was seen
-        # number of second until beginning of the day
+        					# number of second until beginning of the day
         ts = int(ttt)       		    	# Unix time - seconds from the epoch
-        t=datetime.utcfromtimestamp(ts)
+        t=datetime.utcfromtimestamp(ts)		# convert to time object the number os seconds from epoc
+
         if "lon" in msg:
             lon = msg['lon']
         else:
@@ -113,7 +114,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         else:
             print ("AVX No lat")
             continue
-        gps = "NO"
+        gps = "NO"				# set all the defaults
         extpos = "NO"
         roc=0
         rot=0
@@ -144,17 +145,19 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
             else:
                src='ADSB'
 
-        date = t.strftime("%y%m%d")
+        date = t.strftime("%y%m%d")		# date and time
         tme = t.strftime("%H%M%S")
         # print ("TTT:", t, ts, avxnow, date, tme, msg)
-        foundone = True
+        foundone = True				# mark that we found one
 
-        vitlat = config.FLOGGER_LATITUDE
+        vitlat = config.FLOGGER_LATITUDE	# get the distance to the dummy station 
         vitlon = config.FLOGGER_LONGITUDE
         distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
+
         pos = {"ICAOID": aid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
                "dist": distance, "course": dir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, 
                "flight": flg, "FL" : FL, "source": src, "cat": cat}
+
         #print "SSS:", ts, ttime, pos
         if alt < int(config.AVXfl) or src == 'OGN':	# filter by source or FL
            avxpos['avxpos'].append(pos)      	# and store it on the dict
