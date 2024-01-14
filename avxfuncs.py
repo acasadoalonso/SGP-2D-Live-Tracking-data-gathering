@@ -93,12 +93,22 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
     foundone = False				# assuming nothing found
     for msg in tracks:
         #print ("TRKS:", msg)
+        src='ADSB'				# ADSB is the default
         if "fli" in msg:
             flg = msg['fli']
         else:
             print ("AVX No fli")
             continue
-        aid = "ICA"+msg['hex'].upper()	    	# aircraft ID
+        if "src" in msg:			# check the source ADS-B or ADS-L
+            if msg['src'] == 'O':
+               src='OGN'
+            else:
+               src='ADSB'
+        if src == 'OGN':
+           aid = "OGN"+msg['hex'].upper()	# aircraft ID
+        else: 
+           aid = "ICA"+msg['hex'].upper()	# aircraft ID
+
         ttt=msg['uti']		    		# when the aircraft was seen
         					# number of second until beginning of the day
         ts = int(ttt)       		    	# Unix time - seconds from the epoch
@@ -122,7 +132,6 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         spd=0
         FL=0
         cat=''
-        src='ADSB'				# ADSB is the default
         if "vrt" in msg:
                 roc = msg['vrt']
         if "spd" in msg:
@@ -139,11 +148,6 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
             dir = msg['trk']
         if "cat" in msg:
             cat = msg['cat']
-        if "src" in msg:			# check the source ADS-B or ADS-L
-            if msg['src'] == 'O':
-               src='OGN'
-            else:
-               src='ADSB'
 
         date = t.strftime("%y%m%d")		# date and time
         tme = t.strftime("%H%M%S")
@@ -230,7 +234,11 @@ def avxaprspush(datafix, conn, prt=False):
         sensitivity = 0
         gps      = fix['GPS']
         uniqueid = fix["UnitID"]
-        uniqueid = '25'+uniqueid[3:]
+        src      = fix['source']
+        if src == 'OGN':
+           uniqueid = '07'+uniqueid[3:]
+        else:   
+           uniqueid = '25'+uniqueid[3:]
         dist     = fix['dist']
         extpos   = fix['extpos']
         flight   = fix['flight']
@@ -269,7 +277,10 @@ def avxaprspush(datafix, conn, prt=False):
             aprsmsg += "reg"+reg+" model"+model+" \n"
         else:
             aprsmsg += " \n"
-        print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
+        if  src == 'OGN':
+            print("APRSMSG: ", aprsmsg[0:-1], "Country: OGN")
+        else:
+            print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
         rtn = config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
         if rtn == 0:
