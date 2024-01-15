@@ -8,7 +8,7 @@ import os
 import io
 from   datetime import datetime
 from   geopy.distance import geodesic       	# use the Vincenty algorithm^M
-from   parserfuncs import deg2dmslat, deg2dmslon
+from   parserfuncs import deg2dmslat, deg2dmslon, dao
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -226,6 +226,7 @@ def avxaprspush(datafix, conn, prt=False):
         station  = config.location_name
         latitude = fix['Lat']
         longitude= fix['Long']
+        daotxt="!W"+dao(latitude)+dao(longitude)+"!"  # the extended precision
         altitude = fix['altitude']
         speed    = fix['speed']
         course   = fix['course']
@@ -265,7 +266,7 @@ def avxaprspush(datafix, conn, prt=False):
             aprsmsg += "A=%06d" % int(altitude)
         else:
             continue								# ignore the traffic with no altitude
-        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot " 
+        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot "+daotxt+" " 
         if flight != '':
            aprsmsg += "fn"+cat+":"+flight+" "
         regmodel = getadsbreg(id[3:9])
