@@ -89,7 +89,7 @@ adddb   = args.adddb			# fi add to the database
 filedb  = args.S3file			# SQLITE3 file name
 flighta = args.fa			# FlightAware CSV file
 flighto = args.os			# Open Sky CSV vile
-print ("OPtions: MySQL ", MYSQL, "addDB", adddb, "FA ", flighta, "OS ", flighto)
+print ("Options: MySQL ", MYSQL, "addDB", adddb, "FA ", flighta, "OS ", flighto)
 # --------------------------------------#
 if MYSQL:
     # open the DataBase
@@ -181,6 +181,7 @@ print("\nRegistrations from FA:", cntfa, "dups:", dups, "DB:", cntdb)
 
 if flighto:				# if extra data from FlightAare
     if not os.path.exists(fileos):
+        print("\nGen data to:", fileos)
         os.system("cd utils && bash get_os_csv.sh")
     lc=linecount_wc(fileos)
     print("\nAdding data from:", fileos, lc)
