@@ -348,6 +348,10 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:8] == 'PORTAINE'  or      \
             station[0:8] == 'ALJARAFE'  or      \
             station[0:9] == 'Pagalajar' or      \
+            station[0:6] == 'Aguila'    or      \
+            station[0:4] == 'Raca'      or      \
+            station[0:6] == 'Fiscal'    or      \
+            station[0:4] == 'LUGA'      or      \
             station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
         return True
     return False
@@ -425,21 +429,21 @@ def parseraprs(packet_str, msg):
         else:
             return -1
         longitude = get_longitude(packet)
-        latitude = get_latitude(packet)
-        altitude = get_altitude(packet)
+        latitude  = get_latitude(packet)
+        altitude  = get_altitude(packet)
         # resolution = get_resolution(packet)
         # daodatum = get_daodatum(packet)
-        speed = get_speed(packet)                       # ground_speed
-        course = get_course(packet)                     # track
-        path = get_path(packet)                         # aprs_receiver, tracker, aprs_aircraft
-        relay = get_relay(packet)                       # relay TCPIP, OGN123456*, RELAY* , OGNDLY*
-        aprstype = get_aprstype(packet)                 # aprs type: status or position
+        speed     = get_speed(packet)                   # ground_speed
+        course    = get_course(packet)                  # track
+        path      = get_path(packet)                    # aprs_receiver, tracker, aprs_aircraft
+        relay     = get_relay(packet)                   # relay TCPIP, OGN123456*, RELAY* , OGNDLY*
+        aprstype  = get_aprstype(packet)                # aprs type: status or position
         dst_callsign = get_dst_callsign(packet)         # APRS, OGNTRK,
-        source = get_source(dst_callsign)               # convert to SOURCE
+        source    = get_source(dst_callsign)            # convert to SOURCE
         destination = get_destination(packet)           # receiver name
-        # header = get_header(packet)                     # aprs type
-        otime = get_otime(packet)                       # msg time
-        data = packet_str
+        # header = get_header(packet)                   # aprs type
+        otime     = get_otime(packet)                   # msg time
+        data      = packet_str
         ix = packet_str.find('>')
         cc = packet_str[0:ix]
         ix = packet_str.find(':')     # look for the message type

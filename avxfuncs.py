@@ -312,7 +312,7 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     cpuload =psutil.cpu_percent()/100
     memavail=psutil.virtual_memory().available/(1024*1024)
     memtot =psutil.virtual_memory().total/(1024*1024)
-    aprsmsg =config.AVXname+">OGNSDR,TCPIP*:>"+tme+"h v0.2.8.AVX CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
+    aprsmsg =config.AVXname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.AVX CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
     print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     sock.flush()
