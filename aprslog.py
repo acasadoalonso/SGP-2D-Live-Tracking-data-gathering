@@ -393,11 +393,11 @@ try:
             sys.stderr.flush()		# flush the print messages
             if COMMIT:
                 conn.commit()		# commit to the DB every 5 minutes
-            continue			    # next APRSMSG
+            continue         		# next APRSMSG
 
         if prt:
             print("In main loop. Count= ", loopcnt)
-        loopcnt += 1			    # just keep a count of number of request to the APRS server
+        loopcnt += 1			# just keep a count of number of request to the APRS server
         if COMMITEM and COMMITMIN != now.minute:
                 conn.commit()		# commit to the DB every 1 minutes
                 COMMITMIN = now.minute	# remember when we made commit
@@ -578,10 +578,6 @@ try:
                 except:
                     print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
 
-                #if cc == "SpainMobi":
-                #    print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
-                #    sys.stdout.flush()					# flush the print messages
-                #    sys.stderr.flush()					# flush the print messages
                 try:
                     curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
@@ -594,7 +590,7 @@ try:
                 cout += 1				# number of records saved
                 continue
 
-            if aprstype == 'status' and TRKSTATUS:			# if status report
+            if aprstype == 'status' and TRKSTATUS:	# if status report
                 #           TRACKER STATUS CASE ------------------------------------------------------#
                 status = msg['status']			# get the status message
                 # and the station receiving that status report

@@ -143,7 +143,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
                 continue
         if "hgt" in msg:			# barometric altitude
                 FL = (msg['hgt']+alt)/100	# Flight Level
-                print("FL", FL)
+                #print("FL", FL)
         if "trk" in msg:
             dir = msg['trk']
         if "cat" in msg:
