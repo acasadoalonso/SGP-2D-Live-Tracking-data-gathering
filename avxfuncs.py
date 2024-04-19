@@ -142,7 +142,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
                 print ("AVX No alt")
                 continue
         if "hgt" in msg:			# barometric altitude
-                FL = msg['hgt']+alt
+                FL = (msg['hgt']+alt)/100	# Flight Level
                 print("FL", FL)
         if "trk" in msg:
             dir = msg['trk']
@@ -238,6 +238,7 @@ def avxaprspush(datafix, conn, prt=False):
         src      = fix['source']
         if src == 'OGN':
            uniqueid = '07'+uniqueid[3:]
+           continue
         else:   
            uniqueid = '25'+uniqueid[3:]
         dist     = fix['dist']

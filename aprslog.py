@@ -246,9 +246,12 @@ if os.path.isfile(compfile):
     print("Competition file: ", compfile)
     fd = open(compfile, 'r')  		# open and read the file
     j = fd.read()
-    clist = json.loads(j)
+    if len(j) > 0:
+       clist = json.loads(j)
+    else:
+       print ("Competition file empty:", clist)
     fd.close()				# close it
-    if clist[0][0:3] != 'OGN' and clist[1][0:3] == 'OGN':		# if the pairing is there on the competition table???
+    if len(clist) > 0 and clist[0][0:3] != 'OGN' and clist[1][0:3] == 'OGN': # if the pairing is there on the competition table???
        OGNT = False			# we do not need to use the TRACKERDEV DB table
        tl=len(clist)			# check the number of entries ???
        idx=0				# index into the table      
