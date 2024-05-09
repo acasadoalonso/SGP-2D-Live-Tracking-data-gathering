@@ -103,7 +103,11 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
             if msg['src'] == 'O':
                src='OGN'
             else:
-               src='ADSB'
+               ID=msg['hex']
+               if ID[0] == 'D':			# almost sure it is a Flarm
+                  src='OGN'
+               else:
+                  src='ADSB'
         if src == 'OGN':
            aid = "OGN"+msg['hex'].upper()	# aircraft ID
         else: 
