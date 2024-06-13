@@ -25,7 +25,7 @@ else:
     exit(-1)
 hostname = socket.gethostname()
 processid = str(os.getpid())
-
+print("Starting Config...")
 APRS_SERVER_HOST = cfg.get('APRS', 'APRS_SERVER_HOST').strip("'").strip('"')
 APRS_SERVER_PORT = int(cfg.get('APRS', 'APRS_SERVER_PORT'))
 APRS_USER = cfg.get('APRS', 'APRS_USER').strip("'").strip('"')
@@ -199,6 +199,39 @@ try:
 except:
     AVXfl = '15000'
 
+try:
+    ENAtext = cfg.get('location', 'ENA').strip("'").strip('"')
+except:
+    ENAtext = 'False'
+try:
+    ENAMQTT = cfg.get('location', 'ENAMQTT').strip("'").strip('"')
+except:
+    ENAMQTT = 'localhost'
+try:
+    ENATOPIC = cfg.get('location', 'ENATOPIC').strip("'").strip('"')
+except:
+    ENATOPIC = ''
+try:
+    ENAUSER = cfg.get('location', 'ENAUSER').strip("'").strip('"')
+except:
+    ENAUSER = ''
+try:
+    ENAPASSWD = cfg.get('location', 'ENAPASSWD').strip("'").strip('"')
+except:
+    ENAPASSWD = ''
+try:
+    ENAname = cfg.get('location', 'ENAname').strip("'").strip('"')
+except:
+    ENAname = 'ENArecvr'
+try:
+    ENAloc = cfg.get('location', 'ENAloc').strip("'").strip('"')
+except:
+    AVXloc = ''
+try:
+    ENAfl = cfg.get('location', 'ENAfl').strip("'").strip('"')
+except:
+    ENAfl = '15000'
+
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
@@ -291,6 +324,10 @@ if (AVXtext == 'True'):
     AVX = True
 else:
     AVX = False
+if (ENAtext == 'True'):
+    ENA = True
+else:
+    ENA = False
 if (ADSBregt == 'True'):
     ADSBreg = True
 else:
@@ -317,9 +354,10 @@ if 'USER' in os.environ and prt:
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
     print("Config APRS values:  ", APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX)
+    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX, "ENA", ENA)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0
 SOCK_FILE = 0
+CLIENT = 0
 RegWarning = True

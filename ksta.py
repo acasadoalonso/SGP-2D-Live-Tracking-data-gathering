@@ -31,6 +31,7 @@ ksta = {
  	   "LEMU"   : "Mutxamiel, Alicante",
  	   "LEBE"   : "Beas del Segura, Jaen",
  	   "LEDE"   : "Cordoba",
+ 	   "LEMS"   : "Manresa",
            "PWLERM2" : "Robledillo de Mohernando",
            "ALCAZAREN" : "Alcazaren, Valladolid ",
            "ANDORRA": "Andorra ",
@@ -95,6 +96,7 @@ ksta = {
            "Benidorm1" : "Benidorm, Alicante ",
            "Benidorm2" : "Benidorm, Alicante ",
            "Pegalajar" : "Pegalajar, Jaen ",
+           "ElYelmo"   : "El Yelmo, Jaen ",
 # french airports
            "LFBM"   : "Mont de Marsan",
 	   "LFBA"   : "La Garomme", 

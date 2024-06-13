@@ -32,7 +32,10 @@ def findfastestaprs():				# find the fastest APRS server
    p=999					# start with a high value
    url=''
    for u in aprs:				# got thru all the servers
-       pp=ping(u)				# ping the server
+       try:
+          pp=ping(u)				# ping the server
+       except:
+          return (u)
        if pp < p:				# if faster ?
           p=pp					# remember the ping time
           url=u					# remember the URL
@@ -54,9 +57,9 @@ def servertest(host, port):
 
 ####################################################################
 
-def getddbdata(prt=True):                  # get the data from the API server
+def getddbdata(prt=False):                  		# get the data from the API server
 
-    global _ogninfo_                        # the OGN info data
+    global _ogninfo_                        	# the OGN info data
     if servertest(HOST, PORT):
         DDB_URL=DDB_URL1
     else:
@@ -80,7 +83,7 @@ def getogninfo(devid):			    # return the OGN DDB infor for this device
 
     global _ogninfo_   		            # the OGN info data
     if len(_ogninfo_) == 0:
-        _ogninfo_=getddbdata()
+        _ogninfo_=getddbdata(prt)
     devices=_ogninfo_["devices"]            # access to the ddbdata
     for dev in devices:                     # loop into the registrations
         if dev["device_id"] == devid:       # if matches ??

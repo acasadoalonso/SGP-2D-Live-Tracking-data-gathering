@@ -32,7 +32,7 @@ def shutdown(sock, count=-1):		        # shutdown routine, close files and repor
         sock.close()                    # close the connection file
     except Exception as e:
         print("Socket error...", e, "ignored \n")
-    if conn:
+    if conn and conn != None:
         conn.commit()                   # commit the DB updates
         conn.close()                    # close the database
     local_time = datetime.now()         # report date and time now
@@ -70,7 +70,7 @@ def prttime(unixtime):
 #
 
 
-programver = 'V2.4'					# January 2024
+programver = 'V2.5'					# June 2024
 
 print("\n\nStart PUSH2OGN: "+programver)
 print(    "=====================")
@@ -99,6 +99,7 @@ TimeCAPTUR            = 150    	# time in second from each run
 TimeLT24SKYL          = 60     	# time in second from each run
 TimeADSB              = SLEEP	# time in second from each run
 TimeAVX               = SLEEP  	# time in second from each run
+TimeENA		      = 0 	# the waiting is whitin the run
 
 # --------------------------------------#
 DBpath = config.DBpath
@@ -129,6 +130,8 @@ parser.add_argument('-u', '--USEDDB', required=False,
                     dest='USEDDB', action='store', default=False)
 parser.add_argument('-x', '--AVX', required=False,
                     dest='AVX', action='store', default=False)
+parser.add_argument('-e', '--ENA', required=False,
+                    dest='ENA', action='store', default=False)
 
 args 	= parser.parse_args()
 prt 	= args.prt			# print on|off
@@ -141,12 +144,13 @@ LT24 	= args.LT24
 ADSB 	= args.ADSB
 USEDDB  = args.USEDDB
 AVX     = args.AVX
+ENA     = args.ENA
 # --------------------------------------#
 if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 
-print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "\n")
+print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "ENA:", ENA, "\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -184,8 +188,14 @@ if LT24:
     LT24login = False
     LT24firsttime = True
 if AVX:
-    from avxfuncs import getsizeadsbcache, avxsetrec
     from avxfuncs import *
+if ENA:
+    from enafuncs import enasetrec
+    from enafuncs import *
+    enaini(prt=prt, aprspush=True)			# init the Mosquitto
+    sleep(2)				# give a chance
+    print ("MQTT initialized...\n")
+    SLEEP = 0				# no sleep when MQTT
 
 
 # --------------------------------------#
@@ -265,7 +275,7 @@ spispotcount = 0			# loop counter
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
 day = now.day				# day of the month
-print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "for AVX:", TimeAVX, "\n\n")
+print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "for AVX:", TimeAVX, "for ENA:", TimeENA, "\n\n")
 if LT24:
     # login into the LiveTrack24 server
     lt24login(LT24path, lt24username, lt24password)
@@ -302,6 +312,9 @@ try:
                 if AVX:
                     func='AVX'
                     avxsetrec(sock_file, prt=prt, store=False, aprspush=True)
+                if ENA:
+                    func='ENA'
+                    enasetrec(sock_file, prt=prt, store=False, aprspush=True)
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
 
             except Exception as e:
@@ -317,7 +330,6 @@ try:
             print("End of Day...")
             shutdown(sock)				# recycle
             exit(0)
-
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
             if (tt - ttspid) >TimeSPOTSPIDERINREACH:    # every 5 minutes for SPIDER, SPOT, INREACH
                 if SPIDER:			        # if we have SPIDER according with the config
@@ -389,6 +401,14 @@ try:
                 					# number of second until beginning of the day
                 td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
                 avxts = int(td.total_seconds())
+
+            if ENA:					# enaire interface
+
+                now = datetime.utcnow()			# get the UTC time
+                #print ("calling to the MQTT:    ", now)
+                enarun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                now = datetime.utcnow()			# get the UTC time
+                #print ("returning from the MQTT:", now)
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
