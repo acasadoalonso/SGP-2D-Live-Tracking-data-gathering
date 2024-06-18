@@ -190,9 +190,9 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
        userdata[1]["datafix"]= []
     utc = datetime.utcnow()
     print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
-    client = 0
-    config.CLIENT = 0
-    sleep (2)
+    client = 0					# reset the mqtt instance
+    config.CLIENT = 0				# and the global pointer
+    sleep (2)					# give it a chance to recover
     return(rc)
     
 
@@ -208,21 +208,21 @@ def enaini(prt=False, aprspush=False):		# init the mosquito client
 
 def enarun(prt=False, aprspush=False):		# run the normal work
 
-    client=config.CLIENT
+    client=config.CLIENT			# the mosquitto instance pointer
     if (client != 0):				# if not disconnected ???
-       client.loop(5)
-    else:					# init the broker
+       client.loop(5)				# give it 5 seconds to get all the messages
+    else:					# init the broker again
        print ("Reinitialize the Mosquitto broker ...")
-       enaini(prt, aprspush)			
-       client=config.CLIENT
-       client.loop(5)
+       enaini(prt, aprspush)			# inititlize the mosquitto	
+       client=config.CLIENT			# point to the new client
+       client.loop(5)				# and recover the messages for 5 seconds again
      
      
 def enafinish(prt=False, aprspush=False):	# run the normal work
 
     print ("ENA finishing ...")
-    client=config.CLIENT
-    client.disconnect()
+    client=config.CLIENT			# point to the global instance
+    client.disconnect()				# disconnect the mosquitto client
      
 
 #-------------------------------------------------------------------------------------------------------------------#
