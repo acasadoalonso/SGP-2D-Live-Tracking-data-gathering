@@ -182,6 +182,8 @@ if ADSB:
     from adsbfuncs import getsizeadsbcache, adsbsetrec
     from adsbfuncs import *
     SLEEP = 5
+    
+    adsbini(prt=prt, aprspush=True)			# init the process
 
 if LT24:
     from lt24funcs import lt24login
@@ -292,7 +294,7 @@ if LT24:
     LT24firsttime = True
 
 
-if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB:
+if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB or AVX or ENA:
     print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
 
 

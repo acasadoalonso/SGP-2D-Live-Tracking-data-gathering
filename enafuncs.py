@@ -13,6 +13,7 @@ import psutil
 import config
 import adsbregfuncs
 from   adsbregfuncs import getadsbreg, getsizeadsbcache
+from   time import sleep
 
 from   datetime import datetime
 from   geopy.distance import geodesic       	# use the Vincenty algorithm^M
@@ -61,12 +62,14 @@ password  = config.ENAPASSWD			# the passowrd
 
 
 def on_connect(client, userdata, flags, rc):	# function clled on connect
+
      if rc == 0:
          print("Connected to MQTT Broker!")	# just inform of it
      else:
          print("Failed to connect, return code %d\n", rc)
 
 def connect_mqtt() -> mqtt_client:		# connect to the Mosquitto server
+
     client = mqtt_client.Client(client_id)
 
     client.username_pw_set(username, password)	# provide un¡sername and password
@@ -174,33 +177,49 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
     return (client)				# return the client instance
 
 def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send the messages on the buffer
+
     loopcount = userdata[0]["message_count"]# counter on the buffer 
     datafix   = userdata[1]["datafix"]
     prt       = userdata[2]["prt"]
     aprspush  = userdata[3]["aprspush"]
     if prt:
-       print ("Disconnecting ...")
+       print ("Disconnecting ...", rc)
     if aprspush:				# if aprspush ... push the remaining data
        enaaprspush(datafix, prt)
        userdata[0]["message_count"] = 0
        userdata[1]["datafix"]= []
     utc = datetime.utcnow()
-    print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, "<<<")
+    print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
+    client = 0
+    config.CLIENT = 0
+    sleep (2)
+    return(rc)
     
 
 def enaini(prt=False, aprspush=False):		# init the mosquito client
+
     client = connect_mqtt()			# create instance and connect
     client.user_data_set([{"message_count": 0}, {"datafix" :  []}, {'prt': prt}, {'aprspush':aprspush}])
     subscribe(client)				# subcribe to the ENAIRE topic
     config.CLIENT=client			# save the client object
     client.on_disconnect = on_disconnect	# in case of disconect
+
     return(client)
 
 def enarun(prt=False, aprspush=False):		# run the normal work
+
     client=config.CLIENT
-    client.loop(5)
+    if (client != 0):				# if not disconnected ???
+       client.loop(5)
+    else:					# init the broker
+       print ("Reinitialize the Mosquitto broker ...")
+       enaini(prt, aprspush)			
+       client=config.CLIENT
+       client.loop(5)
+     
      
 def enafinish(prt=False, aprspush=False):	# run the normal work
+
     print ("ENA finishing ...")
     client=config.CLIENT
     client.disconnect()
