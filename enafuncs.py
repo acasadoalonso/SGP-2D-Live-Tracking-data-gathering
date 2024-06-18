@@ -48,7 +48,8 @@ mmm= {
     "ecat": 3,
     "timestamp": 1718179739.7421875
 }
-
+global savedtime
+savedtime = time.time()
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -168,7 +169,14 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               enaaprspush(datafix, prt)		# push the data to the OGN APRS
               userdata[1]["datafix"]= []	# reset the buffer
         if (loopcount - int(loopcount/100000)*100000) == 0: 	# we send to the APRS in check of 100K messages
-              print (">>>ENA::", loopcount, len(datafix), utc,  aprspush, prt)
+              global savedtime
+              current_time = time.time()
+              timediff=current_time-savedtime
+              #print ("TTT", current_time, savedtime, timediff)
+              mpsec=timediff*60.0/100000.0	# request per minute
+              savedtime=current_time
+        
+              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, utc,  aprspush, prt)
 
 # -------------------------------------------	# end of on_message function
 
@@ -198,8 +206,10 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
 
 def enaini(prt=False, aprspush=False):		# init the mosquito client
 
+    global savedtime
+    savedtime = time.time()
     client = connect_mqtt()			# create instance and connect
-    client.user_data_set([{"message_count": 0}, {"datafix" :  []}, {'prt': prt}, {'aprspush':aprspush}])
+    client.user_data_set([{"message_count": 1}, {"datafix" :  []}, {'prt': prt}, {'aprspush':aprspush}])
     subscribe(client)				# subcribe to the ENAIRE topic
     config.CLIENT=client			# save the client object
     client.on_disconnect = on_disconnect	# in case of disconect
