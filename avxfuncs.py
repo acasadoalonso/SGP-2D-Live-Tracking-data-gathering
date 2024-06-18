@@ -75,19 +75,25 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         else:
             print ("AVX No fli")
             continue
+        aID = msg['hex'].upper()		# aircraft ID
         if "src" in msg:			# check the source ADS-B or ADS-L
             if msg['src'] == 'O':
                src='OGN'
             else:
-               ID=msg['hex']
-               if ID[0] == 'D':			# almost sure it is a Flarm
+               if aID[0] == 'D':		# almost sure it is a Flarm
                   src='OGN'
                else:
-                  src='ADSB'
+                  src='ADSB'			# the default is ADSB
+
+
         if src == 'OGN':
-           aid = "OGN"+msg['hex'].upper()	# aircraft ID
+           aid    = "OGN"+aID			# aircraft ID for the APRS
         else: 
-           aid = "ICA"+msg['hex'].upper()	# aircraft ID
+           if aID[0] == 'D':			# it is Flarm ???
+              aid = "OGN"+aID			# aircraft ID
+           else:
+              aid = "ICA"+aID			# aircraft ID
+        
 
         ttt=msg['uti']		    		# when the aircraft was seen
         					# number of second until beginning of the day
@@ -198,9 +204,9 @@ def avxstoreitindb(datafix, curs, conn):   	# store the fix into the database
 #-------------------------------------------------------------------------------------------------------------------#
 
 def avxaprspush(datafix, conn, prt=False):
-
-    for fix in datafix['avxpos']:	    # for each fix on the dict
-        id       = fix['ICAOID']		    # extract the information
+    cnt=0					# counter of messgages
+    for fix in datafix['avxpos']:	    	# for each fix on the dict
+        id       = fix['ICAOID']		# extract the information
         dte      = fix['date']
         hora     = fix['time']
         station  = config.location_name
@@ -259,16 +265,18 @@ def avxaprspush(datafix, conn, prt=False):
             aprsmsg += "reg"+reg+" model"+model+" \n"
         else:
             aprsmsg += " \n"
-        if  src == 'OGN':
-            print("APRSMSG: ", aprsmsg[0:-1], "Country: OGN")
-        else:
-            print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
+        if prt:
+           if  src == 'OGN':
+               print("APRSMSG: ", aprsmsg[0:-1], "Country: OGN")
+           else:
+               print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
         rtn = config.SOCK_FILE.write(aprsmsg)
         config.SOCK_FILE.flush()
+        cnt += 1
         if rtn == 0:
             print("Error writing msg:", aprsmsg)
 
-    return (True)
+    return (cnt)
 
 #-------------------------------------------------------------------------------------------------------------------#
 #LEMD>OGNSDR,TCPIP*,qAC,GLIDERN2:/141436h4030.49NI00338.59W&/A=002280
@@ -284,7 +292,8 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     t = datetime.utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" \n"
-    print("APRSMSG: ", aprsmsg)
+    if prt:
+       print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     sock.flush()
     if rtn == 0:
@@ -294,7 +303,8 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     memavail=psutil.virtual_memory().available/(1024*1024)
     memtot =psutil.virtual_memory().total/(1024*1024)
     aprsmsg =config.AVXname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.AVX CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
-    print("APRSMSG: ", aprsmsg)
+    if prt:
+       print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     sock.flush()
     return
@@ -308,6 +318,7 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
 
     avxpos = {"avxpos": []}			# init the dict
     url    = config.AVXhost
+    avxcnt=0
     tracks = avxgetapidata(url)   		# get the JSON data from the AVX server
     if prt:
         print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4))  	# convert JSON to dictionary
@@ -325,8 +336,14 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
         curs = conn.cursor()            	# set the cursor for storing the fixes
         avxstoreitindb(avxpos, curs, conn)  	# and store it on the DDBB
     if aprspush:
-        avxaprspush(avxpos, conn, prt=prt)  	# and push it into the OGN APRS
+        avxcnt=avxaprspush(avxpos, conn, prt=prt)  	# and push it into the OGN APRS
         					# number of second until beginning of the day of 1-1-1970
-    return (int(avxnow))			# return TTIME for next call
+    return (int(avxnow), avxcnt)		# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
+def avxini(prt=False, aprspush=False):
+    print ("AVX interface initialized...")
+    return
+def avxfinish(count, prt=False, aprspush=False):
+    print ("AVX interface terminated... Count:", count)
+    return

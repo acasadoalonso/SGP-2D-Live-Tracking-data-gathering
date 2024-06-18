@@ -33,8 +33,13 @@ def shutdown(sock, count=-1):		        # shutdown routine, close files and repor
     except Exception as e:
         print("Socket error...", e, "ignored \n")
     if conn and conn != None:
-        conn.commit()                   # commit the DB updates
-        conn.close()                    # close the database
+        try:
+           conn.commit()                # commit the DB updates
+           conn.close()                 # close the database
+        except:
+           print("Error closing database ... no problem at this shutdown time...")
+    if AVX:
+        avxfinish(avxcnt)
     local_time = datetime.now()         # report date and time now
     print("Shutdown now, Time now:", local_time, " Local time. Count:", count)
     if os.path.exists(config.DBpath+"PUSH2OGN.alive"):
@@ -48,6 +53,8 @@ def shutdown(sock, count=-1):		        # shutdown routine, close files and repor
 
 def signal_term_handler(signal, frame):
     print('got SIGTERM ... shutdown orderly')
+    if ENA:
+       enafinish(True, True)
     shutdown(sock) 			# shutdown orderly
     sys.exit(0)
 
@@ -150,7 +157,7 @@ if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 
-print("Setup: SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "ENA:", ENA, "\n")
+print("Setup: PRINT:", prt, "SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "ENA:", ENA, "\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -189,6 +196,8 @@ if LT24:
     LT24firsttime = True
 if AVX:
     from avxfuncs import *
+    avxini(prt=prt, aprspush=True)			# init the process
+    avxcnt=0
 if ENA:
     from enafuncs import enasetrec
     from enafuncs import *
@@ -328,7 +337,11 @@ try:
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
             print("End of Day...")
-            shutdown(sock)				# recycle
+            if ENA:
+               enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                         				# recycle
+            shutdown(sock, spispotcount)
+            print(".............")
             exit(0)
         try:						# lets see if we have data from the interface functionns: SPIDER, SPOT, LT24 or SKYLINES
             if (tt - ttspid) >TimeSPOTSPIDERINREACH:    # every 5 minutes for SPIDER, SPOT, INREACH
@@ -393,10 +406,11 @@ try:
                 td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
                 adsbts = int(td.total_seconds())
 
-            if AVX:					# if we have the ADSB according with the configuration
+            if AVX:					# if we have the ADSB/AVX according with the configuration
                 					# find the position and add it to the DDBB
                 func='AVX'
-                avxts = avxfindpos(avxts, conn, prt=prt, store=False, aprspush=True)
+                (avxts,cnt) = avxfindpos(avxts, conn, prt=prt, store=False, aprspush=True)
+                avxcnt += cnt				# count the number of APRS messages
             else:
                 					# number of second until beginning of the day
                 td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
@@ -405,20 +419,20 @@ try:
             if ENA:					# enaire interface
 
                 now = datetime.utcnow()			# get the UTC time
-                #print ("calling to the MQTT:    ", now)
                 enarun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                 now = datetime.utcnow()			# get the UTC time
-                #print ("returning from the MQTT:", now)
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX:
-
-                print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or ENA:
+                if prt:
+                   print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
                     tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
-            if (ADSB or AVX) and spispotcount % 10 == 0:
+            if (ADSB or AVX or ENA) and spispotcount % 10000 == 0:
 
                 print("ADSB Cache size", getsizeadsbcache())
+                if AVX:
+                   print ("AVX PUSH messages:", avxcnt)
 
         except Exception as e:
             print(traceback.format_exc())
@@ -429,6 +443,8 @@ try:
 
             nerrors += 1
             if nerrors > 100:
+                if ENA:
+                   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                 shutdown(sock, spispotcount)            # way to many errors
                 sys.exit(-1)		                # and bye ...
 							# end of except
@@ -440,6 +456,8 @@ except KeyboardInterrupt:
     print("Keyboard input received, ignore")
     pass
 
+if ENA:
+   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
 shutdown(sock, spispotcount)
 
 print("Exit now ...", nerrors)

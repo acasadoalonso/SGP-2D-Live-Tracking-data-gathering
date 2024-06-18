@@ -247,7 +247,11 @@ if os.path.isfile(compfile):
     fd = open(compfile, 'r')  		# open and read the file
     j = fd.read()
     if len(j) > 0:
-       clist = json.loads(j)
+       try:
+          clist = json.loads(j)
+       except:
+          clist=[]
+          print ("Competition file empty:", clist)
     else:
        print ("Competition file empty:", clist)
     fd.close()				# close it

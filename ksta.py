@@ -32,6 +32,7 @@ ksta = {
  	   "LEBE"   : "Beas del Segura, Jaen",
  	   "LEDE"   : "Cordoba",
  	   "LEMS"   : "Manresa",
+ 	   "LECA"   : "Corral de Ayllon",
            "PWLERM2" : "Robledillo de Mohernando",
            "ALCAZAREN" : "Alcazaren, Valladolid ",
            "ANDORRA": "Andorra ",

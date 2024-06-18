@@ -43,5 +43,5 @@ python3 genadsbreg.py  -f True -o True -a True -m True
 echo "Generation of the ADSBreg done ..."
 cd ~/src/APRSsrc/utils
 wc Basic*  *.csv
-rm wget-log*
+rm -f wget-log*
 date

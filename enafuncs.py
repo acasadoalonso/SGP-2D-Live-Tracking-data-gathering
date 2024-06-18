@@ -123,7 +123,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
                   roc= 0 
 
            if 'ground_speed' in j_obj:		# if provided
-                  gs=j_obj['ground_speed']*666.738661 # ground speed in knots
+                  gs=j_obj['ground_speed']*1.0  # ground speed in knots
            else:
                   gs=0.0			# if no speed provided 
                   break
@@ -160,10 +160,12 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            datafix   = userdata[1]["datafix"]	# we had stored the messages on the datafix array
            utc = datetime.utcnow()
            if prt:				# for debugging
-              print (">>>", loopcount, len(datafix), utc,  aprspush, prt)
+              print (">>>ENA:", loopcount, len(datafix), utc,  aprspush, prt)
            if aprspush:				# if we asked for APRSpush
               enaaprspush(datafix, prt)		# push the data to the OGN APRS
               userdata[1]["datafix"]= []	# reset the buffer
+        if (loopcount - int(loopcount/100000)*100000) == 0: 	# we send to the APRS in check of 100K messages
+              print (">>>ENA::", loopcount, len(datafix), utc,  aprspush, prt)
 
 # -------------------------------------------	# end of on_message function
 
@@ -172,6 +174,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
     return (client)				# return the client instance
 
 def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send the messages on the buffer
+    loopcount = userdata[0]["message_count"]# counter on the buffer 
     datafix   = userdata[1]["datafix"]
     prt       = userdata[2]["prt"]
     aprspush  = userdata[3]["aprspush"]
@@ -181,6 +184,9 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
        enaaprspush(datafix, prt)
        userdata[0]["message_count"] = 0
        userdata[1]["datafix"]= []
+    utc = datetime.utcnow()
+    print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, "<<<")
+    
 
 def enaini(prt=False, aprspush=False):		# init the mosquito client
     client = connect_mqtt()			# create instance and connect
@@ -193,6 +199,11 @@ def enaini(prt=False, aprspush=False):		# init the mosquito client
 def enarun(prt=False, aprspush=False):		# run the normal work
     client=config.CLIENT
     client.loop(5)
+     
+def enafinish(prt=False, aprspush=False):	# run the normal work
+    print ("ENA finishing ...")
+    client=config.CLIENT
+    client.disconnect()
      
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -281,7 +292,8 @@ def enasetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     t = datetime.utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ENAname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ENAloc+" \n"
-    print("APRSMSG: ", aprsmsg)
+    if prt:
+       print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     sock.flush()
     if rtn == 0:
@@ -291,7 +303,8 @@ def enasetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     memavail=psutil.virtual_memory().available/(1024*1024)
     memtot =psutil.virtual_memory().total/(1024*1024)
     aprsmsg =config.ENAname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.ENA CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
-    print("APRSMSG: ", aprsmsg)
+    if prt:
+       print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     sock.flush()
     return
