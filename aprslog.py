@@ -51,7 +51,7 @@ def aprsconnect(sock, login, firsttime=False, prt=True):  # connect to the APRS 
     #print("Socket send login done")
 
     # Make the connection to the server
-    sock_file = sock.makefile(mode='rw')  # make read/write as we need to send the keep_alive
+    sock_file = sock.makefile(mode='rw', encoding='utf-8', errors='replace')  # make read/write as we need to send the keep_alive
     if prt or firsttime :
         print("APRS Version:", sock_file.readline())  # report the APRS version
         # for control print the login sent and get the response
@@ -287,10 +287,12 @@ if len(clist) > 0 and not LASTFIX and not STATIONS and not FULL: # if we are in 
     afilter += "\n"
     # in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, afilter)
+elif STATIONS :
+    # normal case either STD or STATIONS
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* t/s \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 else:
     # normal case either STD or STATIONS
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
-
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* ' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 if LASTFIX or FULL:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
@@ -362,7 +364,7 @@ try:
         if (current_time - keepalive_time) > 5 * 60:  # keepalives every 5 mins
             # and mark that we are still alive
             alive(config.APP + hostname, keepalive=keepalive_count)  # set the mark on the alive file
-            print("Alive#", keepalive_count, current_time, keepalive_time, "\n\n\n")  # end of UTC day
+            print("Alive#", keepalive_count, current_time - keepalive_time, now, "\n\n\n")  # report the alive
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
@@ -426,9 +428,12 @@ try:
             print("Bye ...\n\n\n")
             os._exit(0)
         except Exception as errt:
+            now = datetime.utcnow()		        # get the UTC time
             print(">>>>: Error on readline", now, file=sys.stderr)
-            print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), "<<<<", len(packet_str), file=sys.stderr)
-            print(f"{type(errt).__name__} was raised: {errt}", file=sys.stderr)
+            if len(packet_str) > 0:
+               print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), ":<<<<", len(packet_str), file=sys.stderr)
+               print(f"{type(errt).__name__} was raised: {errt}", file=sys.stderr)
+               print(">>>>:",packet_str, ":<<<<", file=sys.stderr)
             rtn = sock_file.write("# Python APRSLOG App\n")
             continue
 

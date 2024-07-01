@@ -147,11 +147,16 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            else:
                   flg=''
 
+           if     'ecat' in j_obj and  j_obj['ecat']:	# category
+                  ecat=   j_obj['ecat']	
+           else:
+                  ecat=''
+
            vitlat = config.FLOGGER_LATITUDE	# get the distance to the dummy station 
            vitlon = config.FLOGGER_LONGITUDE
            distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
 						# the dict with the info
-           pos = {"ICAOID":icaoid, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'rot':0, 'UnitID':icaoid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':''}  
+           pos = {"ICAOID":icaoid, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'rot':0, 'UnitID':icaoid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':ecat}  
            
            userdata[1]["datafix"].append(pos)	# we added to the buffer
            userdata[0]["message_count"] += 1	# increase the counter on the buffer
@@ -173,10 +178,10 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               current_time = time.time()
               timediff=current_time-savedtime
               #print ("TTT", current_time, savedtime, timediff)
-              mpsec=timediff*60.0/100000.0	# request per minute
+              mpsec=int(6000000.0/timediff)		# request per minute
               savedtime=current_time
         
-              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, utc,  aprspush, prt)
+              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minutei ", utc,  aprspush, prt, "::<<<<")
 
 # -------------------------------------------	# end of on_message function
 
@@ -293,7 +298,10 @@ def enaaprspush(datafix, prt=False):
             continue								# ignore the traffic with no altitude
         aprsmsg += " id25"+id+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot "+daotxt+" " 
         if flight and flight != '':
-           aprsmsg += "fn"+flight+" "
+           if cat != '':
+               aprsmsg += "fnA"+str(cat)+":"+flight+" "
+           else:
+               aprsmsg += "fn:"+flight+" "
         regmodel = getadsbreg(id)
         if FL > 0 :
            aprsmsg += " FL%03d " % int(FL)

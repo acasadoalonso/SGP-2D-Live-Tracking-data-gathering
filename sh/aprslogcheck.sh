@@ -74,7 +74,7 @@ else
                         else 
                            ps="python3 $SCRIPTPATH/../aprslog.py "$param
                            pnum=$(pgrep -a -f -x -c "$ps")
-                           pnum=$(pgrep -a -c python )
+                           pnum=$(pgrep -a  python | grep aprslog.py | wc -l)
                            if [ $pnum -ne 1 ] # if aprslog is  not running
 		           then
                               if [ "$(id -u)" != "0" ]; then
