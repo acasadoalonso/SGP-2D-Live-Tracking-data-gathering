@@ -98,6 +98,7 @@ ksta = {
            "Benidorm2" : "Benidorm, Alicante ",
            "Pegalajar" : "Pegalajar, Jaen ",
            "ElYelmo"   : "El Yelmo, Jaen ",
+           "Avila"     : "Avila ",
 # french airports
            "LFBM"   : "Mont de Marsan",
 	   "LFBA"   : "La Garomme", 

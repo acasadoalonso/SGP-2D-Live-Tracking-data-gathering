@@ -352,6 +352,8 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:4] == 'Raca'      or      \
             station[0:6] == 'Fiscal'    or      \
             station[0:4] == 'LUGA'      or      \
+            station[0:5] == 'Avila'     or      \
+            station[0:5] == 'AVILA'     or      \
             station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
         return True
     return False

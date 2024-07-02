@@ -122,6 +122,8 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
                 roc = msg['vrt']
         if "spd" in msg:
                 spd = msg['spd']
+                if spd > 999:
+                   spd=999
         if "alt" in msg:
                 alt = msg["alt"] 		# and the altitude
         else:
@@ -132,6 +134,8 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
                 #print("FL", FL)
         if "trk" in msg:
             dir = msg['trk']
+            if dir >359:
+               dir=0
         if "cat" in msg:
             cat = msg['cat']
 
