@@ -349,7 +349,7 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:8] == 'ALJARAFE'  or      \
             station[0:9] == 'Pagalajar' or      \
             station[0:6] == 'Aguila'    or      \
-            station[0:4] == 'Raca'      or      \
+            station[0:6] == 'LaRaca'    or      \
             station[0:6] == 'Fiscal'    or      \
             station[0:4] == 'LUGA'      or      \
             station[0:5] == 'Avila'     or      \

@@ -36,6 +36,7 @@ ksta = {
            "PWLERM2" : "Robledillo de Mohernando",
            "ALCAZAREN" : "Alcazaren, Valladolid ",
            "ANDORRA": "Andorra ",
+           "Avila"  : "Avila ",
            "AVILA"  : "Avila ",
            "CASTEJONS" : "Castejon de Sos, Huesca ",
            "CREAL"  : "Ciudad Real",
