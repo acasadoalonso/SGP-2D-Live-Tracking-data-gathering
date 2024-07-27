@@ -105,7 +105,7 @@ TimeSPOTSPIDERINREACH = 300     # time in second from each run
 TimeCAPTUR            = 150    	# time in second from each run
 TimeLT24SKYL          = 60     	# time in second from each run
 TimeADSB              = SLEEP	# time in second from each run
-TimeAVX               = SLEEP  	# time in second from each run
+TimeAVX               = 5  	# time in second from each run
 TimeENA		      = 0 	# the waiting is whitin the run
 
 # --------------------------------------#
@@ -200,6 +200,7 @@ if AVX:
     from avxfuncs import *
     avxini(prt=prt, aprspush=True)			# init the process
     avxcnt=0
+    SLEEP=5
 if ENA:
     from enafuncs import enasetrec
     from enafuncs import *

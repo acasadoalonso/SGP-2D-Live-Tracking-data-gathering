@@ -52,7 +52,10 @@ def avxgetapidata(url, prt=False):		# get the data from the aero-network using t
     req.add_header("Content-type", "application/x-www-form-urlencoded")
     r = urllib.request.urlopen(req)         	# open the url resource
     js=r.read().decode('UTF-8')
-    j_obj = json.loads(js)                  	# convert to JSON
+    if len(js) > 0:
+       j_obj = json.loads(js)                  	# convert to JSONa
+    else:
+       j_obj = {}
 
     if prt:
         print(json.dumps(j_obj, indent=4))
@@ -323,14 +326,18 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
     avxpos = {"avxpos": []}			# init the dict
     url    = config.AVXhost
     avxcnt=0
-    tracks = avxgetapidata(url)   		# get the JSON data from the AVX server
-    if prt:
-        print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4))  	# convert JSON to dictionary
-    
     now = datetime.utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
     td = now-datetime(1970, 1, 1)
     avxnow = int(td.total_seconds())  		# Unix time - seconds from the epoch
     # print ("AVXnow:", avxnow)
+    tracks = avxgetapidata(url)   		# get the JSON data from the AVX server
+    if len(tracks) <= 0:
+        print("AVXfindpos: Empty msg", avxnow)	# print the data
+        return (int(avxnow), avxcnt)		# return TTIME for next call
+    if False:
+        print("AVXfindpos:", len(tracks), avxnow)
+    if prt:
+        print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4))  	# convert JSON to dictionary
     						# get all the devices with AVX
     avxaddpos(tracks, avxpos, ttime, avxnow, prt=prt)  # find the gliders since TTIME
 
