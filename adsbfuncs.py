@@ -309,7 +309,7 @@ RPI = is_raspberrypi()
 
 
 def adsbsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.utcnow()       		# get the date
+    t = datetime.now(datetime.timezone.utc)       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ADSBloc+" \n"
     print("APRSMSG: ", aprsmsg)
@@ -341,7 +341,7 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
     adsbpos = {"adsbpos": []}		# init the dict
     if OPENSKY:
         found = adsbopensky(adsbpos, ttime, prt=prt)
-        now = datetime.utcnow()          # get the UTC time
+        now = datetime.now(datetime.timezone.utc)          # get the UTC time
         # number of seconds until beginning of the day 1-1-1970
         td = now-datetime(1970, 1, 1)
         adsbnow = int(td.total_seconds())  # Unix time - seconds from the epoch
@@ -349,7 +349,7 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
         url = "http://"+config.ADSBhost+"/data.json"
         adsbfile = config.ADSBfile
         if not os.path.exists(adsbfile):
-            now = datetime.utcnow()
+            now = datetime.now(datetime.timezone.utc)
             # number of second until beginning of the day of 1-1-1970
             return (ttime+1)		# return TTIME for next call
 

@@ -139,31 +139,33 @@ echo "Installing the PYTHON modules required  ..."		#
 echo "=================================================="	#
 echo " "							#
 echo								#
-sudo -H python3 -m pip install --upgrade pip			#
+pip install --upgrade pip					#
 pip3 -V								#
-sudo -H python3 -m pip install ephem pytz geopy configparser 	#
-sudo -H python3 -m pip install pycountry uritemplate requests	#
-sudo -H python3 -m pip install beeprint ogn.client		#
-sudo -H python3 -m pip install tqdm psutil python-dateutil	#
-sudo -H python3 -m pip install ping3               		#
-sudo -H python3 -m pip install pipreqs               		#
-sudo -H python3 -m pip install ttn               		#
-sudo -H python3 -m pip install paho-mqtt			#
-sudo -H python3 -m pip install pyserial 			#
-sudo -H python3 -m pip install pyopenssl 			#
-sudo -H python3 -m pip install eciespy pycryptodome rsa         #
-sudo -H python3 -m pip install ansible               		#
-sudo -H python3 -m pip install ansible-lint            		#
-sudo -H python3 -m pip install molecule               		#
-sudo -H python3 -m pip install docker               		#
-sudo -H python3 -m pip install yamllint               		#
-sudo -H python3 -m pip install setuptools 			#
-sudo -H python3 -m pip install flake8 icecream         		#
-sudo -H python3 -m pip install httpx               		#
-sudo -H python3 -m pip install mysqlclient			#
-sudo -H python3 -m pip install timezonefinder 			#
-sudo -H python3 -m pip install airportsdata			#
-sudo -H python3 -m pip install termcolor			#
+sudo -H python3 -m pip install ephem pytz geopy configparser 	--break-system-packages
+sudo -H python3 -m pip install pycountry uritemplate requests	--break-system-packages
+sudo -H python3 -m pip install beeprint ogn.client		--break-system-packages
+sudo -H python3 -m pip install tqdm psutil python-dateutil	--break-system-packages
+sudo -H python3 -m pip install ping3               		--break-system-packages
+sudo -H python3 -m pip install pipreqs               		--break-system-packages
+sudo -H python3 -m pip install ttn               		--break-system-packages
+sudo -H python3 -m pip install paho-mqtt			--break-system-packages
+sudo -H python3 -m pip install pyserial 			--break-system-packages
+sudo -H python3 -m pip install pyopenssl 			--break-system-packages
+sudo -H python3 -m pip install eciespy pycryptodome rsa         --break-system-packages
+sudo -H python3 -m pip install ansible               		--break-system-packages
+sudo -H python3 -m pip install ansible-lint            		--break-system-packages
+sudo -H python3 -m pip install molecule               		--break-system-packages
+sudo -H python3 -m pip install docker               		--break-system-packages
+sudo -H python3 -m pip install yamllint               		--break-system-packages
+sudo -H python3 -m pip install setuptools 			--break-system-packages
+sudo -H python3 -m pip install flake8 icecream         		--break-system-packages
+sudo -H python3 -m pip install httpx               		--break-system-packages
+sudo -H python3 -m pip install mysqlclient			--break-system-packages
+sudo -H python3 -m pip install timezonefinder 			--break-system-packages
+sudo -H python3 -m pip install airportsdata			--break-system-packages
+sudo -H python3 -m pip install termcolor			--break-system-packages
+sudo -H python3 -m pip install gitpython			--break-system-packages
+pipreqs  --force .
 if [ $sql = 'MySQL' ]						#	
 then								#
 	sudo -H pip3 uninstall mysqlclient			#

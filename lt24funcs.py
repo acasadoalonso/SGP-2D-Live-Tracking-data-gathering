@@ -342,7 +342,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
 
     if len(userList) == 0:
         userList = "NONE"
-        now = datetime.utcnow()
+        now = datetime.now(datetime.timezone.utc)
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
@@ -357,7 +357,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
     if 'result' in pos:
         result = pos["result"]                  # get the result part
     else:
-        now = datetime.utcnow()
+        now = datetime.now(datetime.timezone.utc)
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
@@ -376,7 +376,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
         lt24aprspush(lt24pos, prt)		# and push the data to the OGN APRS
 
     if sync == 0:			        # just in case of not tracks at all, built the current time
-        now = datetime.utcnow()
+        now = datetime.now(datetime.timezone.utc)
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         sync = int(td.total_seconds())          # as an integer

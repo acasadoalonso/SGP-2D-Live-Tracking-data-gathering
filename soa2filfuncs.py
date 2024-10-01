@@ -25,7 +25,7 @@ from getflarm import *
 from simplehal import HalDocument, Resolver
 from pprint import pprint
 from config import *
-pgmver='2.1'
+pgmver='2.2'
 #-------------------------------------------------------------------------------------------------------------------#
 
 
@@ -99,16 +99,17 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
 # ==============================================#
    hostname = socket.gethostname()	    	# hostname as control
    start_time = time.time()                    	# get the time now
-   utc = datetime.datetime.utcnow()            	# the UTC time
+   utc = datetime.datetime.now(datetime.timezone.utc)            	# the UTC time
                                             	# print the time for information only
    date = utc.strftime("%Y-%m-%dT%H:%M:%SZ")   	# get the local time
    local_time = datetime.datetime.now()        	# the local time
    fl_date_time = local_time.strftime("%Y%m%d") # get the local time
+   dttoday = local_time.strftime("%Y-%m-%d")    # get the local time
    if not web:
       print("Hostname:", hostname)
       print("UTC Time is now:", utc)
       print(date)                             	#
-      print("Local Time is now:", local_time)	# print the time for information only
+      print("Local Time is now:", local_time, dttoday)	# print the time for information only
       if prt:
          print("Config params.  SECpath:", secpath)
 
@@ -156,7 +157,7 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
    PrevTaskDate = ""
    if not web:
       print("Classes:\n========\n\n")
-
+   last=idx
    for cl in getemb(cd, 'classes'):
        #print "CLCLCL", cl
        classname = cl["type"]                  	# search for each class
@@ -166,13 +167,27 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
        url3 = getlinks(cl, "class_results")
        #print ("URL",url3)
        ll= len(gdata(url3, "class_results", prt='no')) 
+       i=0
+       if last == 999:		# case of LAST
+           ctt = gdata(url3,   "class_results", prt='no')[ll-2]   # get the results data
+           idx=ll-2
+           tasktype = ctt["task_type"]
+           taskdate = ctt["task_date"]
+           print ("Selecting for: ", taskdate, "Index: ", idx)
+       i=0
+       while i < ll and False:
+           ctt = gdata(url3,   "class_results", prt='no')[i]   # get the results data
+           print ("LLL", i, ctt)
+           i +=1
+           print("==============================================================================================================================")
+
        if ll  > idx:
-           ctt = gdata(url3,   "class_results", prt='no')[
-            idx]                            	# get the results data
+           ctt = gdata(url3,   "class_results", prt='no')[idx]   # get the results data
        else:
            print("The class ", classname, "it is not ready yet\n")
            continue                            	# the class is not ready
-    #print "CTTCTT",ctt
+       
+       #pprint ( gdata(url3,   "class_results", prt='no'))   # get the results data
        tasktype = ctt["task_type"]
        taskdate = ctt["task_date"]
        if not web:
@@ -188,6 +203,7 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
                                             	# go the contestants (pilot) information
            cnt = getemb(ft, "contestant")
            pil = getemb(cnt, "pilot")[0]       	# get the pilot name information
+           #print ("LLL", pil)
            npil += 1
            ognid = ''
            if "igc_file" in ft:
@@ -214,7 +230,12 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
                nationality = pil['nationality']
            else:
                nationality = "UNKOWN"          	# report that we are extracting the flight of that pilot
-           livetrk = cnt['live_track_id']  	# flarmID and OGN pair
+           if "live_track_id" in cnt:
+                 livetrk = cnt['live_track_id']# flarmID and OGN pair
+           else:
+                 livetrk = 'NOFLARM'
+                 print ("No FlarmID for:", pil)
+                 continue
            if len(livetrk) == 9:
                idflarm = livetrk[3:9]		# case that just the FlarmID, no piaring
            if len(livetrk) == 19:              	# format:  FLR123456 OGN654321
@@ -231,7 +252,12 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
 
            if not web:
               print("Pilot:>>>>", pil["first_name"], pil["last_name"], nationality, fr, idflarm, regi, ognid)
-           req = urllib.request.Request(fftc)  	# open the URL
+           time.sleep(3)
+           try: 
+               req = urllib.request.Request(fftc)  	# open the URL
+           except HTTPError:			# in case of HTTP error
+               time.sleep(2)			# give it a second chance
+               req = urllib.request.Request(fftc)  	# open the URL
                                             	# build the authorization header
            req.add_header('Authorization', auth)
            req.add_header("Accept", "application/json")
@@ -247,7 +273,7 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
        if not web:
           print("----------------------------------------------------------------\n\n")
    if not web:
-      print(stats)
+      print("Stats:", stats)
 #
 # Check if the exec option is requested
 #
@@ -259,19 +285,26 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
            os.chdir(dirpath)
        else:
            print("Not available target directory:", dirpath+taskdate)
-
+       nf= os.listdir(dirpath+'/'+taskdate)
+       if len(nf) == 0:
+          print(">>> No files generated ...")
+          exit(-1)
+       else:
+          print("Files generated: ...", nf)
        fname = FlarmID+'.'+getognreg(FlarmID)+'.'+getogncn(FlarmID)+'.igc'
                                             # remove the file to avoid errors
+       #print("FFF", fname)
        if os.path.isfile(fname):
            os.remove(fname)                                # remove if exists
            # get the new IGC files based on the FLARM messages
-       cmd = "grep 'FLARM "+FlarmID+"\|ICAO  "+FlarmID+"' "+taskdate+"/* | sort -k 3 | python3 " + cwd+"/genIGC.py "+FlarmID+" > "+fname
+       cmd = "(cd "+dirpath+" && grep 'FLARM "+FlarmID+"\|ICAO  "+FlarmID+"' "+taskdate+"/* | sort -k 3 | python3 " + cwd+"/genIGC.py "+FlarmID+") > "+fname
 
-       os.system(cmd)
        if not web: 
           print("Extracting the IGC file from embeded FLARM messages \nFrom CD:", cwd, "To:", dirpath)
           print ("CMD:", cmd)
           print("Resulting IGC file is on:", dirpath, "As: ", fname)
+
+       os.system(cmd)
 
 
 # print the number of pilots as a reference and control

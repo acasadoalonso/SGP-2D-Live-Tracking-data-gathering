@@ -51,6 +51,11 @@ def avxgetapidata(url, prt=False):		# get the data from the aero-network using t
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
     r = urllib.request.urlopen(req)         	# open the url resource
+    rc=r.getcode()
+    if rc != 200:
+       print ("AVX RC = ", rc)
+       j_obj = {}
+       return j_obj                            	# return the JSON object
     js=r.read().decode('UTF-8')
     if len(js) > 0:
        j_obj = json.loads(js)                  	# convert to JSONa
@@ -80,7 +85,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
             continue
         aID = msg['hex'].upper()		# aircraft ID
         if "src" in msg:			# check the source ADS-B or ADS-L
-            if msg['src'] == 'O':
+            if msg['src'] == 'O' or msg['src'] == 'F' or msg['src'] == 'L' or msg['src'] == 'N':
                src='OGN'
             else:
                if aID[0] == 'D':		# almost sure it is a Flarm
@@ -296,7 +301,7 @@ def avxaprspush(datafix, conn, prt=False):
 #-------------------------------------------------------------------------------------------------------------------#
 
 def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.utcnow()       		# get the date
+    t = datetime.now(datetime.timezone.utc)       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" \n"
     if prt:
@@ -326,7 +331,7 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
     avxpos = {"avxpos": []}			# init the dict
     url    = config.AVXhost
     avxcnt=0
-    now = datetime.utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
+    now = datetime.now(datetime.timezone.utc)          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
     td = now-datetime(1970, 1, 1)
     avxnow = int(td.total_seconds())  		# Unix time - seconds from the epoch
     # print ("AVXnow:", avxnow)

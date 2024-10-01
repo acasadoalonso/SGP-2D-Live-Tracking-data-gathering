@@ -199,7 +199,7 @@ def captfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             captaprspush(captpos, prt=prt)  # and push the date thru the APRS
 
     if onefound:
-        now = datetime.utcnow()
+        now = datetime.now(datetime.timezone.utc)
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())  # as an integer

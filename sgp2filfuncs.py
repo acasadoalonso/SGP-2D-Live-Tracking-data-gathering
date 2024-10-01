@@ -20,7 +20,7 @@ from getflarm import *
 
 #-------------------------------------------------------------------------------------------------------------------#
 import config
-pgmver='2.1'
+pgmver='2.2'
 def sgp2fil(qsgpID, day, FlarmID, execopt=False, prt=False, web=False):
     FlarmID=FlarmID.upper()
     stats = {}                                              	# statistics
@@ -136,7 +136,8 @@ def sgp2fil(qsgpID, day, FlarmID, execopt=False, prt=False, web=False):
         print("No index of days ... exiting.")
         return('Noindex')
     indexofdays = j_obj["i"]
-                                                        	#print "Index of Days", indexofdays
+    if day == 999:
+       day=len(indexofdays)-1                                  	# print "Index of Days", indexofdays
     if day != 0:                                          	# check the days
         cday = 0
         for dayday in indexofdays:

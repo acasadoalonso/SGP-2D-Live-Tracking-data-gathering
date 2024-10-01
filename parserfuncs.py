@@ -426,7 +426,7 @@ def parseraprs(packet_str, msg):
     # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
-        date = datetime.utcnow() 			# get the date
+        date = datetime.now(datetime.timezone.utc) 			# get the date
         if 'name' in packet:
             callsign = packet['name']               	# get the call sign FLARM ID or station name
             gid = callsign                  	        # id

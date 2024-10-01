@@ -261,7 +261,6 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
                 inreachID+"?d1="+str(ts)
         if prt:
             print(url)
-        print(url)
         inreachpos = {"inreachpos": []}     # init the dict
         # get the KML data from the InReach server
         kml = inreachgetapidata(url)
@@ -283,7 +282,7 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             inreachaprspush(inreachpos, prt)  # and push the data into the APRS
 
     if foundone:
-        now = datetime.utcnow()
+        now = datetime.now(datetime.timezone.utc)
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # as an integer

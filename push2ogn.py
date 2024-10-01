@@ -84,7 +84,7 @@ print(    "=====================")
 
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
-date = datetime.utcnow()         		# get the date
+date = datetime.now(datetime.timezone.utc)         		# get the date
 dte = date.strftime("%y%m%d")             # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
 date = datetime.now()                   # local time
@@ -157,7 +157,7 @@ if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 
-print("Setup: PRINT:", prt, "SPIDER:", SPIDER, "SPOT:", SPOT, "INREACH:", INREACH, "CAPTURS:", CAPTURS, "SKLYLINE:", SKYLINE, "LT24:", LT24, "ADSB:", ADSB, "AVX:", AVX, "ENA:", ENA, "\n")
+print("Setup: \nPRINT:", prt, "\nSPIDER:", SPIDER, "\nSPOT:", SPOT, "\nINREACH:", INREACH, "\nCAPTURS:", CAPTURS, "\nSKLYLINE:", SKYLINE, "\nLT24:", LT24, "\nADSB:", ADSB, "\nAVX:", AVX, "\nENA:", ENA, "\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -268,7 +268,7 @@ alive(config.DBpath+APP, first='yes')
 # Initialise API for SPIDER & SPOT & INREACH & LT24
 #-----------------------------------------------------------------#
 #
-now  = datetime.utcnow()		# get the UTC time
+now  = datetime.now(datetime.timezone.utc)		# get the UTC time
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now  = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
@@ -296,7 +296,7 @@ if LT24:
 
 
 if SPIDER or SPOT or INREACH or CAPTURS or LT24 or ADSB or AVX or ENA:
-    print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.utcnow().isoformat())
+    print(spispotcount, "---> Initial TTime:", ttime, "Unix time:", ts, "UTC:", datetime.now(datetime.timezone.utc).isoformat())
 
 
 date = datetime.now()
@@ -332,10 +332,10 @@ try:
             except Exception as e:
                 print((
                     'Something\'s wrong with socket write. Exception type is %s' % (repr(e))))
-                now = datetime.utcnow()		        # get the UTC time
+                now = datetime.now(datetime.timezone.utc)		        # get the UTC time
                 print("UTC time is now: ", now, keepalive_count, run_time)
 
-        now = datetime.utcnow()				# get the UTC time
+        now = datetime.now(datetime.timezone.utc)				# get the UTC time
         # number of second until beginning of the epoch
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
@@ -421,16 +421,16 @@ try:
 
             if ENA:					# enaire interface
 
-                now = datetime.utcnow()			# get the UTC time
+                now = datetime.now(datetime.timezone.utc)			# get the UTC time
                 enarun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
-                now = datetime.utcnow()			# get the UTC time
+                now = datetime.now(datetime.timezone.utc)			# get the UTC time
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
             if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or ENA:
                 if prt:
                    print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
-                    tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.utcnow().isoformat())
+                    tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", datetime.now(datetime.timezone.utc).isoformat())
             if (ADSB or AVX or ENA) and spispotcount % 10000 == 0:
 
                 print("ADSB Cache size", getsizeadsbcache())
@@ -442,7 +442,7 @@ try:
             print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
 
             if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX:
-                print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.utcnow().isoformat())
+                print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", datetime.now(datetime.timezone.utc).isoformat())
 
             nerrors += 1
             if nerrors > 100:

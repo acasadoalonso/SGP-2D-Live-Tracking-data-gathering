@@ -167,7 +167,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
         if (loopcount - int(loopcount/100)*100) == 0: 	# we send to the APRS in check of 100 messages
            #print(f"Received `{message}` from `{msg.topic}` topic", loopcount)
            datafix   = userdata[1]["datafix"]	# we had stored the messages on the datafix array
-           utc = datetime.utcnow()
+           utc = datetime.now(datetime.timezone.utc)
            if prt:				# for debugging
               print (">>>ENA:", loopcount, len(datafix), utc,  aprspush, prt)
            if aprspush:				# if we asked for APRSpush
@@ -201,7 +201,7 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
        enaaprspush(datafix, prt)
        userdata[0]["message_count"] = 0
        userdata[1]["datafix"]= []
-    utc = datetime.utcnow()
+    utc = datetime.now(datetime.timezone.utc)
     print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
     client = 0					# reset the mqtt instance
     config.CLIENT = 0				# and the global pointer
@@ -326,7 +326,7 @@ def enaaprspush(datafix, prt=False):
 #-------------------------------------------------------------------------------------------------------------------#
 
 def enasetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.utcnow()       		# get the date
+    t = datetime.now(datetime.timezone.utc)       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ENAname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ENAloc+" \n"
     if prt:
