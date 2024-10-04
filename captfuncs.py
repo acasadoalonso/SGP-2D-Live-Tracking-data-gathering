@@ -9,7 +9,7 @@ import MySQLdb                            # the SQL data base routines^M
 import config
 from flarmfuncs import getflarmid, chkflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
-
+from dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 # get the data from the API server
 def captgetapidata(url, prt=False):
@@ -41,7 +41,7 @@ def captaddpos(msg, captpos, ttime, captID, flarmid):  # extract the data from t
     speed = msg["speed"]		# low accuracy speed
     dte = msg["date"]			# date on format: :"Wed Jan 25 2017 22:52:41 GMT"
     # get the time from the timestamp
-    tme = datetime.utcfromtimestamp(unixtime)
+    tme = naive_utcfromtimestamp(unixtime)
     date = tme.strftime("%y%m%d")  # the date
     time = tme.strftime("%H%M%S")  # the time
     vitlat = config.FLOGGER_LATITUDE    # the lat/long of the base station
@@ -199,7 +199,7 @@ def captfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             captaprspush(captpos, prt=prt)  # and push the date thru the APRS
 
     if onefound:
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())  # as an integer

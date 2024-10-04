@@ -12,6 +12,7 @@ import time
 import psutil
 import config
 import adsbregfuncs
+import platform
 from   adsbregfuncs import getadsbreg, getsizeadsbcache
 from   time import sleep
 
@@ -19,6 +20,7 @@ from   datetime import datetime
 from   geopy.distance import geodesic       	# use the Vincenty algorithm^M
 from   parserfuncs import deg2dmslat, deg2dmslon, dao
 from   paho.mqtt import client as mqtt_client
+from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 msgsample= {					# sample of data comming form ENAIRE
     "lat": 39.5751748,
@@ -71,7 +73,11 @@ def on_connect(client, userdata, flags, rc):	# function clled on connect
 
 def connect_mqtt() -> mqtt_client:		# connect to the Mosquitto server
 
-    client = mqtt_client.Client(client_id)
+    py=platform.python_version()
+    if py[0:4] >= '3.12':
+       client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
+    else:
+       client = mqtt_client.Client(client_id)
 
     client.username_pw_set(username, password)	# provide un¡sername and password
     client.on_connect = on_connect		# define what function to call on connect
@@ -106,7 +112,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
                  break
            ttt =  j_obj['timestamp']		# message time
            ts = int(ttt)       			# Unix time - seconds from the epoch
-           t=datetime.utcfromtimestamp(ts)	# convert to time object the number os seconds from epoc
+           t=naive_utcfromtimestamp(ts)	# convert to time object the number os seconds from epoc
            date = t.strftime("%y%m%d")		# date and time
            tme = t.strftime("%H%M%S")
            lat=   j_obj['lat']			# latitude
@@ -167,7 +173,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
         if (loopcount - int(loopcount/100)*100) == 0: 	# we send to the APRS in check of 100 messages
            #print(f"Received `{message}` from `{msg.topic}` topic", loopcount)
            datafix   = userdata[1]["datafix"]	# we had stored the messages on the datafix array
-           utc = datetime.now(datetime.timezone.utc)
+           utc = naive_utcnow()
            if prt:				# for debugging
               print (">>>ENA:", loopcount, len(datafix), utc,  aprspush, prt)
            if aprspush:				# if we asked for APRSpush
@@ -201,7 +207,7 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
        enaaprspush(datafix, prt)
        userdata[0]["message_count"] = 0
        userdata[1]["datafix"]= []
-    utc = datetime.now(datetime.timezone.utc)
+    utc = naive_utcnow()
     print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
     client = 0					# reset the mqtt instance
     config.CLIENT = 0				# and the global pointer
@@ -326,7 +332,7 @@ def enaaprspush(datafix, prt=False):
 #-------------------------------------------------------------------------------------------------------------------#
 
 def enasetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.now(datetime.timezone.utc)       		# get the date
+    t = naive_utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ENAname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ENAloc+" \n"
     if prt:

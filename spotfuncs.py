@@ -10,7 +10,7 @@ import config
 from flarmfuncs import getflarmid, chkflarmid
 from ognddbfuncs import getognflarmid, get_by_dvt
 from parserfuncs import deg2dmslat, deg2dmslon
-
+from dtfuncs import naive_utcnow
 
 # get the data from the API server
 def spotgetapidata(url, prt=False):
@@ -259,7 +259,7 @@ def spotfindpos(ttime, conn, prt=False, store=True, aprspush=False):
                 if aprspush:
                     spotaprspush(spotpos, prt)	    # and push the data into the APRS
     if foundone:
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # as an integer

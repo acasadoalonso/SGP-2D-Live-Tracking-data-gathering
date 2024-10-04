@@ -17,6 +17,7 @@ import ICAO_ranges
 import config
 import adsbregfuncs
 from   adsbregfuncs import getadsbreg, getsizeadsbcache
+from dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 #-------------------------------------------------------------------------------------------------------------------#
 sample= {					# sample of data received from aero-network
@@ -106,7 +107,7 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         ttt=msg['uti']		    		# when the aircraft was seen
         					# number of second until beginning of the day
         ts = int(ttt)       		    	# Unix time - seconds from the epoch
-        t=datetime.utcfromtimestamp(ts)		# convert to time object the number os seconds from epoc
+        t=naive_utcfromtimestamp(ts)		# convert to time object the number os seconds from epoc
 
         if "lon" in msg:
             lon = msg['lon']
@@ -301,7 +302,7 @@ def avxaprspush(datafix, conn, prt=False):
 #-------------------------------------------------------------------------------------------------------------------#
 
 def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.now(datetime.timezone.utc)       		# get the date
+    t = naive_utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" \n"
     if prt:
@@ -331,7 +332,7 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
     avxpos = {"avxpos": []}			# init the dict
     url    = config.AVXhost
     avxcnt=0
-    now = datetime.now(datetime.timezone.utc)          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
+    now = naive_utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
     td = now-datetime(1970, 1, 1)
     avxnow = int(td.total_seconds())  		# Unix time - seconds from the epoch
     # print ("AVXnow:", avxnow)

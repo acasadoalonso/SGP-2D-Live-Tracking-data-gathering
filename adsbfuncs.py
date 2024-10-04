@@ -7,6 +7,7 @@ from   adsbregfuncs import getadsbreg, getsizeadsbcache
 from   geopy.distance import geodesic       # use the Vincenty algorithm^M
 import config
 from   parserfuncs import deg2dmslat, deg2dmslon
+from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 import psutil
 MUT=False
 if config.ADSBOpenSky:
@@ -65,7 +66,7 @@ def adsbaddpos(tracks, adsbpos, ttime, adsbnow, prt=False):
         ttt=adsbnow-msg['seen']		    	# when the aircraft was seen
         					# number of second until beginning of the day
         ts = int(ttt)       		    	# Unix time - seconds from the epoch
-        t=datetime.utcfromtimestamp(ts)
+        t=naive_utcfromtimestamp(ts)
         #print ("TTT:", t, ts, (adsbnow-ts) , adsbnow, msg)
         if "lon" in msg:
             lon = msg['lon']
@@ -167,7 +168,7 @@ def adsbopensky(adsbpos, ttime, prt=True):
         if s.time_position == None:
             continue			    # if no time nothing to do
         ts = int(s.time_position) 	    # Unix time - seconds from the epocha
-        t=datetime.utcfromtimestamp(ts)
+        t=naive_utcfromtimestamp(ts)
         date = t.strftime("%y%m%d")
         tme = t.strftime("%H%M%S")
         foundone = True
@@ -309,7 +310,7 @@ RPI = is_raspberrypi()
 
 
 def adsbsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
-    t = datetime.now(datetime.timezone.utc)       		# get the date
+    t = naive_utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
     aprsmsg=config.ADSBname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ADSBloc+" \n"
     print("APRSMSG: ", aprsmsg)
@@ -341,7 +342,7 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
     adsbpos = {"adsbpos": []}		# init the dict
     if OPENSKY:
         found = adsbopensky(adsbpos, ttime, prt=prt)
-        now = datetime.now(datetime.timezone.utc)          # get the UTC time
+        now = naive_utcnow()          # get the UTC time
         # number of seconds until beginning of the day 1-1-1970
         td = now-datetime(1970, 1, 1)
         adsbnow = int(td.total_seconds())  # Unix time - seconds from the epoch
@@ -349,7 +350,7 @@ def adsbfindpos(ttime, conn, prt=False, store=False, aprspush=False):
         url = "http://"+config.ADSBhost+"/data.json"
         adsbfile = config.ADSBfile
         if not os.path.exists(adsbfile):
-            now = datetime.now(datetime.timezone.utc)
+            now = naive_utcnow()
             # number of second until beginning of the day of 1-1-1970
             return (ttime+1)		# return TTIME for next call
 

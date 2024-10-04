@@ -12,8 +12,10 @@ import sys
 import atexit
 import socket
 import airportsdata
-from datetime import datetime
+
 from ogn.parser import parse
+from datetime import datetime, timezone
+from dtfuncs  import naive_utcnow, naive_utcfromtimestamp
 
 # --------------------------------------------------------------------------
 aprssources = {			# sources based on the APRS TOCALL
@@ -249,7 +251,7 @@ def get_otime(packet):
     if 'timestamp' in packet:
         otime = packet['timestamp']
     else:
-        otime = datetime.utcfromtimestamp(0)
+        otime = datetime.naive_utcfromtimestamp(0)
     return otime
 
 
@@ -426,7 +428,7 @@ def parseraprs(packet_str, msg):
     # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
-        date = datetime.now(datetime.timezone.utc) 			# get the date
+        date = naive_utcnow() 			# get the date
         if 'name' in packet:
             callsign = packet['name']               	# get the call sign FLARM ID or station name
             gid = callsign                  	        # id

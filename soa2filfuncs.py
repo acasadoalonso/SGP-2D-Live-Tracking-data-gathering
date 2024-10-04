@@ -25,6 +25,8 @@ from getflarm import *
 from simplehal import HalDocument, Resolver
 from pprint import pprint
 from config import *
+from dtfuncs import naive_utcnow
+
 pgmver='2.2'
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -99,7 +101,7 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
 # ==============================================#
    hostname = socket.gethostname()	    	# hostname as control
    start_time = time.time()                    	# get the time now
-   utc = datetime.datetime.now(datetime.timezone.utc)            	# the UTC time
+   utc = naive_utcnow()            		# the UTC time
                                             	# print the time for information only
    date = utc.strftime("%Y-%m-%dT%H:%M:%SZ")   	# get the local time
    local_time = datetime.datetime.now()        	# the local time

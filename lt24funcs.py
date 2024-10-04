@@ -15,6 +15,7 @@ import urllib.error
 import config
 from flarmfuncs import getflarmid, chkflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
+from dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -202,7 +203,7 @@ def lt24gettrackpoints(lt24pos, since, userid, flarmids):
             # distance to the central location
             distance = geodesic((lat, lon), (vitlat, vitlon)).km
             # get the data/time for the timestamp
-            dte = datetime.utcfromtimestamp(TMs[i])
+            dte = naive_utcfromtimestamp(TMs[i])
             date = dte.strftime("%y%m%d")  # date format
             time = dte.strftime("%H%M%S")  # time format
             gps = "GPS"
@@ -342,7 +343,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
 
     if len(userList) == 0:
         userList = "NONE"
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
@@ -357,7 +358,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
     if 'result' in pos:
         result = pos["result"]                  # get the result part
     else:
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         return (int(td.total_seconds()))
@@ -376,7 +377,7 @@ def lt24findpos(ttime, conn, once, prt=False, store=True, aprspush=False):
         lt24aprspush(lt24pos, prt)		# and push the data to the OGN APRS
 
     if sync == 0:			        # just in case of not tracks at all, built the current time
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         sync = int(td.total_seconds())          # as an integer

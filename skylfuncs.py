@@ -12,7 +12,7 @@ import urllib.error
 import config
 from flarmfuncs import getflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
-
+from dtfuncs import naive_utcnow
 #-------------------------------------------------------------------------------------------------------------------#
 
 
@@ -185,7 +185,7 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):
     cnt = cursG.fetchone()
     cnt = int(cnt[0])
     if cnt == 0:
-        now = datetime.now(datetime.timezone.utc)
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         sync = int(td.total_seconds())  # as an integer
@@ -214,7 +214,7 @@ def skylfindpos(ttime, conn, prt=False, store=True, aprspush=False):
         skylstoreitindb(skylpos, curs, conn)  # and store it on the DDBB
     if aprspush:
         skylaprspush(skylpos, conn, prt=prt)  # and push it into the OGN APRS
-    now = datetime.now(datetime.timezone.utc)
+    now = naive_utcnow()
     # number of second until beginning of the day of 1-1-1970
     td = now-datetime(1970, 1, 1)
     sync = int(td.total_seconds())      # as an integer

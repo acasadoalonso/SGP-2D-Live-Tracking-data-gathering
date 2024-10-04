@@ -5,7 +5,8 @@
 # Version for gathering all the records for the world
 #
 
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import socket
 import time
 import json
@@ -20,7 +21,7 @@ from geopy.distance import geodesic     # use the Vincenty algorithm^M
 import MySQLdb                          # the SQL data base routines^M
 import config				# import the configuration details
 from parserfuncs import alive, parseraprs, getinfoairport  # the ogn/ham parser functions
-
+from dtfuncs import *
 #########################################################################
 
 
@@ -36,7 +37,7 @@ def aprsconnect(sock, login, firsttime=False, prt=True):  # connect to the APRS 
     if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the receiving buffer
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
-    date = datetime.now(datetime.timezone.utc)        # get the date
+    date = naive_utcnow()        # get the date
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
     if LASTFIX or FULL:			    # if LASTFIX use the non filtered port
@@ -121,11 +122,11 @@ print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and L
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
-date = datetime.now(datetime.timezone.utc)                # get the date
+date = naive_now()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
-date = datetime.now()
+date = datetime.datetime.now()
 print("Time now is: ", date, " Local time")
 
 APP = "APRS"				# the application name
@@ -219,7 +220,7 @@ if LASTFIX :
         except MySQLdb.Error as e:
             try:
      
-                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), datetime.now(datetime.timezone.utc)   , file=sys.stderr)
+                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), naive_utcnow()   , file=sys.stderr)
             except IndexError:
                 print(">>>>: MySQL Error2: [%s]" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
         print("Number of IDs on the DB: ", len(lastfix))
@@ -317,7 +318,7 @@ if sock == False:
 
 # -----------------------------------------------------------------
 start_time = time.time()
-local_time = datetime.now()
+local_time = datetime.datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 if DATA:				# if we want to record the data on a file
     OGN_DATA = config.DBpath + "APRS" + fl_date_time + '.log'
@@ -331,19 +332,19 @@ alive(config.APP + hostname, first='yes')  # create the ALIVE file/lock
 #
 # -----------------------------------------------------------------
 #
-now = datetime.now(datetime.timezone.utc)			# get the UTC time
+now = naive_utcnow()			# get the UTC time
 day = now.day				# day of the month
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now = now - min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
-td = now - datetime(1970, 1, 1)
+td = now.replace(tzinfo=None) - datetime.datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
 tc = ts					# init the variables
 ty = ts
 lt24ts = ts
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
-date = datetime.now()
+date = datetime.datetime.now()
 
 #
 # -----------------------------------------------------------------
@@ -351,8 +352,8 @@ date = datetime.now()
 try:
     while True:				# forever
         current_time = time.time()
-        local_time = datetime.now()
-        now = datetime.now(datetime.timezone.utc)		# get the UTC time
+        local_time = datetime.datetime.now()
+        now = naive_utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
             print("End of Day...Day: ", day, "\n\n")  # end of UTC day
             shutdown(sock, datafile)  # recycle
@@ -376,7 +377,7 @@ try:
                     datafile.flush()
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
-                now = datetime.now(datetime.timezone.utc)  # get the UTC time
+                now = naive_utcnow()  # get the UTC time
             except Exception as e:
                 print(('>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
                 now = datetime.now(datetime.timezone.utc)  # get the UTC time
@@ -384,12 +385,12 @@ try:
                 err += 1
                 if err > maxnerrs:
                     print(">>>>: Write returns an error code. Failure.  Orderly closeout", file=sys.stderr)
-                    date = datetime.now()
+                    date = datetime.datetime.now()
                     break
                 sleep(SLEEPTIME) 	# wait X seconds
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
-                now = datetime.now(datetime.timezone.utc)  # get the UTC time
+                now = naive_utcnow()  # get the UTC time
                 continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                 # rebuild the table from the TRKDEVICES DB table
@@ -428,7 +429,7 @@ try:
             print("Bye ...\n\n\n")
             os._exit(0)
         except Exception as errt:
-            now = datetime.now(datetime.timezone.utc)		        # get the UTC time
+            now = naive_utcnow(datetime.timezone.utc)		        # get the UTC time
             print(">>>>: Error on readline", now, file=sys.stderr)
             if len(packet_str) > 0:
                print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), ":<<<<", len(packet_str), file=sys.stderr)
@@ -455,7 +456,7 @@ try:
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             if err > maxnerrs:
                 print(">>>>: Too many errors reading APRS messages.  Orderly closeout", file=sys.stderr)
-                date = datetime.now()
+                date = datetime.datetime.now()
                 print("UTC now is: ", date)
                 break
             else:
@@ -557,7 +558,7 @@ try:
                     latitude = fslla[ident]
                     longitude = fsllo[ident]
                     altitude = fslal[ident]
-                    otime = datetime.now(datetime.timezone.utc)
+                    otime = naive_utcnow(datetime.timezone.utc)
                     # print "TTT:", ident, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
                 if ident not in fslod:			# if we not have it yeat on the table
                     # save the location of the station
@@ -591,11 +592,11 @@ try:
                     curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error1a [%d]: %s" % (e.args[0], e.args[1]),datetime.now(datetime.timezone.utc), inscmd, file=sys.stderr)
+                        print(">>>>: MySQL1 Error1a [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), inscmd, file=sys.stderr)
                     except IndexError:
-                        print(">>>>: MySQL2 Error1a: [%s]" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                    print(">>>>: MySQL3 error1a:", cout, inscmd,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                        print(">>>>: MySQL2 Error1a: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error1a:", cout, inscmd,naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,naive_utcnow(), file=sys.stderr)
                 cout += 1				# number of records saved
                 continue
 
@@ -606,7 +607,7 @@ try:
                 station = msg['station']
                 if station == 'NEMO':
                    continue
-                otime = datetime.now(datetime.timezone.utc)  		# get the time from the system
+                otime = naive_utcnow()  		# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
                 #print ("Status report:", ident, station, otime, status)
@@ -618,9 +619,9 @@ try:
                     try:
                         print(">>>>: MySQL1 Error2a [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
                     except IndexError:
-                        print(">>>>: MySQL2 Error2a: %s" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                    print(">>>>: MySQL3 error2a:", cout, inscmd,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                        print(">>>>: MySQL2 Error2a: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error2a:", cout, inscmd,naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,naive_utcnow(), file=sys.stderr)
 
                 cout += 1				# number of records saved
 
@@ -707,7 +708,7 @@ try:
 
                         # get the date from the system as the APRS packet does not contain the date
                         # get the date from the system as the APRS packet does not contain the date
-                dateutc = datetime.now(datetime.timezone.utc)
+                dateutc = naive_utcnow()
                 dte = dateutc.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
                     source = source[0:4]  		# restrict the length to 4 chars
@@ -736,11 +737,11 @@ try:
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1c [%d]: %s" % (e.args[0], e.args[1]),datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                print(">>>>: MySQL Error1c [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2c: [%s]" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                            print(">>>>: MySQL error3c [count & cmd] :", cout, cmd1,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                print(">>>>: MySQL Error2c: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3c [count & cmd] :", cout, cmd1,naive_utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
 
                         row = curs.fetchone()		# get the counter 0 or 1 ???
                         if row[0] == 0 and source != "UNKW":  # if not add the entry to the tablea
@@ -757,11 +758,11 @@ try:
                                curs.execute(cmd2)  	# insert the data on the DB
                             except MySQLdb.Error as e:
                                try:
-                                   print(">>>>: MySQL Error1d [%d]: %s" % (e.args[0], e.args[1]),datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                   print(">>>>: MySQL Error1d [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                                except IndexError:
-                                   print(">>>>: MySQL Error2d: %s" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                                   print(">>>>: MySQL error3d:", cout, cmd2,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                                   print(">>>>: MySQL data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                   print(">>>>: MySQL Error2d: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL error3d:", cout, cmd2,naive_utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
                         except TypeError:		# type error building the INSERT cmd
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
                                print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, "::",source,"::")
@@ -787,11 +788,11 @@ try:
                                 curs.execute(cmd3)  	# update the data on the DB
                             except MySQLdb.Error as e:
                                 try:
-                                    print(">>>>: MySQL Error1e [%d]: %s" % (e.args[0], e.args[1]),datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                    print(">>>>: MySQL Error1e [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                                 except IndexError:
-                                    print(">>>>: MySQL Error2e: %s" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                                    print(">>>>: MySQL error3e:", cout, cmd3,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                                    print(">>>>: MySQL data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                                    print(">>>>: MySQL Error2e: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL error3e:", cout, cmd3,naive_utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
                         except TypeError:
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
                                print(">>>>cmd3e:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
@@ -824,11 +825,11 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error1f [%d]: %s" % (e.args[0], e.args[1]),datetime.now(datetime.timezone.utc), file=sys.stderr)
+                            print(">>>>: MySQL Error1f [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                         except IndexError:
-                            print(">>>>: MySQL Error2f: %s" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
-                        print(">>>>: MySQL error3f:", cout, addcmd,datetime.now(datetime.timezone.utc), file=sys.stderr)
-                        print(">>>>: MySQL data :", data,datetime.now(datetime.timezone.utc), file=sys.stderr)
+                            print(">>>>: MySQL Error2f: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL error3f:", cout, addcmd,naive_utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
                     conn.commit()			# commit to the DB  right away
 
                 cout += 1  				# number of records saved
@@ -837,17 +838,17 @@ try:
 # end of infinity while
 # --------------------------------------------------------------------------------------
 except SystemExit:
-    print(datetime.now(datetime.timezone.utc), "System EXIT <<<<<<\n\n")
+    print(naive_utcnow(), "System EXIT <<<<<<\n\n")
     os._exit(1)
 except KeyboardInterrupt:
-    print(datetime.now(datetime.timezone.utc), " Keyboard Interrupt <<<<<<\n\n")
+    print(naive_utcnow(), " Keyboard Interrupt <<<<<<\n\n")
 
-print(datetime.now(datetime.timezone.utc), " end of loop ... error detected or SIGTERM <<<<<<\n\n")
+print(naive_utcnow(), " end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)  				# close down everything
-print(datetime.now(datetime.timezone.utc), "Exit now ... Number of errors: ", err, "Number of records saved:", cout, "\n")
+print(naive_utcnow(), "Exit now ... Number of errors: ", err, "Number of records saved:", cout, "\n")
 
 if err > maxnerrs:
-    now = datetime.now(datetime.timezone.utc)				# get the UTC time
+    now = naive_utcnow()				# get the UTC time
     print("\nRestarting the python program ...", now, sys.executable, file=sys.stderr)
     print("==================================================\n\n",   file=sys.stderr)
     if os.path.exists(config.PIDfile):
