@@ -116,7 +116,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.15'			# manually set the program version !!!
+programver = 'V2.16'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and LT24 logging: " + programver)
 print("==================================================================================")
@@ -126,7 +126,7 @@ date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
-date = datetime.datetime.now()
+date = datetime.now()
 print("Time now is: ", date, " Local time")
 
 APP = "APRS"				# the application name
@@ -318,7 +318,7 @@ if sock == False:
 
 # -----------------------------------------------------------------
 start_time = time.time()
-local_time = datetime.datetime.now()
+local_time = datetime.now()
 fl_date_time = local_time.strftime("%y%m%d")
 if DATA:				# if we want to record the data on a file
     OGN_DATA = config.DBpath + "APRS" + fl_date_time + '.log'
@@ -337,14 +337,14 @@ day = now.day				# day of the month
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now = now - min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
-td = now.replace(tzinfo=None) - datetime.datetime(1970, 1, 1)
+td = now.replace(tzinfo=None) - datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
 tc = ts					# init the variables
 ty = ts
 lt24ts = ts
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
-date = datetime.datetime.now()
+date = datetime.now()
 
 #
 # -----------------------------------------------------------------
@@ -352,7 +352,7 @@ date = datetime.datetime.now()
 try:
     while True:				# forever
         current_time = time.time()
-        local_time = datetime.datetime.now()
+        local_time = datetime.now()
         now = naive_utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
             print("End of Day...Day: ", day, "\n\n")  # end of UTC day
@@ -385,7 +385,7 @@ try:
                 err += 1
                 if err > maxnerrs:
                     print(">>>>: Write returns an error code. Failure.  Orderly closeout", file=sys.stderr)
-                    date = datetime.datetime.now()
+                    date = datetime.now()
                     break
                 sleep(SLEEPTIME) 	# wait X seconds
                 keepalive_time = current_time
@@ -456,7 +456,7 @@ try:
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             if err > maxnerrs:
                 print(">>>>: Too many errors reading APRS messages.  Orderly closeout", file=sys.stderr)
-                date = datetime.datetime.now()
+                date = datetime.now()
                 print("UTC now is: ", date)
                 break
             else:
@@ -558,7 +558,7 @@ try:
                     latitude = fslla[ident]
                     longitude = fsllo[ident]
                     altitude = fslal[ident]
-                    otime = naive_utcnow(datetime.timezone.utc)
+                    otime = naive_utcnow()
                     # print "TTT:", ident, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
                 if ident not in fslod:			# if we not have it yeat on the table
                     # save the location of the station
