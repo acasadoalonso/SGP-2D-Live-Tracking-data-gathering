@@ -23,7 +23,7 @@ then
                 logger -t $0 "PUSH2OGN Log seems down, restarting"
                 echo $(date)" - "$(hostname)" - PUSH2OGN "  >>$DBpath/.APRSrestart.log
 else
-                logger -t $0 "PUSH2OGN Log is alive"
+                logger -t $0 "PUSH2OGN Log is alive" "Process: $(cat $pid)"
 fi
 
 DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')

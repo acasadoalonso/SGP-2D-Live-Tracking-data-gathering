@@ -122,7 +122,7 @@ print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and L
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
-date = naive_now()                # get the date
+date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
@@ -222,7 +222,7 @@ if LASTFIX :
      
                 print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), naive_utcnow()   , file=sys.stderr)
             except IndexError:
-                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.now(datetime.timezone.utc), file=sys.stderr)
+                print(">>>>: MySQL Error2: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
         print("Number of IDs on the DB: ", len(lastfix))
 if DATA:
     config.LogData = True
@@ -380,7 +380,7 @@ try:
                 now = naive_utcnow()  # get the UTC time
             except Exception as e:
                 print(('>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
-                now = datetime.now(datetime.timezone.utc)  # get the UTC time
+                now = naive_utcnow()  # get the UTC time
                 print("UTC time is now: ", now)
                 err += 1
                 if err > maxnerrs:
@@ -429,7 +429,7 @@ try:
             print("Bye ...\n\n\n")
             os._exit(0)
         except Exception as errt:
-            now = naive_utcnow(datetime.timezone.utc)		        # get the UTC time
+            now = naive_utcnow()		        # get the UTC time
             print(">>>>: Error on readline", now, file=sys.stderr)
             if len(packet_str) > 0:
                print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), ":<<<<", len(packet_str), file=sys.stderr)

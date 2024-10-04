@@ -18,7 +18,7 @@ import MySQLdb                          # the SQL data base routines^M
 import sqlite3
 import argparse
 from tqdm import tqdm
-
+from dtfuncs import naive_utcnow
 
 def linecount_wc(filename):
     return int(os.popen('wc -l '+filename).read().split()[0])
@@ -41,13 +41,13 @@ print("\n\nGen the ADSB registration JSON file : "+programver)
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
-date = datetime.now(datetime.timezone.utc)                # get the date
+date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
 print("Time now is: ", date, " Local time")
-date = datetime.now(datetime.timezone.utc)
+date = naive_utcnow()
 tme = date.strftime("%y-%m-%d %H:%M:%S")  # today's date
 Y = date.strftime("%Y")  # today's date
 M = date.strftime("%m")  # today's date
@@ -131,7 +131,7 @@ for row in res:
     mydict.add(ICAO, ({"Reg": row[1], "Model": model}))
     counter += 1
     if counter %10000 == 0:
-        print("Process DB:", counter, datetime.now(datetime.timezone.utc).strftime("%y-%m-%d %H:%M:%S"))
+        print("Process DB:", counter, naive_utcnow().strftime("%y-%m-%d %H:%M:%S"))
 print("Registrations from VRS from DDBB:", counter)
 cntbasic=counter
 cntdb=counter
@@ -172,7 +172,7 @@ if flighta:				# if extra data from FlightAare
                 cntdb +=1
 
             if counter %100000 == 0:
-                print("Process FA:", counter, cntfa, datetime.now(datetime.timezone.utc).strftime("%y-%m-%d %H:%M:%S"), cntdb)
+                print("Process FA:", counter, cntfa, naive_utcnow().strftime("%y-%m-%d %H:%M:%S"), cntdb)
             pbar.update(1)
     pbar.close()
     conn.commit()			# commit the changes
@@ -234,7 +234,7 @@ if flighto:				# if extra data from FlightAare
                 cntdb +=1
 
             if counter %100000 == 0:
-                print("Process OS:", counter, cntos, datetime.now(datetime.timezone.utc).strftime("%y-%m-%d %H:%M:%S"), cntdb)
+                print("Process OS:", counter, cntos, naive_utcnow().strftime("%y-%m-%d %H:%M:%S"), cntdb)
             pbar.update(1)
     pbar.close()
     conn.commit()			# commit the changes
