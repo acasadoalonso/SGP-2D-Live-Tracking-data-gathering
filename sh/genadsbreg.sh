@@ -19,6 +19,7 @@ DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 date
 cd ~/src/APRSsrc/utils
 rm BasicAircraftLookup.sqb.gz
+echo "Get the VRS Basic Aircraft DB ... into a sqlite3 DB ..."
 wget http://www.virtualradarserver.co.uk/Files/BasicAircraftLookup.sqb.gz
 if [ -f BasicAircraftLookup.sqb.gz ]; then
    rm BasicAircraftLookup.sqb
@@ -26,7 +27,7 @@ if [ -f BasicAircraftLookup.sqb.gz ]; then
 fi
 
 date										
-bash get_os_csv.sh		# get the opensky database	
+bash ../sh/genadsb_get_os_csv.sh		# get the opensky database	
 date							
 echo "Import the VRS Basic Aircraft database into MARIADB"			
 echo "DELETE FROM Aircraft ; "                                                                 | mysql -u $DBuser -p$DBpasswd -v APRSLOG -h $server	
