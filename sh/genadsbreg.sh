@@ -18,14 +18,17 @@ DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | 
 DBpasswd=$(echo  `grep '^DBpasswd ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpasswd //g' | sed 's/ //g' )
 date
 cd ~/src/APRSsrc/utils
+rm BasicAircraftLookup.sqb.gz
 wget http://www.virtualradarserver.co.uk/Files/BasicAircraftLookup.sqb.gz
 if [ -f BasicAircraftLookup.sqb.gz ]; then
    rm BasicAircraftLookup.sqb
    gunzip BasicAircraftLookup.sqb.gz
 fi
 
-bash get_os_csv.sh			
 date										
+bash get_os_csv.sh		# get the opensky database	
+date							
+echo "Import the VRS Basic Aircraft database into MARIADB"			
 echo "DELETE FROM Aircraft ; "                                                                 | mysql -u $DBuser -p$DBpasswd -v APRSLOG -h $server	
 echo ".dump Aircraft " | sqlite3 *sqb  | sed -e '1,11d' | sed -n -e :a -e '1,4!{P;N;D;};N;ba'  | mysql -u $DBuser -p$DBpasswd  APRSLOG -h $server		   
 echo "DELETE FROM Model ;   "                                                                  | mysql -u $DBuser -p$DBpasswd -v APRSLOG -h $server	

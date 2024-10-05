@@ -8,7 +8,9 @@ requests == 2.25.1
 setuptools == 59.6.0
 tqdm == 4.66.3
 pycrypto == 2.6.1
+GitPython == 3.1.43
 gpiozero == 2.0.1
 paho_mqtt == 2.1.0
+rsa == 4.9
 sphinx_rtd_theme == 2.0.0
 typing == 3.10.0.0

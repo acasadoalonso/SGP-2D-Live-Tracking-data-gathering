@@ -35,7 +35,7 @@ class create_dict(dict):
         self[key] = value
 
 
-programver = 'V1.02'			# manually set the program version !!!
+programver = 'V1.03'			# manually set the program version !!!
 
 print("\n\nGen the ADSB registration JSON file : "+programver)
 print("==================================================================================")
@@ -48,6 +48,14 @@ print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
 print("Time now is: ", date, " Local time")
 date = naive_utcnow()
+import git
+try:
+   repo = git.Repo(__file__, search_parent_directories=True)
+   sha = repo.head.object.hexsha
+except:
+   sha='NO SHA'
+print ("Git commit info:", sha)
+
 tme = date.strftime("%y-%m-%d %H:%M:%S")  # today's date
 Y = date.strftime("%Y")  # today's date
 M = date.strftime("%m")  # today's date
@@ -64,7 +72,6 @@ DBname = config.DBname
 OGNT = config.OGNT
 # the 3 files to get that registration data
 filedb = "utils/BasicAircraftLookup.sqb"
-filefa = "utils/flightaware-20200924.csv"
 filefa = "utils/flightaware-20231026.csv"
 fileos = "utils/aircraftDatabase-"+Y+"-"+M+".csv"
 fileos = "utils/aircraftDatabase.csv"
@@ -90,7 +97,7 @@ adddb   = args.adddb			# fi add to the database
 filedb  = args.S3file			# SQLITE3 file name
 flighta = args.fa			# FlightAware CSV file
 flighto = args.os			# Open Sky CSV vile
-print ("Options: MySQL ", MYSQL, "addDB", adddb, "FA ", flighta, "OS ", flighto)
+print ("Options:\nMySQL ", MYSQL, "\naddDB (to VRS Basic Aircraft DB)", adddb, "\nFA    (FlightAware)", flighta, "\nOS    (OpenSky)", flighto,"\n")
 # --------------------------------------#
 if MYSQL:
     # open the DataBase
@@ -142,7 +149,7 @@ if flighta:				# if extra data from FlightAare
         print("FlightAware data not available \n")
         exit(-1)
     lc=linecount_wc(filefa)
-    print("\nAdding data from:", filefa, lc)
+    print("\nAdding data from:", filefa, lc, "Flight Aware")
     pbar=tqdm(total=lc)
     with open(filefa, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -178,14 +185,14 @@ if flighta:				# if extra data from FlightAare
     pbar.close()
     conn.commit()			# commit the changes
 
-print("\nRegistrations from FA:", cntfa, "dups:", dups, "DB:", cntdb)
+print("\nRegistrations from  FlightAware:", cntfa, "dups:", dups, "DB:", cntdb)
 
 if flighto:				# if extra data from FlightAare
     if not os.path.exists(fileos):
         print("\nGen data to:", fileos)
         os.system("cd utils && bash get_os_csv.sh")
     lc=linecount_wc(fileos)
-    print("\nAdding data from:", fileos, lc)
+    print("\nAdding data from:", fileos, lc, "OpenSky")
     pbar=tqdm(total=lc)
     with open(fileos, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -241,7 +248,7 @@ if flighto:				# if extra data from FlightAare
     conn.commit()			# commit the changes
 
 
-print("\nRegistrations entries from OS:", cntos, "dups:", dups, "DB:", cntdb)
+print("\nRegistrations entries from OpenSky:", cntos, "dups:", dups, "DB:", cntdb)
 
 
 print("# Entries on dict: ", len(mydict))
@@ -253,7 +260,7 @@ print ("Generating the ADSBreg.py file\n")
 fd=open("ADSBreg.py", "w")
 fd.write("ADSBreg="+stud_json)
 fd.close()
-print("Size of ADSBreg file", len(stud_json), " Registrations generated DDBB: ", counter, "Basic:", cntbasic, "FA:", cntfa, "OS:", cntos, "DDBB:", cntdb, "\n")
+print("Size of ADSBreg file", len(stud_json), " Registrations generated DDBB: ", counter, "VRS Basic:", cntbasic, "FlightAware:", cntfa, "OpenSky:", cntos, "DDBB:", cntdb, "\n")
 conn.commit()
 conn.close()
 exit(0)
