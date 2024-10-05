@@ -35,7 +35,7 @@ class create_dict(dict):
         self[key] = value
 
 
-programver = 'V1.03'			# manually set the program version !!!
+programver = 'V1.04'			# manually set the program version !!!
 
 print("\n\nGen the ADSB registration JSON file : "+programver)
 print("==================================================================================")
@@ -253,7 +253,8 @@ print("\nRegistrations entries from OpenSky:", cntos, "dups:", dups, "DB:", cntd
 
 print("# Entries on dict: ", len(mydict))
 #stud_json = json.dumps(mydict, indent=4, sort_keys=True)
-stud_json = json.dumps(mydict)
+sorted_mydict=dict(sorted(mydict.items()))
+stud_json = json.dumps(sorted_mydict)
 #print(stud_json)
 print ("Records added to the DDBB\n", cntdb)
 print ("Generating the ADSBreg.py file\n")
