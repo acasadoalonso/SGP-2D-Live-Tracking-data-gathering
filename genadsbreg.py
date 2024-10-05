@@ -67,6 +67,7 @@ filedb = "utils/BasicAircraftLookup.sqb"
 filefa = "utils/flightaware-20200924.csv"
 filefa = "utils/flightaware-20231026.csv"
 fileos = "utils/aircraftDatabase-"+Y+"-"+M+".csv"
+fileos = "utils/aircraftDatabase.csv"
 # --------------------------------------#
 parser = argparse.ArgumentParser(description="Gen the ADSB registration file\n")
 parser.add_argument('-p', '--print', required=False,
