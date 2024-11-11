@@ -89,6 +89,8 @@ parser.add_argument('-f', '--FlightAware', required=False,
                     dest='fa', action='store', default=False)
 parser.add_argument('-o', '--OpenSky', required=False,
                     dest='os', action='store', default=False)
+parser.add_argument('-d', '--database', required=False,
+                    dest='db', action='store', default='localhost')
 args = parser.parse_args()
 #
 prt     = args.prt			# print on|off
@@ -97,7 +99,10 @@ adddb   = args.adddb			# fi add to the database
 filedb  = args.S3file			# SQLITE3 file name
 flighta = args.fa			# FlightAware CSV file
 flighto = args.os			# Open Sky CSV vile
-print ("Options:\nMySQL ", MYSQL, "\naddDB (to VRS Basic Aircraft DB)", adddb, "\nFA    (FlightAware)", flighta, "\nOS    (OpenSky)", flighto,"\n")
+dbhost  = args.db			# DataBase host
+if dbhost != '':			# if DBhosts is provide on the args
+   DBhost = dbhost
+print ("Options:\nMySQL ", MYSQL, "\naddDB (to VRS Basic Aircraft DB)", adddb, "\nFA    (FlightAware)", flighta, "\nOS    (OpenSky)", flighto,"\nDBhost", dbhost,"\n")
 # --------------------------------------#
 if MYSQL:
     # open the DataBase

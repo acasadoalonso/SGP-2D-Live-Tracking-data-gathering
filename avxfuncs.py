@@ -337,15 +337,16 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
     avxnow = int(td.total_seconds())  		# Unix time - seconds from the epoch
     # print ("AVXnow:", avxnow)
     tracks = avxgetapidata(url)   		# get the JSON data from the AVX server
-    if len(tracks) <= 0:
-        print("AVXfindpos: Empty msg", avxnow)	# print the data
+    if len(tracks) <= 0:			# if no data ...
+        print("AVXfindpos: Empty msg",  avxnow, now)	# print the data
         return (int(avxnow), avxcnt)		# return TTIME for next call
     if False:
         print("AVXfindpos:", len(tracks), avxnow)
     if prt:
-        print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4))  	# convert JSON to dictionary
+        print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4), "time:", now)  	# convert JSON to string
+
     						# get all the devices with AVX
-    avxaddpos(tracks, avxpos, ttime, avxnow, prt=prt)  # find the gliders since TTIME
+    avxaddpos(tracks, avxpos, ttime, avxnow, prt=prt)  # find the airplanes since TTIME
 
     if prt:
         print("AVXpos:\n", avxpos)		# print the data
@@ -358,6 +359,7 @@ def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is 
     return (int(avxnow), avxcnt)		# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
+
 def avxini(prt=False, aprspush=False):
     print ("AVX interface initialized...")
     return

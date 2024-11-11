@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# generate the ADSG registration file
+# generate the ADSB registration file
 #
 if [ $# = 0 ]; then
 	server='localhost'
@@ -29,7 +29,10 @@ fi
 date										
 bash ../sh/genadsb_get_os_csv.sh		# get the opensky database	
 date							
-echo "Import the VRS Basic Aircraft database into MARIADB"			
+echo " "
+echo "Import the VRS Basic Aircraft database into "$server
+echo "=========================================== "$server
+echo " "
 echo "DELETE FROM Aircraft ; "                                                                 | mysql -u $DBuser -p$DBpasswd -v APRSLOG -h $server	
 echo ".dump Aircraft " | sqlite3 *sqb  | sed -e '1,11d' | sed -n -e :a -e '1,4!{P;N;D;};N;ba'  | mysql -u $DBuser -p$DBpasswd  APRSLOG -h $server		   
 echo "DELETE FROM Model ;   "                                                                  | mysql -u $DBuser -p$DBpasswd -v APRSLOG -h $server	
@@ -42,8 +45,11 @@ echo "SELECT 'Model',    COUNT(*) FROM Model    "                               
 echo "SELECT 'Operator', COUNT(*) FROM Operator       "                                        | mysql -u $DBuser -p$DBpasswd  APRSLOG -h $server -v		     
 date
 cd ~/src/APRSsrc/
+echo " "
 echo "Generating the ADSBreg ..."
-python3 genadsbreg.py  -f True -o True -a True -m True
+echo "=========================="
+echo " "
+python3 genadsbreg.py  -f True -o True -a True -m True -d $server
 echo "Generation of the ADSBreg done ..."
 cd ~/src/APRSsrc/utils
 wc Basic*  *.csv
