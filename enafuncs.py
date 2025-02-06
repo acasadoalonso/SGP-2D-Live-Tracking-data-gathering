@@ -74,7 +74,7 @@ def on_connect(client, userdata, flags, rc):	# function clled on connect
 def connect_mqtt() -> mqtt_client:		# connect to the Mosquitto server
 
     py=platform.python_version()
-    if py[0:4] >= '3.12':
+    if py[0:4] >= '3.11':
        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
     else:
        client = mqtt_client.Client(client_id)

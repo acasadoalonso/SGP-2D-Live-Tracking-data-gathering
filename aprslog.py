@@ -293,7 +293,7 @@ elif STATIONS :
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* t/s \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 else:
     # normal case either STD or STATIONS
-    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* ' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
 if LASTFIX or FULL:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8

@@ -70,6 +70,7 @@ sudo apt install -y mariadb-client				#
 sudo apt install -y libmariadb-dev				#
 sudo apt install -y python3-dev python3-pip 			#
 sudo apt install -y python3-autopep8				#
+sudo setcap cap_net_raw+ep $(realpath $(which python3))		#
 if [ $sql = 'MariaDB' ]						#
 then								#
      sudo apt install -y mariadb-server 			#
@@ -98,10 +99,13 @@ sudo apt-get install -y apache2 php 				#
 sudo apt-get install -y php-sqlite3 php-cli 			#
 sudo apt-get install -y php-mysql 				#
 sudo apt-get install -y php-mbstring php-json			#
-sudo apt-get install -y php8.1	php8.1-mysql			#
+sudo apt-get install -y php8.3	php8.3-mysql			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
 sudo a2enmod headers						#
+sudo a2dismod mpm_event						# 
+sudo a2enmod mpm_prefork					# 
+sudo a2enmod php8.3						#
 echo "==========================="                              #
 echo "Install now other utilities"				#
 echo "==========================="                              #

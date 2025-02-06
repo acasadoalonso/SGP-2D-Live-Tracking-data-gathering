@@ -1,16 +1,15 @@
-airportsdata == 20230906
-geopy == 2.2.0
-ogn_client == 1.2.1
-ping3 == 4.0.3
-psutil == 5.9.0
-pycountry == 22.3.5
-requests == 2.25.1
-setuptools == 59.6.0
-tqdm == 4.66.3
-pycrypto == 2.6.1
-GitPython == 3.1.43
-gpiozero == 2.0.1
-paho_mqtt == 2.1.0
-rsa == 4.9
-sphinx_rtd_theme == 3.0.1
-typing == 3.10.0.0
+airportsdata==20241001
+geopy==2.4.1
+GitPython==3.1.44
+gpiozero==2.0.1
+MySQL-python==1.2.5
+paho_mqtt==2.1.0
+ping3==4.0.8
+psutil==5.9.8
+pycountry==24.6.1
+pycryptodome==3.21.0
+Requests==2.32.3
+rsa==4.9
+setuptools==68.1.2
+sphinx_rtd_theme==3.0.2
+tqdm==4.67.1

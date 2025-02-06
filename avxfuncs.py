@@ -127,20 +127,23 @@ def avxaddpos(tracks, avxpos, ttime, avxnow, prt=False):	# build the avxpos from
         spd=0
         FL=0
         cat=''
+
         if "vrt" in msg:
                 roc = msg['vrt']
         if "spd" in msg:
                 spd = msg['spd']
                 if spd > 999:
                    spd=999
-        if "alt" in msg:
-                alt = msg["alt"] 		# and the altitude
+        if "alt" in msg:			# alt QFE
+                FL = msg["alt"]/100 		# FL
+                #print("FL", FL)
         else:
                 print ("AVX No alt")
                 continue
-        if "hgt" in msg:			# barometric altitude
-                FL = (msg['hgt']+alt)/100	# Flight Level
-                #print("FL", FL)
+        if "hgt" in msg:			# barometric altitude difference
+                alt = msg['hgt']+msg['alt']	# altitude
+        else:
+                alt=msg['alt']
         if "trk" in msg:
             dir = msg['trk']
             if dir >359:
