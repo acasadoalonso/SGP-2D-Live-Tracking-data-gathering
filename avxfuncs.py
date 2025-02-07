@@ -42,6 +42,7 @@ sample= {					# sample of data received from aero-network
         "dbm": -77
     }
 
+#{"uti":1738919833,"dat":"2025-02-07 09:17:13.659812566","tim":"09:17:13.659812566","hex":"4cac7b","fli":"SAS7721","lat":41.25059509277344,"lon":-6.8309326171875,"gda":"A","src":"A","alt":35000,"altg":35125,"hgt":125,"spd":466,"cat":"A3","squ":"0715","vrt":-128,"trk":201.39053,"mop":2,"lla":5,"tru":6764,"dbm":-91},
 #-------------------------------------------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -219,9 +220,11 @@ def avxstoreitindb(datafix, curs, conn):   	# store the fix into the database
 # Push the data received into the OGN APRS
 #-------------------------------------------------------------------------------------------------------------------#
 
-def avxaprspush(datafix, conn, prt=False):
+def avxaprspush(datafix, conn, prt=True):
     cnt=0					# counter of messgages
     for fix in datafix['avxpos']:	    	# for each fix on the dict
+        if prt:
+           print ("FIX: ", fix)
         id       = fix['ICAOID']		# extract the information
         dte      = fix['date']
         hora     = fix['time']
@@ -268,6 +271,7 @@ def avxaprspush(datafix, conn, prt=False):
         if altitude != None and altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
         else:
+            #print ("APRSPUSH No altitude:", altitude, speed, roclimb)
             continue								# ignore the traffic with no altitude
         aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot "+daotxt+" " 
         if flight != '':
@@ -307,7 +311,7 @@ def avxaprspush(datafix, conn, prt=False):
 def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
     t = naive_utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
-    aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" \n"
+    aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" AVX dummy station \n"
     if prt:
        print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
@@ -330,7 +334,7 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
 #-------------------------------------------------------------------------------------------------------------------#
 
 
-def avxfindpos(ttime, conn, prt=False, store=False, aprspush=False):		# this is the function called by push2ogn.py module
+def avxfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is the function called by push2ogn.py module
 
     avxpos = {"avxpos": []}			# init the dict
     url    = config.AVXhost
