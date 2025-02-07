@@ -59,6 +59,7 @@ def servertest(host, port):
 
 def getddbdata(prt=False):                  		# get the data from the API server
 
+    j_obj=''					# empty as default
     global _ogninfo_                        	# the OGN info data
     if servertest(HOST, PORT):
         DDB_URL=DDB_URL1
@@ -67,14 +68,17 @@ def getddbdata(prt=False):                  		# get the data from the API server
     if prt:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT)
        #print("PING time: ",           ping(HOST))
-    req = urllib.request.Request(DDB_URL)
-    req.add_header("Accept", "application/json")  # it return a JSON string
-    req.add_header("Content-Type", "application/hal+json")
-    r = urllib.request.urlopen(req)         # open the url resource
-    js=r.read().decode('UTF-8')
-    j_obj = json.loads(js)                  # convert to JSON
+    try:
+       req = urllib.request.Request(DDB_URL)
+       req.add_header("Accept", "application/json")  # it return a JSON string
+       req.add_header("Content-Type", "application/hal+json")
+       r = urllib.request.urlopen(req)      # open the url resource
+       js=r.read().decode('UTF-8')
+       j_obj = json.loads(js)               # convert to JSON
 
-    _ogninfo_ = j_obj                       # save the data on the global storage
+       _ogninfo_ = j_obj                    # save the data on the global storage
+    except:
+       j_obj=''
     return j_obj                            # return the JSON objecta
 
 ####################################################################

@@ -1,8 +1,10 @@
 airportsdata==20241001
 geopy==2.4.1
 GitPython==3.1.44
+GitPython==3.1.44
 gpiozero==2.0.1
 MySQL-python==1.2.5
+ogn_client==1.2.1
 paho_mqtt==2.1.0
 ping3==4.0.8
 psutil==5.9.8
