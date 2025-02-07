@@ -78,6 +78,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
 
        _ogninfo_ = j_obj                    # save the data on the global storage
     except:
+       print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''
     return j_obj                            # return the JSON objecta
 
@@ -114,6 +115,8 @@ def getognchk(devid):                       # Check if the FlarmID exist or NOT
     global _ogninfo_                        # the OGN info data
     if len(_ogninfo_) == 0:
         _ogninfo_ = getddbdata()            # get the table from OGN DDB
+        if len(_ogninfo_) == 0:
+           return False
     devices = _ogninfo_["devices"]          # access to the ddbdata
     for dev in devices:                     # loop into the devices
         if dev["device_id"] == devid:       # if matches ??
