@@ -245,17 +245,17 @@ except:
 try:
     DDBhost = cfg.get('server', 'DDBhost').strip("'")
 except:
-    DDBhost = 'acasado.es'
+    DDBhost = 'ddb.glidernet.org'
 
 try:
     DDBport = cfg.get('server', 'DDBport').strip("'")
 except:
-    DDBport = '60082'
+    DDBport = '80'
 
 try:
     DDBurl1 = cfg.get('server', 'DDBurl1').strip("'")
 except:
-    DDBurl1 = 'http://ddb.acasado.name:60082/download/?j=2'
+    DDBurl1 = 'http://ddb.glidernet.org/download/?j=2'
 
 try:
     DDBurl2 = cfg.get('server', 'DDBurl2').strip("'")
