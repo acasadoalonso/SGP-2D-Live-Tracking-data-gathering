@@ -483,6 +483,8 @@ try:
                 print(">>>>: Missing ID:>>>", data)
                 continue
             aprstype  = msg['aprstype']			# APRS msg type
+            if not 'longitude' in msg:          # WX type
+                continue
             longitude = msg['longitude']
             latitude  = msg['latitude']
             altitude  = msg['altitude']

@@ -23,8 +23,10 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNSDR": "OGN",		# station Sofware defined radio
     "OGFLR":  "OGN",		# Flarm
     "OGNFLR": "OGN",		# Flarm
+    "OGFLR7": "OGN",		# Flarm
     "OGNTRK": "OGN",		# OGN Tracker
     "OGNDSX": "OGN",		# old DSX
+    "OGNDVS": "WTX",		# Weather stations
     "OGNTTN": "TTN",		# the things LoRaWan network
     "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
     "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
@@ -285,6 +287,16 @@ def gdatal(data, typer):               	        # get data on the left
     ret = data[pb +1:p]                  	# return the data requested
     return(ret)
 # #######################################################################
+def gdatall(data, typer):              	        # get data on the left
+    p = data.find(typer)              	        # scan for the type requested
+    if p == -1:
+        return (" ")
+    pb = p
+    while (data[pb] != ' ' and pb >= 0):
+        pb -= 1
+    ret = data[pb +1:p]                  	# return the data requested
+    return(ret)
+# #######################################################################
 
 
 def gdatar(data, typer):               	# get data on the  right
@@ -462,14 +474,37 @@ def parseraprs(packet_str, msg):
         ix = packet_str.find(':')     # look for the message type
         # check if it is position report or status report
         msgtype = packet_str[ix +1:ix +2]
-        if msgtype != '>' and msgtype != '/':   # only status or location messages
+        if msgtype != '>' and msgtype != '/':   	# only status or location messages
             print("MMM>>>", aprstype, data, file=sys.stderr)
+# ===================================================================================================== #
+        # if TCPIP records            			The the WX
+        if dst_callsign == 'OGNDVS':			# if it is a wether station ??
+           windspeed = gdatall(data, 'kt ')
+           temp      = gdatal (data, 'F ')
+           humidity  = gdatal (data, '% ')
+           rain      = gdatal (data, 'mm/h ')
+           msg['id']       = gid	        	# return the parsed data into the dict
+           msg['path']     = path
+           msg['relay']    = relay
+           msg['station']  = gid
+           msg['aprstype'] = aprstype
+           msg['otime']    = otime
+           msg['windspeed']= windspeed
+           msg['temp']     = temp
+           msg['humidity'] = humidity
+           msg['rain']     = rain
+           msg['source']   = 'WTX'
+           return (msg)
+               
+# ===================================================================================================== #
+        # if TCPIP records            			The station records
         if (path == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
             if cc.isupper():
                 gid = callsign
             else:
                 gid = cc
             station = gid
+	
             # scan for the body of the APRS message
             p = data.find(' v0.')                       # the comment side
             if aprstype == 'status':
