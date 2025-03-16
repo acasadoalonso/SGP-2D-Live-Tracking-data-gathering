@@ -19,10 +19,11 @@ from dtfuncs  import naive_utcnow, naive_utcfromtimestamp
 
 # --------------------------------------------------------------------------
 aprssources = {			# sources based on the APRS TOCALL
-    "APRS":   "OGN",		# old tocall
+    "APRS"  : "OGN",		# old tocall
     "OGNSDR": "OGN",		# station Sofware defined radio
-    "OGFLR":  "OGN",		# Flarm
+    "OGFLR" : "OGN",		# Flarm
     "OGNFLR": "OGN",		# Flarm
+    "OGFLR6": "OGN",		# Flarm
     "OGFLR7": "OGN",		# Flarm
     "OGNTRK": "OGN",		# OGN Tracker
     "OGNDSX": "OGN",		# old DSX
@@ -31,14 +32,14 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
     "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
     "OGNHEL": "HELI",		# helium LoRaWan
-    "OGOBS":  "OBS",		# OBS LoRaWan
+    "OGOBS" : "OBS",		# OBS LoRaWan
     "OGADSB": "ADSB",		# ADSB
     "ONADSB": "ADSB",		# ADSB
     "OGADSL": "ADSL",		# ADS-L
     "OGNFNT": "FANE",		# FANET
-    "OGFNT":  "FANE",		# FANET
+    "OGFNT" : "FANE",		# FANET
     "OGNPAW": "PAW",		# PilotAware
-    "OGPAW":  "PAW",		# PilotAware
+    "OGPAW" : "PAW",		# PilotAware
     "OGSPOT": "SPOT",		# SPOT
     "OGINRE": "INREACH",        # Garmin InReach
     "OGFLYM": "FLYM",		# FlyMaster
@@ -482,7 +483,7 @@ def parseraprs(packet_str, msg):
            windspeed = gdatall(data, 'kt ')
            temp      = gdatal (data, 'F ')
            humidity  = gdatal (data, '% ')
-           rain      = gdatal (data, 'mm/h ')
+           rain      = gdatal (data, 'mm/h')
            msg['id']       = gid	        	# return the parsed data into the dict
            msg['path']     = path
            msg['relay']    = relay

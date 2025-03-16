@@ -135,6 +135,7 @@ ksta = {
 "ElPuerto"  : "El Puerto de Santa Maria, Cadiz ",
 "ABDALAJIS" : "Valle de Abdalajis, Malaga ",
 "AXARQUIA"  : "Valle de la Axarquia, Malaga ",
+"Larouco"   : "Larouco, Orense ",
 "SSCC-RDAR" : "Estacion radar Paracuellos, Madrid ",
 "SPAINAVX"  : "Estacion ficticia gateway AVX ",
 "SPAINTTT"  : "Estacion ficticia gateway Enaire ",
