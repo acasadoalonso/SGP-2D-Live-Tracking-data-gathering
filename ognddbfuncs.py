@@ -4,6 +4,7 @@ import socket
 import urllib.request
 import urllib.error
 import urllib.parse
+from urllib.error import HTTPError
 import requests
 import config
 from ping3 import ping
@@ -77,6 +78,9 @@ def getddbdata(prt=False):                  		# get the data from the API server
        j_obj = json.loads(js)               # convert to JSON
 
        _ogninfo_ = j_obj                    # save the data on the global storage
+    except HTTPError as err:
+       if err.code == 429:
+          print("DDB Connecting with: ", DDB_URL, HOST, PORT, " too many request ... \n")
     except:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''

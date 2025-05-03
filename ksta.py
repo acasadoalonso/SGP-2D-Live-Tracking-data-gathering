@@ -1,5 +1,5 @@
 
-# 2020-08-05 CASADOUBUNTU
+# 2025-05-05 CASADOUBUNTU
 ksta = { 
 # -------------------------------------------------------------------#
 # Known Receivers
@@ -43,8 +43,10 @@ ksta = {
 "LETI"   : "El Tietar, Toledo",
 "LECN"   : "Castellon de la Plana",
 "LERS"   : "Reus, Tarragona",
+"LETY"   : "Tinajeros, Albacete",
 #
 # spanish sites
+#
 "LEMDADSB"  : "Madrid - ADSB GateWay",
 "LEMDTEST"  : "Madrid - ADSB Test",
 "PWLERM2"   : "Robledillo de Mohernando",
@@ -61,9 +63,9 @@ ksta = {
 "MADRID"    : "Madrid - Test site",
 "MATARO"    : "Mataro, Barcelona ",
 "PWMATARO"  : "Mataro, Barcelona ",
-"PORTAINE"  :"PortAine Ski station ",
-"STOROE"    :"Santa Orosia, Huesca ",
-"STOROW"    :"Santa Orosia, Huesca ",
+"PORTAINE"  : "PortAine Ski station ",
+"STOROE"    : "Santa Orosia, Huesca ",
+"STOROW"    : "Santa Orosia, Huesca ",
 "TAULL2"    : "Boi Taull ski station, Lerida ",
 "Taull2"    : "Boi Taull ski station, Lerida ",
 "BOITAULL"  : "Boi Taull, Lerida ",
@@ -130,12 +132,17 @@ ksta = {
 "BoiTaull"  : "Boi Taull, Lerida ",
 "BOITAULL"  : "Boi Taull, Lerida ",
 "Lillo"     : "Lillo, Toledo ",
+"LILLO"     : "Lillo, Toledo ",
 "ARANGOITI" : "Arangoiti, Navarra ",
 "ELPUERTO"  : "El Puerto de Santa Maria, Cadiz ",
 "ElPuerto"  : "El Puerto de Santa Maria, Cadiz ",
 "ABDALAJIS" : "Valle de Abdalajis, Malaga ",
 "AXARQUIA"  : "Valle de la Axarquia, Malaga ",
 "Larouco"   : "Larouco, Orense ",
+"LAROUCO"   : "Larouco, Orense ",
+"Pozuelo"   : "Pozuelo de Alarcon, Madrid ",
+"POZUELO"   : "Pozuelo de Alarcon, Madrid ",
+"Tenerife"  : "Tenerife, Canary Islands ",
 "SSCC-RDAR" : "Estacion radar Paracuellos, Madrid ",
 "SPAINAVX"  : "Estacion ficticia gateway AVX ",
 "SPAINTTT"  : "Estacion ficticia gateway Enaire ",
@@ -224,3 +231,87 @@ ksta = {
 # ------------------------------------------------------------------ #
 	}
 # -------------------------------------------------------------------#
+# #######################################################################
+#
+# geo specifics validations
+#
+
+
+def spanishsta(station):                # return true if is an Spanish station
+    
+    import ksta				# list of know stations
+    if (station) is None:
+        return False
+    if station[0:2] == 'LE' or station[0:2] == "LP" or	\
+            station[0:5] == 'CREAL'     or 	\
+            station[0:5] == 'CReal'     or 	\
+            station[0:4] == 'MORA'      or 	\
+            station[0:4] == 'LUGO'      or 	\
+            station[0:6] == 'MADRID'    or 	\
+            station[0:8] == 'LEMDadsb'  or 	\
+            station[0:7] == 'TTN2OGN'   or 	\
+            station[0:6] == 'VIADOS'    or	\
+            station[0:6] == 'Viados'    or	\
+            station[0:9] == 'ALCAZAREN' or	\
+            station[0:7] == 'ANDORRA'   or	\
+            station[0:9] == 'STOROE'    or	\
+            station[0:9] == 'STOROW'    or	\
+            station[0:5] == 'PALOE'     or	\
+            station[0:5] == 'PALOW'     or	\
+            station[0:8] == 'BOITAULL'  or  	\
+            station[0:6] == 'TAULL2'    or  	\
+            station[0:6] == 'Taull2'    or  	\
+            station[0:8] == 'LAMOLINA'  or	\
+            station[0:6] == 'MATARO'    or	\
+            station[0:6] == 'CEREJA'    or	\
+            station[0:9] == 'FLYMASTER' or	\
+            station[0:4] == 'SPOT'      or	\
+            station[0:6] == 'PWLERM'    or	\
+            station[0:9] == 'CASTEJONS' or	\
+            station[0:9] == 'BELAVISTA' or	\
+            station[0:9] == 'ALDEASEST' or	\
+            station[0:9] == 'AldeaSEst' or	\
+            station[0:9] == 'MADRUEDAN' or	\
+            station[0:9] == 'Madruedan' or	\
+            station[0:9] == 'PCARRASCO' or	\
+            station[0:9] == 'PCarrasco' or	\
+            station[0:8] == 'SMUERDO'   or	\
+            station[0:8] == 'SMuerdo'   or	\
+            station[0:9] == 'SSALVADOR' or	\
+            station[0:9] == 'SSalvador' or	\
+            station[0:9] == 'RinconCie' or	\
+            station[0:8] == 'PORTAINE'  or      \
+            station[0:8] == 'ALJARAFE'  or      \
+            station[0:9] == 'Pagalajar' or      \
+            station[0:6] == 'Aguila'    or      \
+            station[0:6] == 'LaRaca'    or      \
+            station[0:6] == 'Fiscal'    or      \
+            station[0:4] == 'LUGA'      or      \
+            station[0:5] == 'Avila'     or      \
+            station[0:5] == 'AVILA'     or      \
+            station[0:7] == 'Montsec'   or      \
+            station[0:7] == 'MONTSEC'   or      \
+            station[0:9] == 'TordlOrri' or      \
+            station[0:9] == 'TORDLORRI' or      \
+            station[0:8] == 'Baqueira'  or      \
+            station[0:8] == 'BAQUEIRA'  or      \
+            station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
+        return True
+    return False
+
+
+def frenchsta(station):                # return true if is an French station
+    if (station) is None:
+        return False
+    if station[0:2] == 'LF' or \
+       station[0:4] == 'BRAM' or \
+       station[0:7] == 'POUBEAU' or \
+       station[0:7] == 'CANOHES' or \
+       station[0:7] == 'FONTROMEU' or \
+       station[0:7] == 'ROCAUDE':
+        return True
+    return False
+# ########################################################################
+
+
+

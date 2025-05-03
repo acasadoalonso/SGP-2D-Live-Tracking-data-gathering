@@ -60,6 +60,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNMYC": "MYC",	   	# My cloud base
     "FXCAPP": "FXC",	   	# FXC 
     "OGMSHT": "MSHT",	   	# Metashtic
+    "OGNPUR": "PURT",	   	# Pure track
     "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
 }
 # --------------------------------------------------------------------------
@@ -127,7 +128,7 @@ def isFloat(string):
         return False
 
 #
-# low lever parser functions
+# low level parser functions
 #
 
 
@@ -266,8 +267,6 @@ def get_station(packet):
     else:
         station=''
     return (station)
-# #######################################################################
-
 
 def get_source(dstcallsign):
     src = str(dstcallsign)
@@ -314,89 +313,12 @@ def gdatar(data, typer):               	# get data on the  right
         pb += 1
     ret = data[p:pb]                 	# return the data requested
     return(ret)
+
 # #######################################################################
 #
 # geo specifics validations
 #
-
-
-def spanishsta(station):                # return true if is an Spanish station
-    
-    import ksta				# list of know stations
-    if (station) is None:
-        return False
-    if station[0:2] == 'LE' or station[0:2] == "LP" or	\
-            station[0:5] == 'CREAL'     or 	\
-            station[0:5] == 'CReal'     or 	\
-            station[0:4] == 'MORA'      or 	\
-            station[0:4] == 'LUGO'      or 	\
-            station[0:6] == 'MADRID'    or 	\
-            station[0:8] == 'LEMDadsb'  or 	\
-            station[0:7] == 'TTN2OGN'   or 	\
-            station[0:6] == 'VIADOS'    or	\
-            station[0:6] == 'Viados'    or	\
-            station[0:9] == 'ALCAZAREN' or	\
-            station[0:7] == 'ANDORRA'   or	\
-            station[0:9] == 'STOROE'    or	\
-            station[0:9] == 'STOROW'    or	\
-            station[0:5] == 'PALOE'     or	\
-            station[0:5] == 'PALOW'     or	\
-            station[0:8] == 'BOITAULL'  or  	\
-            station[0:6] == 'TAULL2'    or  	\
-            station[0:6] == 'Taull2'    or  	\
-            station[0:8] == 'LAMOLINA'  or	\
-            station[0:6] == 'MATARO'    or	\
-            station[0:6] == 'CEREJA'    or	\
-            station[0:9] == 'FLYMASTER' or	\
-            station[0:4] == 'SPOT'      or	\
-            station[0:6] == 'PWLERM'    or	\
-            station[0:9] == 'CASTEJONS' or	\
-            station[0:9] == 'BELAVISTA' or	\
-            station[0:9] == 'ALDEASEST' or	\
-            station[0:9] == 'AldeaSEst' or	\
-            station[0:9] == 'MADRUEDAN' or	\
-            station[0:9] == 'Madruedan' or	\
-            station[0:9] == 'PCARRASCO' or	\
-            station[0:9] == 'PCarrasco' or	\
-            station[0:8] == 'SMUERDO'   or	\
-            station[0:8] == 'SMuerdo'   or	\
-            station[0:9] == 'SSALVADOR' or	\
-            station[0:9] == 'SSalvador' or	\
-            station[0:9] == 'RinconCie' or	\
-            station[0:8] == 'PORTAINE'  or      \
-            station[0:8] == 'ALJARAFE'  or      \
-            station[0:9] == 'Pagalajar' or      \
-            station[0:6] == 'Aguila'    or      \
-            station[0:6] == 'LaRaca'    or      \
-            station[0:6] == 'Fiscal'    or      \
-            station[0:4] == 'LUGA'      or      \
-            station[0:5] == 'Avila'     or      \
-            station[0:5] == 'AVILA'     or      \
-            station[0:7] == 'Montsec'   or      \
-            station[0:7] == 'MONTSEC'   or      \
-            station[0:9] == 'TordlOrri' or      \
-            station[0:9] == 'TORDLORRI' or      \
-            station[0:8] == 'Baqueira'  or      \
-            station[0:8] == 'BAQUEIRA'  or      \
-            station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
-        return True
-    return False
-
-
-def frenchsta(station):                # return true if is an French station
-    if (station) is None:
-        return False
-    if station[0:2] == 'LF' or \
-       station[0:4] == 'BRAM' or \
-       station[0:7] == 'POUBEAU' or \
-       station[0:7] == 'CANOHES' or \
-       station[0:7] == 'FONTROMEU' or \
-       station[0:7] == 'ROCAUDE':
-        return True
-    return False
-# ########################################################################
-
-
+# #######################################################################
 
 def dao(dd):                           	# return the 3 digit of the decimal minutes
     dd1 = abs(float(dd))
@@ -436,11 +358,11 @@ def decdeg2dms(dd):			# convert degress float into DDMMSS
 #
 # High level APRS parser function
 #
+# ########################################################################
 
 
 def parseraprs(packet_str, msg):
     # args: packet_str the packet stream with the data, msg the dict where to return the parsed data
-    # patch #######
     try:
         packet = parse(packet_str)
     except:
@@ -702,6 +624,7 @@ def parseraprs(packet_str, msg):
         return -1				# if length ZERO or just the keep alive
 #
 # #######################################################################
+#
 
 
 def SRSSgetapidata(url):                    # get the data from the API server
@@ -734,7 +657,9 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
         ts = int(td.total_seconds())      # Unix time - seconds from the epoch
     return (ts)                             # return it
 
+#
 # ########################################################################
+#
 
 
 def alive(app, keepalive=0, first='no', register=False):
