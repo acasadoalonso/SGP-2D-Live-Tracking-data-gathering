@@ -226,7 +226,7 @@ else:
     print("Using the OGN DDB.")
     conn = False
 
-#----------------------pus2ogn.py start-----------------------#
+#----------------------push2ogn.py start-----------------------#
 
 prtreq = sys.argv[1:]              # check if the prt arg is there
 if prtreq and prtreq[0] == 'prt':
@@ -287,6 +287,7 @@ lt24ts = ts                             # the same
 adsbts = ts                             # the same
 avxts  = ts                             # the same
 spispotcount = 0			# loop counter
+nerrors = 0				# number of write errors
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
 
 day = now.day				# day of the month
@@ -337,6 +338,14 @@ try:
                     'Something\'s wrong with socket write. Exception type is %s' % (repr(e))))
                 now = naive_utcnow()		        # get the UTC time
                 print("UTC time is now: ", now, keepalive_count, run_time)
+                nerrors += 1
+                if nerrors > 100:
+                   if ENA:
+                      enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                   shutdown(sock, spispotcount)
+                   print("Too may errors .............")
+                         				# recycle
+                   exit(-1)
 
         now = naive_utcnow()				# get the UTC time
         # number of second until beginning of the epoch

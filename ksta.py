@@ -134,15 +134,22 @@ ksta = {
 "Lillo"     : "Lillo, Toledo ",
 "LILLO"     : "Lillo, Toledo ",
 "ARANGOITI" : "Arangoiti, Navarra ",
+"Arangoiti" : "Arangoiti, Navarra ",
 "ELPUERTO"  : "El Puerto de Santa Maria, Cadiz ",
 "ElPuerto"  : "El Puerto de Santa Maria, Cadiz ",
+"Abdalajis" : "Valle de Abdalajis, Malaga ",
 "ABDALAJIS" : "Valle de Abdalajis, Malaga ",
 "AXARQUIA"  : "Valle de la Axarquia, Malaga ",
+"Axarquia"  : "Valle de la Axarquia, Malaga ",
 "Larouco"   : "Larouco, Orense ",
 "LAROUCO"   : "Larouco, Orense ",
-"Pozuelo"   : "Pozuelo de Alarcon, Madrid ",
-"POZUELO"   : "Pozuelo de Alarcon, Madrid ",
+"PozueloA"  : "Pozuelo de Alarcon, Madrid ",
+"POZUELOA"  : "Pozuelo de Alarcon, Madrid ",
 "Tenerife"  : "Tenerife, Canary Islands ",
+"Algodonal" : "Algodonales, Cadiz ",
+"ALGODONAL" : "Algodonales, Cadiz ",
+"VILADAMAT" : "Viladamat, Girona ",
+"Viladamat" : "Viladamat, Girona ",
 "SSCC-RDAR" : "Estacion radar Paracuellos, Madrid ",
 "SPAINAVX"  : "Estacion ficticia gateway AVX ",
 "SPAINTTT"  : "Estacion ficticia gateway Enaire ",
@@ -295,6 +302,8 @@ def spanishsta(station):                # return true if is an Spanish station
             station[0:9] == 'TORDLORRI' or      \
             station[0:8] == 'Baqueira'  or      \
             station[0:8] == 'BAQUEIRA'  or      \
+            station[0:9] == 'VILADAMAT' or      \
+            station[0:9] == 'Viladamat' or      \
             station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
         return True
     return False
