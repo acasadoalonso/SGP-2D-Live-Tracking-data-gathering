@@ -23,6 +23,7 @@ from dtfuncs import naive_utcnow, naive_utcfromtimestamp        # import the nai
 import argparse
 import traceback
 
+programver = 'V2.7'						# June 2025
 #########################################################################
 
 
@@ -78,7 +79,6 @@ def prttime(unixtime):
 #
 
 
-programver = 'V2.6'					# June 2024
 
 print("\n\nStart PUSH2OGN: "+programver)
 print(    "=====================")
