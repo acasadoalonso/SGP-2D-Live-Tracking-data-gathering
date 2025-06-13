@@ -3,6 +3,8 @@ import config
 from parserfuncs import SRSSgetjsondata, getinfoairport
 import sys
 import socket
+import platform
+print("Python version:", platform.python_version())
 sys.path.insert(0, '/nfs/OGN/src/funcs')
 hostname = socket.gethostname()
 prt=False

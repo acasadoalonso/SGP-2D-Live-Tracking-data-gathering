@@ -116,13 +116,15 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.16'			# manually set the program version !!!
+programver = 'V2.17'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and LT24 logging: " + programver)
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
-date = naive_utcnow()                # get the date
+import platform
+print("Python version:", platform.python_version())
+date = naive_utcnow()                	# get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())

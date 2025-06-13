@@ -278,12 +278,14 @@ def connect_aprs(programver, sock=0, firsttime=False, prt=False):
 ###################   MAIN Program  #####################################################
 #
 
-programver = 'V1.5'
+programver = 'V1.6'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
+import platform
+print("Python version:", platform.python_version())
 date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())

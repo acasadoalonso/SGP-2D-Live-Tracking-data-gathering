@@ -41,6 +41,8 @@ print("\n\nGen the ADSB registration JSON file : "+programver)
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
+import platform
+print("Python version:", platform.python_version())
 date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
