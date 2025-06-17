@@ -150,6 +150,8 @@ ksta = {
 "ALGODONAL" : "Algodonales, Cadiz ",
 "VILADAMAT" : "Viladamat, Girona ",
 "Viladamat" : "Viladamat, Girona ",
+"TenerifeN" : "Tenerife Norte, Canarias ",
+"TENERIFEN" : "Tenerife Norte, Canarias ",
 "TenerifeS" : "Tenerife Sur, Canarias ",
 "TENERIFES" : "Tenerife Sur, Canarias ",
 "SSCC-RDAR" : "Estacion radar Paracuellos, Madrid ",

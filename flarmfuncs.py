@@ -21,9 +21,9 @@ def getflarmid(conn, registration):  # get the FLARMID from the GLIDERS table on
     idglider = rowg[0]		    # flarmid to report
     flarmtype = rowg[1]		    # flarmtype flarm/ica/ogn
     if not getognchk(idglider):     # check that the registration is on the table - sanity check
-        if idglider not in unkglider:
-            print("Warning: FLARM ID=", idglider, "not on OGN DDB")
-            unkglider.append(idglider)
+        if idglider not in unkglider:	# we do not want to repeat the warning many times
+            print("Warning: FLARM ID=", idglider, "not on OGN DDB.")
+            unkglider.append(idglider)	@ add it to the list
     if flarmtype == 'F':
         flarmid = "FLR"+idglider    # flarm
     elif flarmtype == 'I':
@@ -38,11 +38,19 @@ def getflarmid(conn, registration):  # get the FLARMID from the GLIDERS table on
 
 
 def chkflarmid(idglider):           # check if the FLARM ID exist, if not add it to the unkglider table
-    glider = idglider[3:9]          # only the last 6 chars of the ID
+    if len(idglider) == 9:
+       glider = idglider[3:9]       # only the last 6 chars of the ID
+    elif len(idglider) == 6:
+       glider = idglider[0:6]       # only the last 6 chars of the ID
+    else:
+       return (False)
+       
+
     if not getognchk(glider):       # check that the registration is on the table - sanity check
         if idglider not in unkglider:
-            print("Warning: FLARM ID=", idglider, "not on OGN DDB")
+            print("Warning: FLARM ID=", idglider, "not on OGN DDB...")
             unkglider.append(idglider)
             return (False)
+        return(False)
     return (True)
 # -----------------------------------------------------------
