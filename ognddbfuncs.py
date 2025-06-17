@@ -89,6 +89,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
     except:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''
+    print ("Size of DDB:", len(j_obj))
     return j_obj                            # return the JSON object
 
 ####################################################################
