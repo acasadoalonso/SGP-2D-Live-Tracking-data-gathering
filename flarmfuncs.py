@@ -23,7 +23,7 @@ def getflarmid(conn, registration):  # get the FLARMID from the GLIDERS table on
     if not getognchk(idglider):     # check that the registration is on the table - sanity check
         if idglider not in unkglider:	# we do not want to repeat the warning many times
             print("Warning: FLARM ID=", idglider, "not on OGN DDB.")
-            unkglider.append(idglider)	@ add it to the list
+            unkglider.append(idglider)	# add it to the list
     if flarmtype == 'F':
         flarmid = "FLR"+idglider    # flarm
     elif flarmtype == 'I':
