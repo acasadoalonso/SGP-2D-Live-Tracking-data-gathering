@@ -70,7 +70,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
     #if prt:
     if True:
        print("Trying DDB Connecting with: ", DDB_URL, HOST, PORT)
-       print("PING time: ",           ping(HOST))
+       #print("PING time: ",           ping(HOST))
     try:
        req = urllib.request.Request(DDB_URL)
        req.add_header("Accept", "application/json")  # it return a JSON string
