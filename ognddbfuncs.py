@@ -84,7 +84,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
     except HTTPError as err:
        if err.code == 429:
           print("Error DDB Connecting with: ", DDB_URL, HOST, PORT, " too many request ... \n")
-          sleep(5)
+          sleep(60)
     except:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''
