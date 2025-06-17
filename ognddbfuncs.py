@@ -74,7 +74,8 @@ def getddbdata(prt=False):                  		# get the data from the API server
     try:
        req = urllib.request.Request(DDB_URL)
        req.add_header("Accept", "application/json")  # it return a JSON string
-       req.add_header("Content-Type", "application/hal+json")
+       req.add_header("Content-Type", "application/json")
+       req.add_header("Request-Timeout", "60")
        r = urllib.request.urlopen(req)      # open the url resource
        js=r.read().decode('UTF-8')
        j_obj = json.loads(js)               # convert to JSON
