@@ -67,9 +67,10 @@ def getddbdata(prt=False):                  		# get the data from the API server
         DDB_URL=DDB_URL1
     else:
         DDB_URL=DDB_URL2
-    if prt:
+    #if prt:
+    if True:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT)
-       #print("PING time: ",           ping(HOST))
+       print("PING time: ",           ping(HOST))
     try:
        req = urllib.request.Request(DDB_URL)
        req.add_header("Accept", "application/json")  # it return a JSON string
@@ -79,6 +80,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
        j_obj = json.loads(js)               # convert to JSON
 
        _ogninfo_ = j_obj                    # save the data on the global storage
+       print ("DDB loaded... Size:", len (j_obj))
     except HTTPError as err:
        if err.code == 429:
           print("DDB Connecting with: ", DDB_URL, HOST, PORT, " too many request ... \n")
@@ -86,7 +88,6 @@ def getddbdata(prt=False):                  		# get the data from the API server
     except:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''
-    print ("DDB loaded... Size:", len (j_obj))
     return j_obj                            # return the JSON objecta
 
 ####################################################################
