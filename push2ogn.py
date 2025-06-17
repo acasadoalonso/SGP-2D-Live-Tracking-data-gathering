@@ -22,6 +22,7 @@ from flarmfuncs import *		        		# import the functions delaing with the Flar
 from dtfuncs import naive_utcnow, naive_utcfromtimestamp        # import the naive version of utcnow()
 import argparse
 import traceback
+from ognddbfuncs import *		        		# import the functions delaing with the Flarm ID
 
 programver = 'V2.7'						# June 2025
 #########################################################################
@@ -92,6 +93,7 @@ dte = date.strftime("%y%m%d")             # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
 date = datetime.now()                   # local time
 print("Time now is: ", date, " Local time")
+getddbdata()
 
 #
 # --------------------------------------#
