@@ -77,7 +77,8 @@ def getddbdata(prt=False):                  		# get the data from the API server
     #req.add_header("Request-Timeout", "60")
     #req = urllib.request.Request(url=DDB_URL)
     print ("RRR")
-    f = urllib.request.urlopen(req)
+    f = urllib.request.urlopen(req, timeout=10)
+
     print ("RRR2")
     try:
        js=f.read().decode('utf-8')
