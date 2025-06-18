@@ -81,7 +81,10 @@ def getddbdata(prt=False):                  		# get the data from the API server
        f = urllib.request.urlopen(req)
        print ("RRR2")
        js=f.read().decode('utf-8')
+       print ("RRR3")
 
+       f.close()
+       print ("RRR4")
        #r = urllib.request.urlopen(req)      # open the url resource
        #js=r.read().decode('UTF-8')
        print ("RRR", js)
@@ -96,8 +99,6 @@ def getddbdata(prt=False):                  		# get the data from the API server
     except:
        print("DDB Connecting with: ", DDB_URL, HOST, PORT, " failed ... \n")
        j_obj=''
-    finally:
-       f.close()
     print ("Size of DDB:", len(j_obj))
     return j_obj                            # return the JSON object
 
