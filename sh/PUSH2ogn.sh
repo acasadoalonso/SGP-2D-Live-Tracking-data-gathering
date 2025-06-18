@@ -15,7 +15,7 @@ date                            		>>/tmp/push2ogn.$$.log
 python3 $SCRIPTPATH/../APRScalsunrisesunset.py 	>>/tmp/push2ogn.$$.log
 echo "PUSH2OGN.sh:"            			>>/tmp/push2ogn.$$.log
 echo "===========:"            			>>/tmp/push2ogn.$$.log
-wget -O ognddbdata.json -o ogndbjson.log ddb.glidernet.org/download/?j=1
+wget -O ognddbdata.json ddb.glidernet.org/download/?j=1
 
 python3 $SCRIPTPATH/../push2ogn.py --ENA  True  	>>/tmp/push2ogn.$$.log 2>>/tmp/push2ogn.$$.err &
 #python3 ~/src/APRSsrc/push2ogn.py --SPIDER True --SPOT True --INREACH True --AVX True	>>/tmp/push2ogn.$$.log 2>>/tmp/push2ogn.$$.err &
