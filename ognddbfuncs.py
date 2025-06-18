@@ -81,9 +81,9 @@ def getddbdata(prt=False):                  		# get the data from the API server
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0'}
     #f = urllib.request.urlopen(req, timeout=10)
     response = requests.get(DDB_URL, headers=headers)
-    if response.status_code == 429:
-       sleep(int(response.headers["Retry-After"]))
     print ("RRR2: ", response.status_code)
+    if response.status_code == 429:
+       sleep(12)
     try:
        web_page = response.text
        #js=f.read().decode('utf-8')
