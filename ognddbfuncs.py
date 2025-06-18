@@ -77,7 +77,9 @@ def getddbdata(prt=False):                  		# get the data from the API server
     req.add_header("Request-Timeout", "60")
     try:
        r = urllib.request.urlopen(req)      # open the url resource
+       print ("RRR", r)
        js=r.read().decode('UTF-8')
+       print ("RRR", js)
        sleep(5)
        j_obj = json.loads(js)               # convert to JSON
 
