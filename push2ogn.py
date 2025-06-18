@@ -93,7 +93,10 @@ dte = date.strftime("%y%m%d")             # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
 date = datetime.now()                   # local time
 print("Time now is: ", date, " Local time")
-print("init the OGN DDB interface:", getddbdata(), "\n\n")
+print("Init the OGN DDB interface:")
+lenddb=getddbdata()
+print("OGN DDB data initialized", lenddb,"\n\n")
+
 
 #
 # --------------------------------------#
