@@ -76,11 +76,12 @@ def getddbdata(prt=False):                  		# get the data from the API server
     req.add_header("Content-Type", "application/json")
     req.add_header("Request-Timeout", "60")
     try:
+       print ("RRR")
+       sleep(5)
        r = urllib.request.urlopen(req)      # open the url resource
        print ("RRR", r)
        js=r.read().decode('UTF-8')
        print ("RRR", js)
-       sleep(5)
        j_obj = json.loads(js)               # convert to JSON
 
        _ogninfo_ = j_obj                    # save the data on the global storage
