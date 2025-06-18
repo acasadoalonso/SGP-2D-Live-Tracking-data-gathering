@@ -71,25 +71,27 @@ def getddbdata(prt=False):                  		# get the data from the API server
     if True:
        print("Trying DDB Connecting with: ", DDB_URL, HOST, PORT)
        #print("PING time: ",           ping(HOST))
-    req = urllib.request.Request(url="http://DDB.glidernet.org/download/?j=1",headers={'User-Agent': 'Mozilla/5.0', 'Accept': 'Application/json'})
+    #req = urllib.request.Request(url="http://DDB.glidernet.org/download/?j=1",headers={'User-Agent': 'Mozilla/5.0', 'Accept': 'Application/json'})
     #req.add_header("Accept", "application/json")  # it return a JSON string
     #req.add_header("Content-Type", "application/json")
     #req.add_header("Request-Timeout", "60")
     #req = urllib.request.Request(url=DDB_URL)
     print ("RRR")
-    f = urllib.request.urlopen(req, timeout=10)
-
+    #f = urllib.request.urlopen(req, timeout=10)
+    response = requests.get(DDB_URL)
     print ("RRR2")
     try:
-       js=f.read().decode('utf-8')
+       web_page = response.text
+       #js=f.read().decode('utf-8')
        print ("RRR3")
 
-       f.close()
+       #f.close()
        print ("RRR4")
        #r = urllib.request.urlopen(req)      # open the url resource
        #js=r.read().decode('UTF-8')
-       print ("RRR", js)
-       j_obj = json.loads(js)               # convert to JSON
+       print ("RRR", web_page)
+       #j_obj = json.loads(js)               # convert to JSON
+       j_obj = json.loads(web_page)               # convert to JSON
 
        _ogninfo_ = j_obj                    # save the data on the global storage
        print ("DDB loaded... Size:", len (j_obj))
