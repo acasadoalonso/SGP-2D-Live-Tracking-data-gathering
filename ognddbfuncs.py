@@ -82,7 +82,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
     #f = urllib.request.urlopen(req, timeout=10)
     response = requests.get(DDB_URL, headers=headers)
     if response.status_code == 429:
-       time.sleep(int(response.headers["Retry-After"]))
+       sleep(int(response.headers["Retry-After"]))
     print ("RRR2: ", response.status_code)
     try:
        web_page = response.text
