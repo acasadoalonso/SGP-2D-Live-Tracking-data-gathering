@@ -77,8 +77,10 @@ def getddbdata(prt=False):                  		# get the data from the API server
     #req.add_header("Request-Timeout", "60")
     #req = urllib.request.Request(url=DDB_URL)
     print ("RRR")
+# The headers 
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0'}
     #f = urllib.request.urlopen(req, timeout=10)
-    response = requests.get(DDB_URL)
+    response = requests.get(DDB_URL, headers=headers)
     print ("RRR2")
     try:
        web_page = response.text
