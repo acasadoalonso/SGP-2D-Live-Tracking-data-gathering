@@ -71,11 +71,12 @@ def getddbdata(prt=False):                  		# get the data from the API server
     if True:
        print("Trying DDB Connecting with: ", DDB_URL, HOST, PORT)
        #print("PING time: ",           ping(HOST))
-    req = urllib.request.Request(url=DDB_URL)
-    req.add_header("Accept", "application/json")  # it return a JSON string
-    req.add_header("Content-Type", "application/json")
-    req.add_header("Request-Timeout", "60")
     try:
+       #req = urllib.request.Request(url=DDB_URL)
+       req = urllib.request.Request(url="http://DDB.glidernet.org/download/?j=1")
+       req.add_header("Accept", "application/json")  # it return a JSON string
+       req.add_header("Content-Type", "application/json")
+       req.add_header("Request-Timeout", "60")
        print ("RRR")
        with urllib.request.urlopen(req) as f:
             js=f.read().decode('utf-8')
