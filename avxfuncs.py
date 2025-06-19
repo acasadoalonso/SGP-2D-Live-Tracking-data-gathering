@@ -291,7 +291,10 @@ def avxaprspush(datafix, conn, prt=True):
            else:
                print("APRSMSG: ", aprsmsg[0:-1], "Country:", ICAO_ranges.getcountry(int(id[3:9],16)))
         rtn = config.SOCK_FILE.write(aprsmsg)
-        config.SOCK_FILE.flush()
+        try:
+           config.SOCK_FILE.flush()
+        except Exception as e:
+           print ("error on flush: ", e)
         cnt += 1
         if rtn == 0:
             print("Error writing msg:", aprsmsg)

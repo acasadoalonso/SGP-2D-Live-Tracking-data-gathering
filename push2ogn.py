@@ -76,6 +76,19 @@ def prttime(unixtime):
 
 #
 #########################################################################
+def aprsconnect(programver):
+# create socket & connect to server
+   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   sock.connect((config.APRS_SERVER_PUSH, config.APRS_SERVER_PORT))
+   print("Socket sock connected to: ", config.APRS_SERVER_PUSH, ":", config.APRS_SERVER_PORT)
+
+# logon to OGN APRS network
+
+   login = 'user %s pass %s vers PUSH2OGN %s %s' % (config.APRS_USER_PUSH, config.APRS_PASSCODE_PUSH, programver, "\n")
+   print("APRS Login request:", login)
+   login=login.encode(encoding='utf-8', errors='strict')
+   sock.send(login)
+   return (sock)
 #########################################################################
 #
 
@@ -244,17 +257,7 @@ with open(config.PIDfile+".PUSH2OGN", "w") as f:  # set the lock file  as the pi
     f.close()
 atexit.register(lambda: os.remove(config.PIDfile+".PUSH2OGN"))
 
-# create socket & connect to server
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((config.APRS_SERVER_PUSH, config.APRS_SERVER_PORT))
-print("Socket sock connected to: ", config.APRS_SERVER_PUSH, ":", config.APRS_SERVER_PORT)
-
-# logon to OGN APRS network
-
-login = 'user %s pass %s vers PUSH2OGN %s %s' % (config.APRS_USER_PUSH, config.APRS_PASSCODE_PUSH, programver, "\n")
-login=login.encode(encoding='utf-8', errors='strict')
-sock.send(login)
-
+sock=aprsconnect(programver)
 # Make the connection to the server
 sock_file = sock.makefile(mode='rw')    # make read/write as we need to send the keep_alive
 
@@ -262,7 +265,6 @@ config.SOCK = sock
 config.SOCK_FILE = sock_file
 print("APRS Version:", sock_file.readline())
 sleep(2)
-print("APRS Login request:", login)
 print("APRS Login reply:  ", sock_file.readline())
 
 
@@ -313,6 +315,12 @@ date = datetime.now()
 try:
 
     while True:
+        if nerrors > 100:
+                if ENA:
+                   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                shutdown(sock, spispotcount)            # way to many errors
+                sys.exit(-1)		                # and bye ...
+							# end of except
         func='NONE'
         current_time = time.time()
         local_time = datetime.now()
@@ -462,13 +470,23 @@ try:
                 print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", naive_utcnow().isoformat())
 
             nerrors += 1
-            if nerrors > 100:
-                if ENA:
-                   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
-                shutdown(sock, spispotcount)            # way to many errors
-                sys.exit(-1)		                # and bye ...
-							# end of except
         sys.stdout.flush()				# flush the print messages
+        if AVX or ENA:					# check if the connectio with the APRS server is still is up
+           try:
+              sock_file.flush()
+           except Exception as e:
+              print ("ERROR as flush to the APRS server... ", e)
+              sock=aprsconnect(programver)		# connect again
+              # Make the connection to the server
+              sock_file = sock.makefile(mode='rw')      # make read/write as we need to send the keep_alive
+
+              config.SOCK = socka			# save in on the CONFIG
+              config.SOCK_FILE = sock_file
+              print("APRS Version:", sock_file.readline())
+              sleep(2)
+              print("APRS Login reply:  ", sock_file.readline())
+              nerrors += 1
+
         sleep(SLEEP)					# sleep n seconds
 
 
