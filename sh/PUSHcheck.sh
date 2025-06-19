@@ -19,6 +19,7 @@ then
                 fi
 
 #               restart OGN data collector
+                cd   $SCRIPTPATH/sh
                 bash $SCRIPTPATH/PUSH2ogn.sh
 	        sleep 5	
                 logger -t $0 "PUSH2OGN Log seems down, restarting ... "$(cat $pid)

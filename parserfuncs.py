@@ -430,8 +430,12 @@ def parseraprs(packet_str, msg):
 	
             # scan for the body of the APRS message
             p = data.find(' v0.')                       # the comment side
+            status = " "
             if aprstype == 'status':
-                status = packet['comment'].rstrip()     # status informationa
+                if   "comment" in packet:
+                   status = packet['comment'].rstrip()  # status informationa
+                elif "user_comment" in packet:
+                   status = packet['user_comment'].rstrip()  # status informationa
             else:
                 status = " "
             if 'cpu_temp' in packet:
