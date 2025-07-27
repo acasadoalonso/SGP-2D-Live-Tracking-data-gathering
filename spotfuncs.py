@@ -28,7 +28,8 @@ def spotgetapidata(url, prt=False):
 
 
 def spotaddpos(msg, spotpos, ttime, regis, flarmid):  # extract the data from the JSON object
-
+    if "unixTime" not in msg:		    # check for errors
+       return (False)
     unixtime = msg["unixTime"] 		    # the time from the epoch
     altitude = msg["altitude"]
     if (unixtime < ttime or altitude == 0):
