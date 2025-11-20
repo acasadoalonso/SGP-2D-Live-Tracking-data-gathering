@@ -269,12 +269,14 @@ def get_station(packet):
     else:
         station=''
     return (station)
-
+unksrc={}					# list of unknow sources
 def get_source(dstcallsign):
     src = str(dstcallsign)
     if src in aprssources:
         return (aprssources[src])
-    print(">>> Unknown SOURCE:", src, naive_utcnow(),"<<<", file=sys.stderr)
+    if src not in unksrc:
+        print(">>> Unknown SOURCE:", src, naive_utcnow(),"<<<", file=sys.stderr)
+        unksrc[src]=1
         
     return ("UNKW")
 # ########################################################################
