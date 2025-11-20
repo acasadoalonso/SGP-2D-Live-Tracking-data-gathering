@@ -61,7 +61,9 @@ aprssources = {			# sources based on the APRS TOCALL
     "FXCAPP": "FXC",	   	# FXC 
     "OGMSHT": "MSHT",	   	# Metashtic
     "OGNPUR": "PURT",	   	# Pure track
-    "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
+    "OGNDLY": "DLYM",		# Delayed fixes (IGC mandated)
+    "OGNVOL": "VOLA",		# Volandoo
+    "OGAPIK": "APIK"		# ?
 }
 # --------------------------------------------------------------------------
 aprssymtypes=[
@@ -272,7 +274,8 @@ def get_source(dstcallsign):
     src = str(dstcallsign)
     if src in aprssources:
         return (aprssources[src])
-    print(">>> Unknown SOURCE:", src, "<<<", file=sys.stderr)
+    print(">>> Unknown SOURCE:", src, naive_utcnow(),"<<<", file=sys.stderr)
+        
     return ("UNKW")
 # ########################################################################
 
@@ -362,6 +365,9 @@ def decdeg2dms(dd):			# convert degress float into DDMMSS
 
 
 def parseraprs(packet_str, msg):
+    rc=packet_str.find(":/______")
+    if rc != -1:
+       return -2
     # args: packet_str the packet stream with the data, msg the dict where to return the parsed data
     try:
         packet = parse(packet_str)
