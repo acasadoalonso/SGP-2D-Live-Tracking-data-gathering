@@ -505,10 +505,6 @@ try:
                 fsour[source] += 1	    		# increase the counter
 
             if source == 'FANE' or source == 'UNKW':  	# ignore those messages
-                if source == 'UNKW':
-                   print("SOURCE Error: >>>>", source,msg, packet_str) 
-                   sys.stdout.flush()					# flush the print messages
-                   sys.stderr.flush()					# flush the print messages
                 continue
             if source == 'NEMO' :		  	# ignore those messages
                 continue
