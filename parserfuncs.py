@@ -441,7 +441,8 @@ def parseraprs(packet_str, msg):
            msg['station']  = gid
            msg['aprstype'] = aprstype
            msg['otime']    = otime
-           msg['windspeed']= windspeed
+           msg['windspeed']    = packet['wind_speed']
+           msg['winddirection']= packet['wind_direction']
            msg['temp']     = temp
            msg['humidity'] = humidity
            msg['rain']     = rain
