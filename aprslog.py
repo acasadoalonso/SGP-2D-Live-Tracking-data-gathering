@@ -637,7 +637,7 @@ try:
             if 'speed' in msg:
                 speed = msg['speed']
             else:
-                print("MMMMM>>>>", msg)
+                print("MMM No speed>>>>", msg)
             course = 0
             if 'course' in msg:
                course = msg['course']

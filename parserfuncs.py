@@ -28,6 +28,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNTRK": "OGN",		# OGN Tracker
     "OGNDSX": "OGN",		# old DSX
     "OGNDVS": "WTX",		# Weather stations
+    "APYSNR": "WTX",		# Weather stations
     "OGNTTN": "TTN",		# the things LoRaWan network
     "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
     "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
@@ -258,7 +259,10 @@ def get_otime(packet):
     if 'timestamp' in packet:
         otime = packet['timestamp']
     else:
-        otime = datetime.naive_utcfromtimestamp(0)
+        if hasattr(datetime, 'naive_utcfromtimestamp'):
+           otime = datetime.naive_utcfromtimestamp(0)
+        else:
+           otime = datetime.utcfromtimestamp(0)
     return otime
 
 
@@ -405,8 +409,8 @@ def parseraprs(packet_str, msg):
         ix = packet_str.find(':')     # look for the message type
         # check if it is position report or status report
         msgtype = packet_str[ix +1:ix +2]
-        if msgtype != '>' and msgtype != '/':   	# only status or location messages
-            print("MMM>>>", aprstype, data, file=sys.stderr)
+        if msgtype != '>' and msgtype != '/' and aprstype != 'position_weather':   	# only status or location messages
+            print("MMM Check APRStype >>>", aprstype, data, file=sys.stderr)
 # ===================================================================================================== #
         # if TCPIP records            			The the WX
         if dst_callsign == 'OGNDVS':			# if it is a wether station ??
@@ -425,6 +429,24 @@ def parseraprs(packet_str, msg):
            msg['humidity'] = humidity
            msg['rain']     = rain
            msg['source']   = 'WTX'
+           return (msg)
+        if dst_callsign == 'APYSNR':			# if it is a wether station ??
+           windspeed = 0
+           temp      = 0
+           humidity  = 0
+           rain      = 0
+           msg['id']       = gid	        	# return the parsed data into the dict
+           msg['path']     = path
+           msg['relay']    = relay
+           msg['station']  = gid
+           msg['aprstype'] = aprstype
+           msg['otime']    = otime
+           msg['windspeed']= windspeed
+           msg['temp']     = temp
+           msg['humidity'] = humidity
+           msg['rain']     = rain
+           msg['source']   = 'WTX'
+           print ("WTX:", packet)
            return (msg)
                
 # ===================================================================================================== #
