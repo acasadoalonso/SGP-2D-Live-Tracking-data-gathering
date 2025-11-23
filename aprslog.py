@@ -116,7 +116,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.17'			# manually set the program version !!!
+programver = 'V2.18'			# manually set the program version !!!
 
 print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and LT24 logging: " + programver)
 print("==================================================================================")
@@ -129,7 +129,7 @@ dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
-print("Time now is: ", date, " Local time")
+print("Time now is: ", date, " Local time\n\n")
 
 APP = "APRS"				# the application name
 cin = 0                                 # input record counter
