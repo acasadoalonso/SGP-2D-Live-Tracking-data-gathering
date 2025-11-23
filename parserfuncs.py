@@ -431,7 +431,6 @@ def parseraprs(packet_str, msg):
            msg['source']   = 'WTX'
            return (msg)
         if dst_callsign == 'APYSNR':			# if it is a wether station ??
-           windspeed = 0
            temp      = 0
            humidity  = 0
            rain      = 0
@@ -447,7 +446,7 @@ def parseraprs(packet_str, msg):
            msg['humidity'] = humidity
            msg['rain']     = rain
            msg['source']   = 'WTX'
-           print ("WTX:", packet)
+           #print ("WTX:", packet)
            return (msg)
                
 # ===================================================================================================== #
