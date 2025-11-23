@@ -225,7 +225,7 @@ if LASTFIX :
                 print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), naive_utcnow()   , file=sys.stderr)
             except IndexError:
                 print(">>>>: MySQL Error2: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
-        print("Number of IDs on the DB: ", len(lastfix))
+        print("Number of IDs on current LASTFIX DB: ", len(lastfix), "\n")
 if DATA:
     config.LogData = True
 
@@ -476,6 +476,9 @@ try:
             msg = parseraprs(packet_str, msg)		# parse the APRS message
             if msg == -1:				# if errors
                 continue
+            if not hasattr(msg, '__iter__'):
+                continue
+
             data = packet_str
             if prt:
                 print("MSG:  ", msg)
@@ -753,7 +756,7 @@ try:
                         try:
                             #print    ("CMD2", ident, latitude, longitude, altim, course, dte, hora, "ROT", rot, speed, dist, "ROC", roclimb, station, "SENS", sensitivity, gps, otime, source)
                             cmd2 = "INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
-                                (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                                (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, dateutc, source)
                             try:
                                curs.execute(cmd2)  	# insert the data on the DB
                             except MySQLdb.Error as e:
@@ -765,8 +768,8 @@ try:
                                    print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
                         except TypeError:		# type error building the INSERT cmd
                             if source != 'NEMO' and source != 'OGNB':		# temp patch
-                               print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, "::",source,"::")
-                        if prt:
+                               print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, dateutc, "::",source,"::")
+                        if False:
                             print("CMD2>>>", cmd2)
 
                     else:				# if found just update the entry on the table
