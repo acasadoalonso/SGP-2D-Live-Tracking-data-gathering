@@ -83,7 +83,8 @@ aprssymtypes=[
     "/O",                   # C = airship (seen once)
     "/'",                   # D = UAV (drones, can become very common)
     "/z",                   # E = ground support (ground vehicles at airfields)
-    "\\n"                   # F = static object (ground relay ?)
+    "\\n",                  # F = static object (ground relay ?)
+    "/n"                    # F = Node
 ]
 # --------------------------------------------------------------------------
 aprstypes=[
@@ -102,7 +103,8 @@ aprstypes=[
     "Airship",              # C = airship (seen once)
     "Drone",                # D = UAV (drones, can become very common)
     "GroundVehicle",        # E = ground support (ground vehicles at airfields)
-    "GroundStation"         # F = static object (ground relay ?)
+    "GroundStation",        # F = static object (ground relay ?)
+    "StaticObject"          # F = static object (ground relay ?)
 ]
 # --------------------------------------------------------------------------
 def isfloat(s):
