@@ -442,6 +442,21 @@ def parseraprs(packet_str, msg):
            else:
               return (msg)
            if len(wtx) == 0:
+              msg['id']       = gid	        	# return the parsed data into the dict
+              msg['path']     = path
+              msg['relay']    = relay
+              msg['station']  = gid
+              msg['aprstype'] = aprstype
+              msg['otime']    = otime
+              msg['windspeed']           = packet['wind_speed']
+              msg['winddirection']       = packet['wind_direction']
+              msg['wind_speed_peak']     = packet['wind_speed_peak']
+              msg['temperature']         = packet['temperature']
+              msg['humidity']            = packet['humidity']
+              msg['rainfall_1h']         = packet['rainfall_1h']
+              msg['rainfall_24h']        = packet['rainfall_24h']
+              msg['barometric_pressure'] = packet['barometric_pressure']
+              msg['source']   = 'WTX'
               return (msg)
 
               
