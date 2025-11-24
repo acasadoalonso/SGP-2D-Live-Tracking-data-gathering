@@ -380,6 +380,7 @@ def parseraprs(packet_str, msg):
     try:
         packet = parse(packet_str)
     except:
+        print("PPP", packet)
         return -1
     # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
@@ -432,10 +433,39 @@ def parseraprs(packet_str, msg):
            msg['rain']     = rain
            msg['source']   = 'WTX'
            return (msg)
-        if dst_callsign == 'APYSNR':			# if it is a wether station ??
+        if aprstype == 'position_weather':		# if it is a wether station ??
+           #print ("WTXin:", packet)
+           if   "comment" in packet:
+              wtx = packet['comment'].rstrip()  	# status informationa
+           elif "user_comment" in packet:
+              wtx = packet['user_comment'].rstrip()  	# status informationa
+           else:
+              return (msg)
+           if len(wtx) == 0:
+              return (msg)
+
+              
+          						# parse the APRS weather messagea
            temp      = 0
+           gust      = 0
            humidity  = 0
            rain      = 0
+           rain24    = 0
+           baro      = 0
+
+           if wtx[3]=='g' and wtx[4:6]    != '...'   and wtx[4:6]   != '   ':
+              gust=int(wtx[4:6])			# gust
+           if wtx[7]=='t' and wtx[8:10]   != '...'   and wtx[8:10]  != '   ':
+              temp=int(wtx[8:10])			# temperature
+           if wtx[11]=='r' and wtx[12:14] != '...'   and wtx[12:14] != '   ':
+              rain=int(wtx[12:14])			# rainfall
+           if wtx[15]=='p' and wtx[16:18] != '...'   and wtx[16:18] != '   ':
+              rain24=int(wtx[16:18])			# rainfall
+           if wtx[19]=='b' and wtx[20:24] != '.....' and wtx[20:24] != '     ':
+              baro=int(wtx[20:24])			# barometric presure
+           if wtx[25]=='h' and wtx[26:27] != '..'    and wtx[26:27] != '  ':
+              humidity=int(wtx[26:27])			# humidity
+
            msg['id']       = gid	        	# return the parsed data into the dict
            msg['path']     = path
            msg['relay']    = relay
@@ -444,11 +474,14 @@ def parseraprs(packet_str, msg):
            msg['otime']    = otime
            msg['windspeed']    = packet['wind_speed']
            msg['winddirection']= packet['wind_direction']
-           msg['temp']     = temp
-           msg['humidity'] = humidity
-           msg['rain']     = rain
+           msg['temperature']  = temp
+           msg['humidity']     = humidity
+           msg['rainfall_1h']  = rain
+           msg['rainfall_24h'] = rain24
+           msg['barometric_pressure']     = baro
+           msg['wind_speed_peak']     = gust
            msg['source']   = 'WTX'
-           #print ("WTX:", packet)
+           #print ("WTXout:", msg)
            return (msg)
                
 # ===================================================================================================== #
