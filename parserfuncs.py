@@ -476,7 +476,7 @@ def parseraprs(packet_str, msg):
            baro      = 0
 
            print("WTX", packet)
-           if len(wtx) < 5:
+           if len(wtx) < 27:
               return (msg)
            if wtx[3]=='g' and len(wtx)  >6  and wtx[4:6]   != '...'   and wtx[4:6]   != '   ':
               gust=int(wtx[4:6])			# gust
