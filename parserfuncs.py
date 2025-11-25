@@ -433,6 +433,12 @@ def parseraprs(packet_str, msg):
            msg['source']   = 'WTX'
            return (msg)
         if aprstype == 'position_weather':		# if it is a wether station ??
+           msg['id']       = gid	        	# return the parsed data into the dict
+           msg['path']     = path
+           msg['relay']    = relay
+           msg['station']  = gid
+           msg['aprstype'] = aprstype
+           msg['otime']    = otime
            #print ("WTXin:", packet)
            if   "comment" in packet:
               wtx = packet['comment'].rstrip()  	# status informationa
@@ -440,13 +446,7 @@ def parseraprs(packet_str, msg):
               wtx = packet['user_comment'].rstrip()  	# status informationa
            else:
               return (msg)
-           if len(wtx) == 0:				# if info is already parsered 
-              msg['id']       = gid	        	# return the parsed data into the dict
-              msg['path']     = path
-              msg['relay']    = relay
-              msg['station']  = gid
-              msg['aprstype'] = aprstype
-              msg['otime']    = otime
+           if len(wtx) == 0 or 'wind_speed' in packet:	# if info is already parsered 
               if 'wind_speed' in packet:
                  msg['wind_speed']       = packet['wind_speed']
               if 'wind_direction' in packet:
@@ -491,12 +491,6 @@ def parseraprs(packet_str, msg):
            if wtx[25]=='h' and len(wtx) >27 and wtx[26:27] != '..'    and wtx[26:27] != '  ':
               humidity=int(wtx[26:27])			# humidity
 
-           msg['id']            = gid	        	# return the parsed data into the dict
-           msg['path']          = path
-           msg['relay']         = relay
-           msg['station']       = gid
-           msg['aprstype']      = aprstype
-           msg['otime']         = otime
            msg['wind_speed']    = packet['wind_speed']
            msg['wind_direction']= packet['wind_direction']
            msg['temperature']   = temp
