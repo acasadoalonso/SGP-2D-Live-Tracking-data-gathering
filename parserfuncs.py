@@ -110,6 +110,7 @@ aprstypes=[
 def isfloat(s):
     return (s.replace('.','',1).isdigit())
 
+unkacft={}				# list of unknow aircraft types
 def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the symbol table
 
     sym=sym1 +sym2
@@ -121,7 +122,9 @@ def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the 
     # deal with the NEMO for the time being
     if sym1 == 'I' and sym2 == '&':
         return ("Station")
-    print (">>> Unknown or Wrong Acft Type", sym1, sym2, "<<<", file=sys.stderr)
+    if sym not in unkacft:		# print the error once
+        unkacft[sym]=1
+        print (">>> Unknown or Wrong Acft Type", sym1, sym2, "<<<", file=sys.stderr)
     return ("UNKNOWN")
 
 
