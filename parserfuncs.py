@@ -380,7 +380,6 @@ def parseraprs(packet_str, msg):
     try:
         packet = parse(packet_str)
     except:
-        print("PPP", packet)
         return -1
     # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
@@ -441,21 +440,29 @@ def parseraprs(packet_str, msg):
               wtx = packet['user_comment'].rstrip()  	# status informationa
            else:
               return (msg)
-           if len(wtx) == 0:
+           if len(wtx) == 0:				# if info is already parsered 
               msg['id']       = gid	        	# return the parsed data into the dict
               msg['path']     = path
               msg['relay']    = relay
               msg['station']  = gid
               msg['aprstype'] = aprstype
               msg['otime']    = otime
-              msg['windspeed']           = packet['wind_speed']
-              msg['winddirection']       = packet['wind_direction']
-              msg['wind_speed_peak']     = packet['wind_speed_peak']
-              msg['temperature']         = packet['temperature']
-              msg['humidity']            = packet['humidity']
-              msg['rainfall_1h']         = packet['rainfall_1h']
-              msg['rainfall_24h']        = packet['rainfall_24h']
-              msg['barometric_pressure'] = packet['barometric_pressure']
+              if 'wind_speed' in packet:
+                 msg['wind_speed']       = packet['wind_speed']
+              if 'wind_direction' in packet:
+                 msg['wind_direction']   = packet['wind_direction']
+              if 'wind_speed_peek' in packet:
+                 msg['wind_speed_peak']  = packet['wind_speed_peak']
+              if 'temperature' in packet:
+                 msg['temperature']      = packet['temperature']
+              if 'humidity' in packet:
+                 msg['humidity']         = packet['humidity']
+              if 'rainfall_1h' in packet:
+                 msg['rainfall_1h']      = packet['rainfall_1h']
+              if 'rainfall_24h' in packet:
+                 msg['rainfall_24h']     = packet['rainfall_24h']
+              if 'barometric_pressure' in packet:
+                 msg['barometric_pressure'] = packet['barometric_pressure']
               msg['source']   = 'WTX'
               return (msg)
 
@@ -468,32 +475,32 @@ def parseraprs(packet_str, msg):
            rain24    = 0
            baro      = 0
 
-           if wtx[3]=='g' and wtx[4:6]    != '...'   and wtx[4:6]   != '   ':
+           if wtx[3]=='g' and len(wtx)  >6  and wtx[4:6]   != '...'   and wtx[4:6]   != '   ':
               gust=int(wtx[4:6])			# gust
-           if wtx[7]=='t' and wtx[8:10]   != '...'   and wtx[8:10]  != '   ':
+           if wtx[7]=='t' and len(wtx)  >10 and wtx[8:10]  != '...'   and wtx[8:10]  != '   ':
               temp=int(wtx[8:10])			# temperature
-           if wtx[11]=='r' and wtx[12:14] != '...'   and wtx[12:14] != '   ':
+           if wtx[11]=='r' and len(wtx) >14 and wtx[12:14] != '...'   and wtx[12:14] != '   ':
               rain=int(wtx[12:14])			# rainfall
-           if wtx[15]=='p' and wtx[16:18] != '...'   and wtx[16:18] != '   ':
+           if wtx[15]=='p' and len(wtx) >18 and wtx[16:18] != '...'   and wtx[16:18] != '   ':
               rain24=int(wtx[16:18])			# rainfall
-           if wtx[19]=='b' and wtx[20:24] != '.....' and wtx[20:24] != '     ':
+           if wtx[19]=='b' and len(wtx) >24 and wtx[20:24] != '.....' and wtx[20:24] != '     ':
               baro=int(wtx[20:24])			# barometric presure
-           if wtx[25]=='h' and wtx[26:27] != '..'    and wtx[26:27] != '  ':
+           if wtx[25]=='h' and len(wtx) >27 and wtx[26:27] != '..'    and wtx[26:27] != '  ':
               humidity=int(wtx[26:27])			# humidity
 
-           msg['id']       = gid	        	# return the parsed data into the dict
-           msg['path']     = path
-           msg['relay']    = relay
-           msg['station']  = gid
-           msg['aprstype'] = aprstype
-           msg['otime']    = otime
-           msg['windspeed']    = packet['wind_speed']
-           msg['winddirection']= packet['wind_direction']
-           msg['temperature']  = temp
-           msg['humidity']     = humidity
-           msg['rainfall_1h']  = rain
-           msg['rainfall_24h'] = rain24
-           msg['barometric_pressure']     = baro
+           msg['id']            = gid	        	# return the parsed data into the dict
+           msg['path']          = path
+           msg['relay']         = relay
+           msg['station']       = gid
+           msg['aprstype']      = aprstype
+           msg['otime']         = otime
+           msg['wind_speed']    = packet['wind_speed']
+           msg['wind_direction']= packet['wind_direction']
+           msg['temperature']   = temp
+           msg['humidity']      = humidity
+           msg['rainfall_1h']   = rain
+           msg['rainfall_24h']  = rain24
+           msg['barometric_pressure'] = baro
            msg['wind_speed_peak']     = gust
            msg['source']   = 'WTX'
            #print ("WTXout:", msg)
