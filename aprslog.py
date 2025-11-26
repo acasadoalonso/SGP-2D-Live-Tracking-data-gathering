@@ -159,9 +159,10 @@ fslal = {'NONE  ': 0.0}                 # station location altitude
 fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
 fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
-fsour = {}			 	    # sources
+fsour = {}  		 	        # sources
 acfttype = []			 	# aircraft types
-fdtcnt = {}			 	    # device type counter
+unkacft= {}				# list of unkown aircraft types
+fdtcnt = {}			 	# device type counter
 flastfix = {}				# table with the LAST FIXES
 lastfix = []				# list of last fix from DB
 fdistcheck = {}				# table with device with distance more than 400 kms
@@ -517,7 +518,8 @@ try:
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
-                   if station != 'NEMO' and relay != 'TCPIP*':		# temp patch
+                   if station is not in unkacft:
+                      unkacft[station] = 1
                       print ("Wrong aircraft type:", acftt, packet_str, msg, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
