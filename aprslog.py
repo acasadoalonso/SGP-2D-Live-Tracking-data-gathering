@@ -518,7 +518,7 @@ try:
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
-                   if station is not in unkacft:
+                   if station not in unkacft:
                       unkacft[station] = 1
                       print ("Wrong aircraft type:", acftt, packet_str, msg, file=sys.stderr)
                    continue
