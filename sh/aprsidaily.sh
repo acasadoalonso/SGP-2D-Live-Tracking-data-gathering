@@ -73,10 +73,10 @@ date														     >>APRSproc.log 2>/dev/null
 echo "Gen the heatmaps files from: "$hostname					                                     >>APRSproc.log 2>/dev/null
 if [ "$(id -u)" != "0" ]; then
    sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
-   sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
+   sudo rm -f /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
 else
    sudo wget "http://localhost/node/heatmap.php" -o /tmp/tempfile 						     >/dev/null     2>/dev/null
-   sudo rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
+   sudo -f rm /tmp/tempfile* heat*    										     >/dev/null     2>/dev/null
 fi
 date														     >>APRSproc.log 2>/dev/null
 if [[ $DBname == 'APRSLOG' ]]; then
@@ -113,7 +113,7 @@ then
 else
    	if [[ -f TRKDEVICES.sql ]]
    	then
-      		rm TRKDEVICES.sql												     >/dev/null 2>/dev/null
+      		rm -f TRKDEVICES.sql												     >/dev/null 2>/dev/null
    	fi
    	wget chileogn.ddns.net/files/TRKDEVICES.sql -o /tmp/TRKDEVICES.sql						     >/dev/null 2>/dev/null
 fi
@@ -127,7 +127,7 @@ then
 else
         pt-table-sync  --execute --verbose h=chileogn.ddns.net,D=APRSLOG,t=TRKDEVICES h=$server --user=$DBuser --password=$DBpasswd >>APRSproc.log 2>/dev/null
 fi
-rm /tmp/TRKDEVICES.sql
+rm -f /tmp/TRKDEVICES.sql
 echo "Done."$(date)    		     						                                     >>APRSproc.log 2>/dev/null
 date														     >>APRSproc.log 2>/dev/null
 mutt -a APRSproc.log -s $hostname" APRSlog daily report ..." -- $(cat $SCRIPTPATH/mailnames.txt)		     2>/dev/null 
@@ -136,9 +136,9 @@ mv aprs.log      archive/APRSlog$(date +%y%m%d).log      							     2>/dev/null
 mv aprserr.log   archive/APRSlogerr$(date +%y%m%d).log      							     2>/dev/null
 mv DATA*.log     archive											     2>/dev/null
 mv APRS*.log     archive  											     2>/dev/null
-rm APRS.alive  													     2>/dev/null
+rm -f APRS.alive												     2>/dev/null
 if [ "$(id -u)" != "0" ]; then
-   sudo  rm   /var/www/html/node/nohup.out     							    		     >/dev/null 2>/dev/null
+   sudo  rm -f  /var/www/html/node/nohup.out   							    		     >/dev/null 2>/dev/null
 fi
 cd
 

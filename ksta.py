@@ -142,6 +142,8 @@ ksta = {
 "ElPuerto"  : "El Puerto de Santa Maria, Cadiz ",
 "Abdalajis" : "Valle de Abdalajis, Malaga ",
 "ABDALAJIS" : "Valle de Abdalajis, Malaga ",
+"Abdalajs2" : "Valle de Abdalajis, Malaga ",
+"ABDALAJSi2": "Valle de Abdalajis, Malaga ",
 "AXARQUIA"  : "Valle de la Axarquia, Malaga ",
 "Axarquia"  : "Valle de la Axarquia, Malaga ",
 "Larouco"   : "Larouco, Orense ",
@@ -158,6 +160,8 @@ ksta = {
 "TENERIFES" : "Tenerife Sur, Canarias ",
 "CabezaBel" : "Cabezabellosa, Caceres ",
 "CABEZABEL" : "Cabezabellosa, Caceres ",
+"CabezaMan" : "Cabeza de Manzaneda, Orense ",
+"CABEZAMAN" : "Cabeza de Manzaneda, Orense ",
 "Pedrahita" : "Piedrahita, Avila ",
 "PEDRAHITA" : "Piedrahita, Avila ",
 "Ortigosa"  : "Ortigosa del Monte, Segovia ",
@@ -175,6 +179,7 @@ ksta = {
 "SpainTTT"  : "Estacion ficticia gateway Enaire ",
 "SPAINTTT"  : "Estacion ficticia gateway Enaire ",
 "SpainENA"  : "Estacion ficticia gateway Enaire ",
+"VOLANDOO"  : "Estacion ficticia gateway VOLANDOO ",
 
 # french airports
 "LFBM"   : "Mont de Marsan",
