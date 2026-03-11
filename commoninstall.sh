@@ -169,6 +169,8 @@ sudo -H python3 -m pip install timezonefinder 			--break-system-packages
 sudo -H python3 -m pip install airportsdata			--break-system-packages
 sudo -H python3 -m pip install termcolor			--break-system-packages
 sudo -H python3 -m pip install gitpython			--break-system-packages
+sudo -H python3 -m pip install beautifulsoup4			--break-system-packages
+sudo -H python3 -m pip install simplejson 			--break-system-packages
 pipreqs  --force .
 if [ $sql = 'MySQL' ]						#	
 then								#

@@ -12,6 +12,7 @@ import sys
 import atexit
 import socket
 import airportsdata
+from urllib.error import HTTPError
 
 from ogn.parser import parse
 from datetime import datetime, timezone
@@ -723,10 +724,14 @@ def SRSSgetapidata(url):                    # get the data from the API server
     req = urllib.request.Request(url)       # buil the request
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
-    r = urllib.request.urlopen(req)         # open the url resource
-    js=r.read().decode('UTF-8')
-    j_obj = json.loads(js)                  # convert to JSON
-    return j_obj                            # return the JSON object
+    try:
+       r = urllib.request.urlopen(req)      # open the url resource
+       js=r.read().decode('UTF-8')
+       j_obj = json.loads(js)               # convert to JSON
+       return j_obj                         # return the JSON object
+    except HTTPError as err:
+       print ("Error gathering SRSS", err)
+    return ({})
 
 
 def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
@@ -737,7 +742,7 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
     # print jsondata
     if prt:                                 # if print requested
         print(json.dumps(jsondata, indent=4))
-    if jsondata['status'] == "OK":          # only if results are OK
+    if 'status' in jsondata and jsondata['status'] == "OK": # only if results are OK
         results = jsondata["results"]       # get the reults part
         timeref = results[obj]         	    # get the object that we need
         print(jsondata['status'], obj, timeref)
