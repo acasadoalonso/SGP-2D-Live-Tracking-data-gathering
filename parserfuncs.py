@@ -13,6 +13,7 @@ import atexit
 import socket
 import airportsdata
 from urllib.error import HTTPError
+from suntime import Sun, SunTimeException
 
 from ogn.parser import parse
 from datetime import datetime, timezone
@@ -730,7 +731,7 @@ def SRSSgetapidata(url):                    # get the data from the API server
        j_obj = json.loads(js)               # convert to JSON
        return j_obj                         # return the JSON object
     except HTTPError as err:
-       print ("Error gathering SRSS", err)
+       print ("Error gathering SRSS from api.sunrise-sunset.org", err)
     return ({})
 
 
@@ -750,7 +751,15 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
         ttt = datetime.strptime(timeref, "%Y-%m-%dT%H:%M:%S+00:00")
         # number of second until beginning of the day
         td = ttt -datetime(1970, 1, 1)
-        ts = int(td.total_seconds())      # Unix time - seconds from the epoch
+        ts = int(td.total_seconds())        # Unix time - seconds from the epoch
+    else:
+        if obj=='sunset':
+           sun=Sun(float(lat),float(lon))
+           ttt=sun.get_sunset_time()
+           print("Sunset from suntime:", ttt)
+           naive = ttt.replace(tzinfo=None)
+           td = naive -datetime(1970, 1, 1)
+           ts = int(td.total_seconds())     # Unix time - seconds from the epoch
     return (ts)                             # return it
 
 #

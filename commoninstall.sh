@@ -149,7 +149,7 @@ sudo -H python3 -m pip install ephem pytz geopy configparser 	--break-system-pac
 sudo -H python3 -m pip install pycountry uritemplate requests	--break-system-packages
 sudo -H python3 -m pip install beeprint ogn.client		--break-system-packages
 sudo -H python3 -m pip install tqdm psutil python-dateutil	--break-system-packages
-sudo -H python3 -m pip install ping3               		--break-system-packages
+sudo -H python3 -m pip install ping3 suntime          		--break-system-packages
 sudo -H python3 -m pip install pipreqs               		--break-system-packages
 sudo -H python3 -m pip install ttn               		--break-system-packages
 sudo -H python3 -m pip install paho-mqtt			--break-system-packages
