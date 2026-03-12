@@ -734,15 +734,20 @@ def SRSSgetapidata(url):                    # get the data from the API server
        print ("Error gathering SRSS from api.sunrise-sunset.org", err)
     return ({})
 
+#
+# routines to get the sunrise or sunset for an specific location
+#
 
 def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
 
     ts = 0                                  # init the return time since epoch
+                                            # let try first to use the web api
     url = "http://api.sunrise-sunset.org/json?lat=" +lat +"&lng=" +lon +"&formatted=0"
     jsondata = SRSSgetapidata(url)          # get the data from the web
     # print jsondata
     if prt:                                 # if print requested
         print(json.dumps(jsondata, indent=4))
+
     if 'status' in jsondata and jsondata['status'] == "OK": # only if results are OK
         results = jsondata["results"]       # get the reults part
         timeref = results[obj]         	    # get the object that we need
@@ -753,10 +758,17 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
         td = ttt -datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # Unix time - seconds from the epoch
     else:
-        if obj=='sunset':
+        if obj=='sunset':		    # lets try using the suntime module
            sun=Sun(float(lat),float(lon))
            ttt=sun.get_sunset_time()
            print("Sunset from suntime:", ttt)
+           naive = ttt.replace(tzinfo=None)
+           td = naive -datetime(1970, 1, 1)
+           ts = int(td.total_seconds())     # Unix time - seconds from the epoch
+        if obj=='sunrise':
+           sun=Sun(float(lat),float(lon))
+           ttt=sun.get_sunrise()
+           print("Sunrise from suntime:", ttt)
            naive = ttt.replace(tzinfo=None)
            td = naive -datetime(1970, 1, 1)
            ts = int(td.total_seconds())     # Unix time - seconds from the epoch
