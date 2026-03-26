@@ -232,6 +232,30 @@ try:
 except:
     ENAfl = '15000'
 
+try:
+    BSTOPtext = cfg.get('location', 'BSTOP').strip("'").strip('"')
+except:
+    BSTOPtext = 'False'
+try:
+    BSTOPhost = cfg.get('location', 'BSTOPHOST').strip("'").strip('"')
+except:
+    BSTOPhost = 'localhost'
+try:
+    BSTOPname = cfg.get('location', 'BSTOPname').strip("'").strip('"')
+except:
+    BSTOPname = 'BSTOPrecvr'
+try:
+    BSTOPloc = cfg.get('location', 'BSTOPloc').strip("'").strip('"')
+except:
+    BSTOPloc = ''
+try:
+    BSTOPfl = cfg.get('location', 'BSTOPfl').strip("'").strip('"')
+except:
+    BSTOPfl = '15000'
+try:
+    BSTOPapikey = cfg.get('location', 'BSTOPapikey').strip("'").strip('"')
+except:
+    BSTOPapikey = ''
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
