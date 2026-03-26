@@ -235,7 +235,7 @@ def bstopaprspush(datafix, conn, prt=True):
         uniqueid = fix["UnitID"]
         src      = fix['source']
         if src == 'BSTOP':
-           uniqueid = '07'+uniqueid[3:]
+           uniqueid = '37'+uniqueid[3:]
         dist     = fix['dist']
         extpos   = fix['extpos']
         flight   = fix['flight']
