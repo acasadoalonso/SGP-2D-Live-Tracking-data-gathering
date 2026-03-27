@@ -24,7 +24,7 @@ import argparse
 import traceback
 from ognddbfuncs import *		        		# import the functions delaing with the Flarm ID
 
-programver = 'V2.8'						# June 2025
+programver = 'V2.9'						# June 2025
 #########################################################################
 
 
@@ -128,6 +128,7 @@ TimeLT24SKYL          = 60     	# time in second from each run
 TimeADSB              = SLEEP	# time in second from each run
 TimeAVX               = 5  	# time in second from each run
 TimeENA		      = 0 	# the waiting is whitin the run
+TimeBSTOP	      = 60 	# the waiting is whitin the run
 
 # --------------------------------------#
 DBpath = config.DBpath
@@ -160,6 +161,8 @@ parser.add_argument('-x', '--AVX', required=False,
                     dest='AVX', action='store', default=False)
 parser.add_argument('-e', '--ENA', required=False,
                     dest='ENA', action='store', default=False)
+parser.add_argument('-b', '--BSTOP', required=False,
+                    dest='BSTOP', action='store', default=False)
 
 args 	= parser.parse_args()
 prt 	= args.prt			# print on|off
@@ -173,12 +176,13 @@ ADSB 	= args.ADSB
 USEDDB  = args.USEDDB
 AVX     = args.AVX
 ENA     = args.ENA
+BSTOP   = args.BSTOP
 # --------------------------------------#
 if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 
-print("Setup: \nPRINT:", prt, "\nSPIDER:", SPIDER, "\nSPOT:", SPOT, "\nINREACH:", INREACH, "\nCAPTURS:", CAPTURS, "\nSKLYLINE:", SKYLINE, "\nLT24:", LT24, "\nADSB:", ADSB, "\nAVX:", AVX, "\nENA:", ENA, "\n")
+print("Setup: \nPRINT:", prt, "\nSPIDER:", SPIDER, "\nSPOT:", SPOT, "\nINREACH:", INREACH, "\nCAPTURS:", CAPTURS, "\nSKLYLINE:", SKYLINE, "\nLT24:", LT24, "\nADSB:", ADSB, "\nAVX:", AVX, "\nENA:", ENA, "\nBSTOP", BSTOP,"\n")
 # --------------------------------------#
 
 if SPIDER:
@@ -229,6 +233,11 @@ if ENA:
     sleep(2)				# give a chance
     print ("MQTT initialized...\n")
     SLEEP = 0				# no sleep when MQTT
+if BSTOP:
+    from bstopfuncs import *
+    bstopini(prt=prt, aprspush=True)		# init the process
+    bstopcnt=0
+    SLEEP=60
 
 
 # --------------------------------------#
@@ -278,8 +287,12 @@ alive(config.DBpath+APP, first='yes')
 # Initialise API for SPIDER & SPOT & INREACH & LT24
 #-----------------------------------------------------------------#
 #
-now  = naive_utcnow()		# get the UTC time
-min5 = timedelta(seconds=300)		# 5 minutes ago
+now  = naive_utcnow()			# get the UTC time
+day = now.day				# day of the month
+if BSTOP:
+   min5 = timedelta(seconds=1*60*60)	# 1 hours ago
+else:
+   min5 = timedelta(seconds=300)	# 5 minutes ago
 now  = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
 td = now-datetime(1970, 1, 1)
@@ -290,15 +303,16 @@ tr = ts					# for inReach
 ttspid = 0				# time between spid request
 ttcapt = 0				# time between capturs request
 ttltsk = 0				# time between lt24/skyl request
-lt24ts = ts                             # the same
+lt24ts = ts                      # the same
 adsbts = ts                             # the same
 avxts  = ts                             # the same
+bstopts  = ts                           # the same
 spispotcount = 0			# loop counter
 nerrors = 0				# number of write errors
 ttime = now.strftime("%Y-%m-%dT%H:%M:%SZ")  # format required by SPIDER
-
-day = now.day				# day of the month
-print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "for AVX:", TimeAVX, "for ENA:", TimeENA, "\n\n")
+if BSTOP:
+   print("Starting gathering data from:", ttime, "     UTC now is:", naive_utcnow().isoformat())
+print("Time between calls for SPOT/SPIDER/INREACH:", TimeSPOTSPIDERINREACH, "for CAPTUR:", TimeCAPTUR, "for LT24/SKYLINES:", TimeLT24SKYL, "for ADSB:", SLEEP, "for AVX:", TimeAVX, "for ENA:", TimeENA, "for BSTOP:", TimeBSTOP, "\n\n")
 if LT24:
     # login into the LiveTrack24 server
     lt24login(LT24path, lt24username, lt24password)
@@ -344,6 +358,9 @@ try:
                 if ENA:
                     func='ENA'
                     enasetrec(sock_file, prt=prt, store=False, aprspush=True)
+                if BSTOP:
+                    func='BSTOP'
+                    bstopsetrec(sock_file, prt=prt, store=False, aprspush=True)
                 sock_file.flush()		        # Make sure keepalive gets sent. If not flushed then buffered
 
             except Exception as e:
@@ -364,7 +381,7 @@ try:
         # number of second until beginning of the epoch
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
-            print("End of Day...")
+            print("End of Day...", day, "New day:", now.day)
             if ENA:
                enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                          				# recycle
@@ -450,6 +467,17 @@ try:
                 enarun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                 now = naive_utcnow()			# get the UTC time
 
+            if BSTOP:					# if we have the ADSB/AVX according with the configuration
+                					# find the position and add it to the DDBB
+                func='BSTOP'
+                print ("BSTOP: check for new messages at ", bstopts)
+                (bstopts,cnt) = bstopfindpos(bstopts, conn, prt=prt, store=False, aprspush=True)
+                bstopcnt += cnt				# count the number of APRS messages
+            else:
+                					# number of second until beginning of the day
+                td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
+                bstopts = int(td.total_seconds())
+
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
             if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or ENA:
@@ -495,7 +523,10 @@ except KeyboardInterrupt:
     pass
 
 if ENA:
-   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+   enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and proces
+if BSTOP:
+   bstopfinish(prt=prt, aprspush=True)  # get the data from Bstop and process it
+            
 shutdown(sock, spispotcount)
 
 print("Exit now ...", nerrors)

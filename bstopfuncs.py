@@ -4,8 +4,6 @@
 #-------------------------------------------------------------------------------------------------------------------#
  
 import json
-import os
-import io
 from   datetime import datetime
 from   geopy.distance import geodesic       	# use the Vincenty algorithm^M
 from   parserfuncs import deg2dmslat, deg2dmslon, dao
@@ -15,13 +13,13 @@ import urllib.parse
 import psutil
 import config
 import adsbregfuncs
-from   adsbregfuncs import getadsbreg, getsizeadsbcache
-from dtfuncs import naive_utcnow, naive_utcfromtimestamp
+from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 #-------------------------------------------------------------------------------------------------------------------#
 #-------------------------------------------------------------------------------------------------------------------#
 # example: curl -G "http://3.22.63.131/v1/detections"   -H "X-API-Key: bsdk_live_ogn_xk9mPqR2vTwL4nYsJ7hB"   --data-urlencode "type=bird"   --data-urlencode "from=2026-03-15T00:00:00"   --data-urlencode "min_confidence=0.8"   --data-urlencode "limit=25" | jq
-null=''
+#
+null=''						# in the example data received from the API, we have null values, but in Python we need to convert them to None, so we define null as an empty string and then we will replace it with None when we process the data
 example= {
   "count": 25,
   "data": [
@@ -75,22 +73,23 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
 
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
-    req.add_header("X-API-Key", config.BSTOPapikey)
+    req.add_header("X-API-Key", config.BSTOPapikey) # add the API key to the header
     r = urllib.request.urlopen(req)         	# open the url resource
     rc=r.getcode()
-    if rc != 200:
+    if rc != 200:				# if we have an error, we return an empty JSON object	
        print ("BSTOP RC = ", rc)
        j_obj = {}
        return j_obj                            	# return the JSON object
     js=r.read().decode('UTF-8')
-    if len(js) > 0:
+    if len(js) > 0:				# if we have data, we convert it to JSON
        j_obj = json.loads(js)                  	# convert to JSONa
     else:
        j_obj = {}
-    j_obj["data"].sort(key=lambda x: x["timestamp"])
+
+    j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
         print(json.dumps(j_obj, indent=4))
-    return j_obj['data']                            	# return the JSON object
+    return j_obj['data']                       	# return the JSON object
 
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -101,67 +100,78 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
 def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstoppos from the tracks received
 
     foundone = False				# assuming nothing found
-    for msg in tracks:
+    for msg in tracks:				# for each track received
         #print ("TRKS:", msg)
-        src='BSTOP'				# ADSB is the default
+        src='BSTOP'				# BSTOP is the default
         if "id" in msg:
             ID = msg['id']
         else:
             print ("BSTOP No id")
             continue
-        ID = msg['id'].upper()			# aircraft ID
-        ID = ID[-6:]
-        if ID.isnumeric():
-           ID="%05X"%int(ID)
-        aid="OGNF"+ID[-5:]
-        t=msg['timestamp']	    		# when the aircraft was seen
-        					# number of second until beginning of the day
-
-        if "longitude" in msg:
+        ID = msg['id'].upper()			# aircraft/bird/drone ID
+        ID = ID[-6:]				# get the last 6 characters of the ID
+        if ID.isnumeric():			# in case of number, convert to hex
+           ID="%05X"%int(ID)			# convert to hex
+        aid="OGNF"+ID[-5:]			# build the ICAO ID for OGN
+        unitid="37F"+ID[-5:]			# build the uniqueID for OGN
+						# we use 37F as prefix to avoid conflicts with real airplanes
+        if "timestamp" in msg:			# check if we have the timestamp        
+            t=msg['timestamp']	    		# when the aircraft was seen
+        					# ISO 8601 format: 2026-03-24T05:59:44
+        else:
+            print ("BSTOP No timestamp")	#
+            continue				# ignore the traffic with no timestamp
+						# if we have timestamp, we assume that we have GPS
+        if "longitude" in msg:			# check if we have longitude and latitude
             lon = msg['longitude']
         else:
             print ("BSTOP No lon")
-            continue
-        if "latitude" in msg:
-            lat = msg['latitude'] 		 # extract the longitude and latitude
+            continue				# ignore the traffic with no position
+        if "latitude" in msg:			# check if we have longitude and latitude
+            lat = msg['latitude'] 		# extract the longitude and latitude
         else:
             print ("BSTOP No lat")
-            continue
+            continue				# ignore the traffic with no position
+						# if we have position, we assume that we have GPS
+
         gps = "NO"				# set all the defaults
         extpos = "NO"
         roc=0
         rot=0
-        dir=0
+        tdir=0
         spd=0
         FL=0
         cat=''
-        trk=0
         alt=0
         ts=0
         flg=''
+        otype=''
 
-        if "altitude_m" in msg:			# alt QFE
-                FL = msg["altitude_m"]*3.28084 	# FL
-                alt = FL
+        if "type" in msg:			# check if drone or bird
+           otype = msg['type']			# get the type of the target
+           cat = otype.upper()			# get the category	
 
-        date = t[2:4]+t[5:7]+t[8:10]		# date and time
-        tme =  t[11:13]+t[14:16]+t[17:19]
+        if "altitude_m" in msg:			# alt QFE in metters
+                alt = msg["altitude_m"]*3.28084 # convert to feet and set it as altitude 
+                FL = alt/100			# and FL	
+
+        date = t[2:4]+t[5:7]+t[8:10]		# date and time in the format YYMMDD and HHMMSS
+        tme =  t[11:13]+t[14:16]+t[17:19]	# we use the timestamp as time of the fix, and we ignore the time when we receive the message, because it can be delayed
         # print ("TTT:", t, ts, bstopnow, date, tme, msg)
-        foundone = True				# mark that we found one
-
         vitlat = config.FLOGGER_LATITUDE	# get the distance to the dummy station 
         vitlon = config.FLOGGER_LONGITUDE
         distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
 
-        pos = {"ICAOID": aid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": aid,
-               "dist": distance, "course": dir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, 
+        pos = {"ICAOID": aid, "date": date, "time": tme, "Lat": lat, "Long": lon, "altitude": alt, "UnitID": unitid,
+               "dist": distance, "course": tdir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, 
                "flight": flg, "FL" : FL, "source": src, "cat": cat}
 
         #print ("SSS:", ttime, pos, "\n\n")
-        if alt < int(config.BSTOPfl) :		# filter by source or FL
+        if alt < int(config.BSTOPfl) :		# filter by FL
            bstoppos['bstoppos'].append(pos)     # and store it on the dict
-        if prt:
+        if prt:					# print the data
             print("bstopPOS :", round(lat, 4), round(lon, 4), alt, aid, round(distance, 4), ts, date, tme, flg)
+        foundone = True				# mark that we found one
 
     return(foundone) 			    	# indicate that we added an entry to the dict
 
@@ -174,43 +184,48 @@ def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
 
     import MySQLdb                          	# the SQL data base routines^M
     for fix in datafix['bstoppos']:	    	# for each fix on the dict
-        id = fix['ICAOID']		    	# extract the information
-        dte = fix['date']
-        hora = fix['time']
-        station = config.location_name
-        latitude = fix['Lat']
+        iid       = fix['ICAOID']	    	# extract the information
+        dte       = fix['date']
+        hora      = fix['time']
+        station   = config.location_name
+        latitude  = fix['Lat']
         longitude = fix['Long']
-        altitude = fix['altitude']
-        speed = fix['speed']
-        course = fix['course']
-        roclimb = fix['roc']
-        rot = fix['rot']
+        altitude  = fix['altitude']
+        speed     = fix['speed']
+        course    = fix['course']
+        roclimb   = fix['roc']
+        rot       = fix['rot']
         sensitivity = 0
-        gps = fix['GPS']
-        uniqueid = str(fix["UnitID"])
-        dist = fix['dist']
-        extpos = fix['extpos']
-        addcmd = "insert into OGNDATA values ('" + id + "','" + dte + "','" + hora + "','" + station + "'," + \
+        gps       = fix['GPS']
+        uniqueid  = str(fix["UnitID"])
+        dist      = fix['dist']
+        extpos    = fix['extpos']
+
+        addcmd = "insert into OGNDATA values ('" + iid + "','" + dte + "','" + hora + "','" + station + "'," + \
             str(latitude) + "," + str(longitude) + "," + str(altitude) + "," + str(speed) + "," + \
             str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
             ",'" + gps + "','" + uniqueid + "'," + \
             str(dist) + ",'" + extpos + "', 'bstop' ) "
-        try:				    # store it on the DDBB
+        try:				    	# store it on the DDBB
             #print addcmd
             curs.execute(addcmd)
-        except MySQLdb.Error as e:
+        except MySQLdb.Error as e:		# if we have an error, we print it and we return False
             try:
                 print(">>>MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
                 print(">>>MySQL Error: %s" % str(e))
                 print(">>>MySQL error:", addcmd)
-            return (False)                  # indicate that we have errors
-    conn.commit()                           # commit the DB updates
-    return(True)			    # indicate that we have success
+            return (False)                  	# indicate that we have errors
+    conn.commit()                           	# commit the DB updates
+    return(True)			    	# indicate that we have success
 
 #-------------------------------------------------------------------------------------------------------------------#
 # Push the data received into the OGN APRS
 #-------------------------------------------------------------------------------------------------------------------#
+#APRSMSG:  OGNF0D3F7>OGBSTOP,qAS,SpaiBSTOP:/235811h4318.13N\00822.61W^000/000/A=000173 id37F0D3F7  !W05!  Bird
+#APRSMSG:  OGNF0D3F9>OGBSTOP,qAS,SpaiBSTOP:/000000h4318.27N\00822.45W^000/000/A=000173 id37F0D3F9  !W10!  Bird
+#-------------------------------------------------------------------------------------------------------------------#
+
 
 def bstopaprspush(datafix, conn, prt=True):
     print ("APRSpush start: ", len(datafix))
@@ -267,11 +282,11 @@ def bstopaprspush(datafix, conn, prt=True):
         aprsmsg += " Bird\n" 
         if True:
            print("APRSMSG: ", aprsmsg[0:-1])
-        rtn=1 #rtn = config.SOCK_FILE.write(aprsmsg)
-        #try:
-           #config.SOCK_FILE.flush()
-        #except Exception as e:
-           #print ("error on flush: ", e)
+        rtn = config.SOCK_FILE.write(aprsmsg)
+        try:
+           config.SOCK_FILE.flush()
+        except Exception as e:
+           print ("error on flush: ", e)
         cnt += 1
         if rtn == 0:
             print("Error writing msg:", aprsmsg)
@@ -297,7 +312,7 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     rtn = sock.write(aprsmsg)
     sock.flush()
     if rtn == 0:
-        print("Error writing msg:", aprsmsg)
+       print("Error writing msg:", aprsmsg)
     tempcpu = 0.0
     cpuload =psutil.cpu_percent()/100
     memavail=psutil.virtual_memory().available/(1024*1024)
@@ -316,8 +331,9 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
 
 def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is the function called by push2ogn.py module
 
-    ttimeformat=ttime.strftime("%Y-%m-%dT%H:%M:%S")
-    print ("TTT time:", ttime, ttimeformat)
+    utime=naive_utcfromtimestamp(ttime)		# convert TTIME to a datetime object
+    ttimeformat=utime.strftime("%Y-%m-%dT%H:%M:%S")
+    #print ("TTT time:", ttime, ttimeformat)
     bstoppos = {"bstoppos": []}			# init the dict
     url    = config.BSTOPhost			# the URL
     url   += "?type=bird&&min_confidence=0.8&limit=500"
@@ -345,7 +361,7 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
         curs = conn.cursor()            	# set the cursor for storing the fixes
         bstopstoreitindb(bstoppos, curs, conn)  	# and store it on the DDBB
     if aprspush:
-        print("Calling aprspush ...\n")
+        #print("Calling aprspush ...\n")
         bstopcnt=bstopaprspush(bstoppos, conn, prt=prt)  	# and push it into the OGN APRS
         					# number of second until beginning of the day of 1-1-1970
     return (int(bstopnow), bstopcnt)		# return TTIME for next call
