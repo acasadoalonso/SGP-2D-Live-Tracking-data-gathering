@@ -81,9 +81,9 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
        j_obj = json.loads(js)                  	# convert to JSONa
     else:
        j_obj = []				# if we have no data, we return an empty list
-    if 'data' not in j_obj:
-       print ("BSTOP No data field in the JSON object")
-       j_obj['data'] = []			# if we have no data, we return an empty list
+    if not isinstance(j_obj, dict) or 'data' not in j_obj:                                                                                           
+       print("BSTOP No data field in the JSON object")                                                                                              
+       return []			  	# if we have no data, we return an empty list 
 
     j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
@@ -103,11 +103,10 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
         #print ("TRKS:", msg)
         src='BSTOP'				# BSTOP is the default
         if "id" in msg:
-            ID = msg['id']
+            ID = msg['id'].upper()		# aircraft/bird/drone ID
         else:
             print ("BSTOP No id")
             continue
-        ID = msg['id'].upper()			# aircraft/bird/drone ID
         ID = ID[-6:]				# get the last 6 characters of the ID
         if ID.isnumeric():			# in case of number, convert to hex
            ID="%05X"%int(ID)			# convert to hex
@@ -179,9 +178,9 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
         #print ("SSSpos:", ttime, pos, "\n\n")
         if alt < int(config.BSTOPfl) :		# filter by FL
            bstoppos['bstoppos'].append(pos)     # and store it on the dict
+           foundone = True			# mark that we found one
         if prt:					# print the data
             print("bstopPOS :", round(lat, 4), round(lon, 4), alt, aid, round(distance, 4), ts, date, tme, flg)
-        foundone = True				# mark that we found one
 
     return(foundone) 			    	# indicate that we added an entry to the dict
 
@@ -242,12 +241,13 @@ def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
 
 
 def bstopaprspush(datafix, prt=False):
-    print ("APRSpush start: ", len(datafix))
+    if prt:
+        print ("APRSpush start: ", len(datafix))
     cnt=0					# counter of messgages
     for fix in datafix['bstoppos']:	    	# for each fix on the dict
         if prt:
            print ("FIX: ", fix)
-        id       = fix['ICAOID']		# extract the information
+        aid      = fix['ICAOID']		# extract the information
         dte      = fix['date']
         hora     = fix['time']
         station  = config.location_name
@@ -263,8 +263,6 @@ def bstopaprspush(datafix, prt=False):
         gps      = fix['GPS']
         uniqueid = fix["UnitID"]
         src      = fix['source']
-        if src == 'BSTOP':
-           uniqueid = '37'+uniqueid[3:]
         dist     = fix['dist']
         extpos   = fix['extpos']
         flight   = fix['flight']
@@ -285,7 +283,7 @@ def bstopaprspush(datafix, prt=False):
         sss = "%03d" % int(speed)
         if roclimb == None:
             roclimb = 0
-        aprsmsg = id+">OGBSTOP,qAS,"+config.BSTOPname+":/" + \
+        aprsmsg = aid+">OGBSTOP,qAS,"+config.BSTOPname+":/" + \
             hora+'h'+lat+"\\"+lon+"^"+ccc+"/"+sss+"/"
         if altitude != None and altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
@@ -296,19 +294,17 @@ def bstopaprspush(datafix, prt=False):
         if cat != None and cat != '':
            aprsmsg += " "+cat
         aprsmsg += " \n" 
-        if True:
+        if prt:
            print("APRSMSG: ", aprsmsg[0:-1])
         rtn = config.SOCK_FILE.write(aprsmsg)
-        if rtn == 0:
-	    print("Error writing msg:", aprsmsg)
+        if rtn == None or rtn == 0 :
+            print("Error writing msg:", aprsmsg)
             return(0)
         try:
            config.SOCK_FILE.flush()
         except Exception as e:
            print ("error on flush: ", e)
         cnt += 1
-        if rtn == 0:
-            print("Error writing msg:", aprsmsg)
 
     return (cnt)
 
@@ -329,7 +325,10 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     if prt:
        print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
-    sock.flush()
+    try:
+       sock.flush()
+    except Exception as e:       
+       print ("error on flush: ", e)
     if rtn == 0:
        print("Error writing msg:", aprsmsg)
     tempcpu = 0.0
