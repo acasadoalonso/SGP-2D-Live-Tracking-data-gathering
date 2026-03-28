@@ -32,7 +32,7 @@ example= {
       "metadata": {
         "category": "Bird",
         "distance_from_mic": 3.205619471300825,
-        "gs_knts": null,
+        "gs_knts": None,
         "track_deg": 0.0,
         "vertical_rate": 0
       },
@@ -52,7 +52,7 @@ example= {
       "metadata": {
         "category": "Bird",
         "distance_from_mic": 50.0,
-        "gs_knts": null,
+        "gs_knts": None,
         "track_deg": 0.0,
         "vertical_rate": 0
       }
@@ -85,6 +85,9 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
     j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
         print(json.dumps(j_obj, indent=4))
+    if 'data' not in j_obj:
+       print ("BSTOP No data field in the JSON object")
+       j_obj['data'] = []			# if we have no data, we return an empty list
     return j_obj['data']                       	# return the JSON object
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -234,7 +237,7 @@ def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
 #-------------------------------------------------------------------------------------------------------------------#
 
 
-def bstopaprspush(datafix, conn, prt=True):
+def bstopaprspush(datafix, prt=True):
     print ("APRSpush start: ", len(datafix))
     cnt=0					# counter of messgages
     for fix in datafix['bstoppos']:	    	# for each fix on the dict
@@ -360,6 +363,7 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
     if len(tracks) <= 0:			# if no data ...
         print("BSTOPfindpos: Empty msg",  bstopnow, now)	# print the data
         return (int(bstopnow), bstopcnt)	# return TTIME for next call
+
     if prt:
         print("BSTOPfindpos:", len(tracks), bstopnow)
     if prt:
@@ -372,10 +376,10 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
         print("BSTOPpos:\n", len (bstoppos), bstoppos, "\n\n")		# print the data
     if store:
         curs = conn.cursor()            	# set the cursor for storing the fixes
-        bstopstoreitindb(bstoppos, curs, conn)  	# and store it on the DDBB
+        bstopstoreitindb(bstoppos, curs, conn) 	# and store it on the DDBB
     if aprspush:
         #print("Calling aprspush ...\n")
-        bstopcnt=bstopaprspush(bstoppos, conn, prt=prt)  	# and push it into the OGN APRS
+        bstopcnt=bstopaprspush(bstoppos, prt=prt)  	# and push it into the OGN APRS
         					# number of second until beginning of the day of 1-1-1970
     return (int(bstopnow), bstopcnt)		# return TTIME for next call
 
