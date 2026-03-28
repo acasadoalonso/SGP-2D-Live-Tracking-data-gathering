@@ -63,9 +63,11 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
     if prt:
        print("URL:", url)   
     req = urllib.request.Request(url)	    	# build the request
-
+    obj =[]					# init the JSON object
     req.add_header("Content-Type", "application/json")
+    req.add_header("Content-type", "application/x-www-form-urlencoded")
     req.add_header("X-API-Key", config.BSTOPapikey) # add the API key to the header
+    #print ("BSTOP API key:", config.BSTOPapikey)
     try:
        r = urllib.request.urlopen(req,timeout=30) # open the url resource
        rc=r.getcode()				# get the return code
@@ -77,17 +79,21 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
        j_obj = []
        return j_obj                            	# return the JSON object
     js=r.read().decode('UTF-8')
+    if prt:
+       print ("BSTOP API response length:", len(js))
     if len(js) > 0:				# if we have data, we convert it to JSON
-       j_obj = json.loads(js)                  	# convert to JSONa
+       j_obj = json.loads(js)                  	# convert to JSON
     else:
        j_obj = []				# if we have no data, we return an empty list
+    if prt:
+       print ("BSTOP API response:", j_obj['count'], "records")	# print the number of records received
     if not isinstance(j_obj, dict) or 'data' not in j_obj:                                                                                           
        print("BSTOP No data field in the JSON object")                                                                                              
        return []			  	# if we have no data, we return an empty list 
 
     j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
-        print(json.dumps(j_obj, indent=4))
+        print(json.dumps(j_obj['data'], indent=4))
     return j_obj['data']                       	# return the JSON object
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -294,8 +300,7 @@ def bstopaprspush(datafix, prt=False):
         if cat != None and cat != '':
            aprsmsg += " "+cat
         aprsmsg += " \n" 
-        if prt:
-           print("APRSMSG: ", aprsmsg[0:-1])
+        print("APRSMSG: ", aprsmsg[0:-1])
         rtn = config.SOCK_FILE.write(aprsmsg)
         if rtn == None or rtn == 0 :
             print("Error writing msg:", aprsmsg)
@@ -336,8 +341,7 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     memavail=psutil.virtual_memory().available/(1024*1024)
     memtot=psutil.virtual_memory().total/(1024*1024)
     aprsmsg=config.BSTOPname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.BSTOP CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
-    if prt:
-       print("APRSMSG: ", aprsmsg)
+    print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     try:
        sock.flush()
@@ -359,16 +363,19 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
     vitlat = config.FLOGGER_LATITUDE		# get location of the station to calculate the distance to the targets
     vitlon = config.FLOGGER_LONGITUDE
     url    = config.BSTOPhost			# the URL
-    url   += "?type=bird&min_confidence=0.8&limit=500"
-    url   +='&from='+ttimeformat
+    url   += "?min_confidence=0.8&limits=500"	# the parameters for the API call, we want only birds with confidence > 0.8 and we want a maximum of 500 records:
+    url   +='&from='+ttimeformat		# we want only the records since TTIME
     url   +='&geo_lat='+str(vitlat)+'&geo_lon='+str(vitlon)+'&geo_radius='+str(config.BSTOPradius) # add the geofencing parameters
-    #print ("URL:", url)
+    if prt:
+    	print ("URL:", url)			# print the URL for debugging
     bstopcnt=0
     now = naive_utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
     td = now-datetime(1970, 1, 1)
     bstopnow = int(td.total_seconds()) 		# Unix time - seconds from the epoch
     # print ("BSTOPnow:", bstopnow)
     tracks = bstopgetapidata(url, prt=prt)	# get the JSON data from the BSTOP server
+    if prt:
+        print ("BSTOP tracks received:", len(tracks))
     if len(tracks) <= 0:			# if no data ...
         print("BSTOPfindpos: Empty msg",  bstopnow, now)	# print the data
         return (int(bstopnow), bstopcnt)	# return TTIME for next call
@@ -386,8 +393,9 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
     if store:
         curs = conn.cursor()            	# set the cursor for storing the fixes
         bstopstoreitindb(bstoppos, curs, conn) 	# and store it on the DDBB
+    if prt:
+        print ("BSTOPfindpos: ", aprspush, len(bstoppos['bstoppos']), "positions found since", ttimeformat, "BSTOPnow:", bstopnow)	# print 
     if aprspush:
-        #print("Calling aprspush ...\n")
         bstopcnt=bstopaprspush(bstoppos, prt=prt)  	# and push it into the OGN APRS
         					# number of second until beginning of the day of 1-1-1970
     return (int(bstopnow), bstopcnt)		# return TTIME for next call

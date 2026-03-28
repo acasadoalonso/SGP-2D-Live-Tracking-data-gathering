@@ -101,14 +101,22 @@ print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
 import platform
 print("Python version:", platform.python_version())
+import git
+try:
+   repo = git.Repo(__file__, search_parent_directories=True)
+   sha = repo.head.object.hexsha
+except:
+   sha='NO SHA'
+print ("Git commit info:", sha)
+
 date = naive_utcnow()         		# get the date
 dte = date.strftime("%y%m%d")             # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
 date = datetime.now()                   # local time
 print("Time now is: ", date, " Local time")
 print("Init now the OGN DDB interface:")
-lenddb=getddbdata()
-print("OGN DDB data initialized", len(lenddb)," records \n\n")
+#lenddb=getddbdata()
+#print("OGN DDB data initialized", len(lenddb)," records \n\n")
 
 
 #
@@ -470,7 +478,7 @@ try:
             if BSTOP:					# if we have the ADSB/AVX according with the configuration
                 					# find the position and add it to the DDBB
                 func='BSTOP'
-                print ("BSTOP: check for new messages at ", bstopts)
+                #print ("BSTOP: check for new messages at ", bstopts)
                 (bstopts,cnt) = bstopfindpos(bstopts, conn, prt=prt, store=False, aprspush=True)
                 bstopcnt += cnt				# count the number of APRS messages
             else:
