@@ -187,7 +187,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               mpsec=int(6000000.0/timediff)		# request per minute
               savedtime=current_time
         
-              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minutei ", utc,  aprspush, prt, "::<<<<")
+              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minute, ", utc,  aprspush, prt, "::<<<<\n")
 
 # -------------------------------------------	# end of on_message function
 
