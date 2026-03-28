@@ -317,6 +317,11 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     aprsmsg=config.AVXname+">OGNSDR,TCPIP*:/"+tme+"h"+config.AVXloc+" AVX dummy station \n"
     if prt:
        print("APRSMSG: ", aprsmsg)
+    try:
+       sock.write(aprsmsg)
+       sock.flush()
+    except Exception as e:
+       print ("error on flush: ", e)
     rtn = sock.write(aprsmsg)
     sock.flush()
     if rtn == 0:
@@ -328,8 +333,11 @@ def avxsetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS 
     aprsmsg =config.AVXname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.AVX CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
     if prt:
        print("APRSMSG: ", aprsmsg)
-    rtn = sock.write(aprsmsg)
-    sock.flush()
+    try:       
+       sock.write(aprsmsg)
+       sock.flush()
+    except Exception as e:       
+       print ("error on flush: ", e)	
     return
 
 #-------------------------------------------------------------------------------------------------------------------#

@@ -298,7 +298,7 @@ alive(config.DBpath+APP, first='yes')
 now  = naive_utcnow()			# get the UTC time
 day = now.day				# day of the month
 if BSTOP:
-   min5 = timedelta(seconds=1*60*60)	# 1 hours ago
+   min5 = timedelta(seconds=3*60*60)	# 3 hours ago
 else:
    min5 = timedelta(seconds=300)	# 5 minutes ago
 now  = now-min5				# now less 5 minutes

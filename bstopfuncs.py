@@ -159,9 +159,11 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
         if "altitude_m" in msg:			# alt QFE in metters
                 alt = msg["altitude_m"]*3.28084 # convert to feet and set it as altitude 
                 FL = alt/100			# and FL	
-
-        date = t[2:4]+t[5:7]+t[8:10]		# date and time in the format YYMMDD and HHMMSS
-        tme =  t[11:13]+t[14:16]+t[17:19]	# we use the timestamp as time of the fix, and we ignore the time when we receive the message, because it can be delayed
+        d = datetime.fromisoformat(t)		# we use the timestamp as time of the fix
+        tme  =d.strftime("%H%M%S")		# time in the format HHMMSS
+        date = d.strftime("%y%m%d")		# date in the format YYMMDD
+        #date = t[2:4]+t[5:7]+t[8:10]		# date and time in the format YYMMDD and HHMMSS
+        #tme =  t[11:13]+t[14:16]+t[17:19]	# we use the timestamp as time of the fix, and we ignore the time when we receive the message, because it can be delayed
         if 'metadata' in msg:			# if we have metadata, we can extract more information
            #print ("METADATA:", msg['metadata'])
            if "track_deg" in msg['metadata'] and msg['metadata']['track_deg'] != None:
@@ -341,7 +343,8 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     memavail=psutil.virtual_memory().available/(1024*1024)
     memtot=psutil.virtual_memory().total/(1024*1024)
     aprsmsg=config.BSTOPname+">OGNSDR,TCPIP*:>"+tme+"h v0.3.0.BSTOP CPU:"+str(cpuload)+" RAM:"+str(memavail)+"/"+str(memtot)+"MB NTP:0.4ms/-5.4ppm +"+str(tempcpu)+"C\n"
-    print("APRSMSG: ", aprsmsg)
+    if prt:
+       print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
     try:
        sock.flush()
