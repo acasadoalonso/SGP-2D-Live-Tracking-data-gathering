@@ -480,11 +480,11 @@ try:
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or ENA:
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or ENA or BSTOP:
                 if prt:
                    print(spispotcount, "---> CONTROL: Spider TTime:", ttime, "SPOT Unix time:", ts, prttime(ts), "TinReach", tr, "Tcapt", prttime(
                     tc), "Tskyl", prttime(ty), "LT24 Unix time", prttime(lt24ts), "ADSB time", adsbts, "UTC Now:", naive_utcnow().isoformat())
-            if (ADSB or AVX or ENA) and spispotcount % 10000 == 0:
+            if (ADSB or AVX or ENA or BSTOP) and spispotcount % 10000 == 0:
 
                 print("ADSB Cache size", getsizeadsbcache())
                 if AVX:
@@ -494,7 +494,7 @@ try:
             print(traceback.format_exc())
             print(('Something\'s wrong with interface function '+func+' Exception type is %s' % (repr(e))))
 
-            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX:
+            if SPIDER or SPOT or INREACH or LT24 or SKYLINE or CAPTURS or ADSB or AVX or BSTOP:
                 print(spispotcount, "ERROR ---> TTime:", ttime, "SPOT Unix time:", ts, "LT24 Unix time", lt24ts, "UTC Now:", naive_utcnow().isoformat())
 
             nerrors += 1
@@ -508,7 +508,7 @@ try:
               # Make the connection to the server
               sock_file = sock.makefile(mode='rw')      # make read/write as we need to send the keep_alive
 
-              config.SOCK = socka			# save in on the CONFIG
+              config.SOCK = sock			# save in on the CONFIG
               config.SOCK_FILE = sock_file
               print("APRS Version:", sock_file.readline())
               sleep(2)

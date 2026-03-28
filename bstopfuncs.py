@@ -17,7 +17,6 @@ from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 #-------------------------------------------------------------------------------------------------------------------#
 # example: curl -G "http://3.22.63.131/v1/detections"   -H "X-API-Key: bsdk_live_ogn_xk9mPqR2vTwL4nYsJ7hB"   --data-urlencode "type=bird"   --data-urlencode "from=2026-03-15T00:00:00"   --data-urlencode "min_confidence=0.8"   --data-urlencode "limit=25" | jq
 #
-null=''						# in the example data received from the API, we have null values, but in Python we need to convert them to None, so we define null as an empty string and then we will replace it with None when we process the data
 example= {
   "count": 25,
   "data": [
@@ -75,20 +74,20 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
        return []				# if we have an error, we return an empty list
     if rc != 200:				# if we have an error, we return an empty JSON object	
        print ("BSTOP RC = ", rc)
-       j_obj = {}
+       j_obj = []
        return j_obj                            	# return the JSON object
     js=r.read().decode('UTF-8')
     if len(js) > 0:				# if we have data, we convert it to JSON
        j_obj = json.loads(js)                  	# convert to JSONa
     else:
        j_obj = []				# if we have no data, we return an empty list
+    if 'data' not in j_obj:
+       print ("BSTOP No data field in the JSON object")
+       j_obj['data'] = []			# if we have no data, we return an empty list
 
     j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
         print(json.dumps(j_obj, indent=4))
-    if 'data' not in j_obj:
-       print ("BSTOP No data field in the JSON object")
-       j_obj['data'] = []			# if we have no data, we return an empty list
     return j_obj['data']                       	# return the JSON object
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -212,6 +211,10 @@ def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
         dist      = fix['dist']
         extpos    = fix['extpos']
 
+        if altitude == None or altitude == 0:
+            print ("STOREITINDB No altitude:", altitude, speed, roclimb)
+            continue								# ignore the traffic with no altitude
+
         addcmd = "insert into OGNDATA values ('" + iid + "','" + dte + "','" + hora + "','" + station + "'," + \
             str(latitude) + "," + str(longitude) + "," + str(altitude) + "," + str(speed) + "," + \
             str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
@@ -238,7 +241,7 @@ def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
 #-------------------------------------------------------------------------------------------------------------------#
 
 
-def bstopaprspush(datafix, prt=True):
+def bstopaprspush(datafix, prt=False):
     print ("APRSpush start: ", len(datafix))
     cnt=0					# counter of messgages
     for fix in datafix['bstoppos']:	    	# for each fix on the dict
@@ -296,6 +299,9 @@ def bstopaprspush(datafix, prt=True):
         if True:
            print("APRSMSG: ", aprsmsg[0:-1])
         rtn = config.SOCK_FILE.write(aprsmsg)
+        if rtn == 0:
+	    print("Error writing msg:", aprsmsg)
+            return(0)
         try:
            config.SOCK_FILE.flush()
         except Exception as e:
