@@ -525,7 +525,7 @@ except KeyboardInterrupt:
 if ENA:
    enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and proces
 if BSTOP:
-   bstopfinish(prt=prt, aprspush=True)  # get the data from Bstop and process it
+   bstopfinish(bstopcnt,prt=prt, aprspush=True)  # get the data from Bstop and process it
             
 shutdown(sock, spispotcount)
 

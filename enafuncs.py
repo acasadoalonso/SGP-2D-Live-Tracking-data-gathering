@@ -334,7 +334,7 @@ def enaaprspush(datafix, prt=False):
 def enasetrec(sock, prt=False, store=False, aprspush=False):			# define on APRS the dummy OGN station
     t = naive_utcnow()       		# get the date
     tme = t.strftime("%H%M%S")
-    aprsmsg=config.ENAname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ENAloc+" \n"
+    aprsmsg=config.ENAname+">OGNSDR,TCPIP*:/"+tme+"h"+config.ENAloc+" TTT dummy station \n"
     if prt:
        print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)

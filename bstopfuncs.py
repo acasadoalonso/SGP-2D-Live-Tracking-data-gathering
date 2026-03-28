@@ -24,44 +24,40 @@ example= {
   "count": 25,
   "data": [
     {
-      "altitude_m": 53.0,
+      "altitude_m": 50.0,
       "confidence": 0.8,
-      "id": "bird_LCG2_4015381",
-      "latitude": 43.30735037780403,
-      "longitude": -8.369694569367567,
+      "id": "bird_LCG2_4063986",
+      "latitude": 41.999973992671606,
+      "longitude": 2.9999794882946733,
       "metadata": {
         "category": "Bird",
-        "distance_from_mic": 50.0,
+        "distance_from_mic": 3.205619471300825,
         "gs_knts": null,
-        "track_deg": 0.0
+        "track_deg": 0.0,
+        "vertical_rate": 0
       },
-      "sensor": "6015",
-      "site_id": "6015",
+      "sensor": "LCG2",
+      "site_id": "LCG2",
       "site_name": "LCG2",
-      "timestamp": "2026-03-24T05:59:44",
-      "track_id": "2",
+      "timestamp": "2026-03-27T16:06:03Z",
+      "track_id": "1",
       "type": "bird"
     },
     {
       "altitude_m": 53.0,
       "confidence": 0.8,
-      "id": "bird_LCG2_4015378",
-      "latitude": 43.30729641850767,
-      "longitude": -8.370170344840586,
+      "id": "bird_LCG2_4063958",
+      "latitude": 43.30594743609879,
+      "longitude": -8.371980763198955,
       "metadata": {
         "category": "Bird",
         "distance_from_mic": 50.0,
         "gs_knts": null,
-        "track_deg": 0.0
-      },
-      "sensor": "6015",
-      "site_id": "6015",
-      "site_name": "LCG2",
-      "timestamp": "2026-03-24T05:59:40",
-      "track_id": "2",
-      "type": "bird"
-    }
-    ]
+        "track_deg": 0.0,
+        "vertical_rate": 0
+      }
+   }
+   ]
 }
 #-------------------------------------------------------------------------------------------------------------------#
 
@@ -146,6 +142,7 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
         ts=0
         flg=''
         otype=''
+        
 
         if "type" in msg:			# check if drone or bird
            otype = msg['type']			# get the type of the target
@@ -157,6 +154,16 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
 
         date = t[2:4]+t[5:7]+t[8:10]		# date and time in the format YYMMDD and HHMMSS
         tme =  t[11:13]+t[14:16]+t[17:19]	# we use the timestamp as time of the fix, and we ignore the time when we receive the message, because it can be delayed
+        if 'metadata' in msg:			# if we have metadata, we can extract more information
+           #print ("METADATA:", msg['metadata'])
+           if "track_deg" in msg['metadata'] and msg['metadata']['track_deg'] != None:
+              tdir = msg['metadata']['track_deg']	# get the track direction
+           if "gs_knts" in msg['metadata'] and msg['metadata']['gs_knts'] != None:
+              spd = msg['metadata']['gs_knts']*1.852 # get the speed in knots and convert to km/h
+           if "vertical_rate" in msg['metadata'] and msg['metadata']['vertical_rate'] != None:
+              roc = msg['metadata']['vertical_rate'] # get the vertical rate in ft/min 
+           if "category" in msg['metadata']:
+              cat = msg['metadata']['category'] # get the category from the metadata, because it can be more specific than the type
         # print ("TTT:", t, ts, bstopnow, date, tme, msg)
         vitlat = config.FLOGGER_LATITUDE	# get the distance to the dummy station 
         vitlon = config.FLOGGER_LONGITUDE
@@ -166,7 +173,7 @@ def bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=False):	# build the bstop
                "dist": distance, "course": tdir, "speed": spd, "roc": roc, "rot": rot, "GPS": gps, "extpos": extpos, 
                "flight": flg, "FL" : FL, "source": src, "cat": cat}
 
-        #print ("SSS:", ttime, pos, "\n\n")
+        #print ("SSSpos:", ttime, pos, "\n\n")
         if alt < int(config.BSTOPfl) :		# filter by FL
            bstoppos['bstoppos'].append(pos)     # and store it on the dict
         if prt:					# print the data
@@ -278,8 +285,10 @@ def bstopaprspush(datafix, conn, prt=True):
         else:
             print ("APRSPUSH No altitude:", altitude, speed, roclimb)
             continue								# ignore the traffic with no altitude
-        aprsmsg += " id"+uniqueid+"  "+daotxt+" " 
-        aprsmsg += " Bird\n" 
+        aprsmsg += " id"+uniqueid+" %+04dfpm " % (int(roclimb))+" "+str(rot)+"rot "+daotxt+" "
+        if cat != None and cat != '':
+           aprsmsg += " "+cat
+        aprsmsg += " \n" 
         if True:
            print("APRSMSG: ", aprsmsg[0:-1])
         rtn = config.SOCK_FILE.write(aprsmsg)
@@ -332,12 +341,16 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
 def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is the function called by push2ogn.py module
 
     utime=naive_utcfromtimestamp(ttime)		# convert TTIME to a datetime object
-    ttimeformat=utime.strftime("%Y-%m-%dT%H:%M:%S")
+    ttimeformat=utime.strftime("%Y-%m-%dT%H:%M:%SZ")	# and format it in the way that the BSTOP API expects
     #print ("TTT time:", ttime, ttimeformat)
     bstoppos = {"bstoppos": []}			# init the dict
+    vitlat = config.FLOGGER_LATITUDE		# get location of the station to calculate the distance to the targets
+    vitlon = config.FLOGGER_LONGITUDE
     url    = config.BSTOPhost			# the URL
     url   += "?type=bird&&min_confidence=0.8&limit=500"
     url   +='&from='+ttimeformat
+    url   +='&geo_lat='+str(vitlat)+'&geo_lon='+str(vitlon)+'&geo_radius='+str(config.BSTOPradius) # add the geofencing parameters
+    #print ("URL:", url)
     bstopcnt=0
     now = naive_utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
     td = now-datetime(1970, 1, 1)

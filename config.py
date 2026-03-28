@@ -256,6 +256,10 @@ try:
     BSTOPapikey = cfg.get('location', 'BSTOPapikey').strip("'").strip('"')
 except:
     BSTOPapikey = ''
+try:
+    BSTOPradius = cfg.get('location', 'BSTOPradius').strip("'").strip('"')
+except:
+    BSTOPradius = '600'
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
