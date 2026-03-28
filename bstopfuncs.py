@@ -9,10 +9,8 @@ from   geopy.distance import geodesic       	# use the Vincenty algorithm^M
 from   parserfuncs import deg2dmslat, deg2dmslon, dao
 import urllib.request
 import urllib.error
-import urllib.parse
 import psutil
 import config
-import adsbregfuncs
 from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -68,10 +66,13 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
     req = urllib.request.Request(url)	    	# build the request
 
     req.add_header("Content-Type", "application/json")
-    req.add_header("Content-type", "application/x-www-form-urlencoded")
     req.add_header("X-API-Key", config.BSTOPapikey) # add the API key to the header
-    r = urllib.request.urlopen(req)         	# open the url resource
-    rc=r.getcode()
+    try:
+       r = urllib.request.urlopen(req,timeout=30) # open the url resource
+       rc=r.getcode()				# get the return code
+    except Exception as e:
+       print ("Error on urlopen: ", e)
+       return []				# if we have an error, we return an empty list
     if rc != 200:				# if we have an error, we return an empty JSON object	
        print ("BSTOP RC = ", rc)
        j_obj = {}
@@ -80,7 +81,7 @@ def bstopgetapidata(url, prt=False):		# get the data from the aero-network using
     if len(js) > 0:				# if we have data, we convert it to JSON
        j_obj = json.loads(js)                  	# convert to JSONa
     else:
-       j_obj = {}
+       j_obj = []				# if we have no data, we return an empty list
 
     j_obj["data"].sort(key=lambda x: x["timestamp"]) # sort the data by timestamp, so we can process it in order
     if prt:
@@ -333,7 +334,10 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     if prt:
        print("APRSMSG: ", aprsmsg)
     rtn = sock.write(aprsmsg)
-    sock.flush()
+    try:
+       sock.flush()
+    except Exception as e:       
+       print ("error on flush: ", e)
     return
 
 #-------------------------------------------------------------------------------------------------------------------#
@@ -350,7 +354,7 @@ def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is
     vitlat = config.FLOGGER_LATITUDE		# get location of the station to calculate the distance to the targets
     vitlon = config.FLOGGER_LONGITUDE
     url    = config.BSTOPhost			# the URL
-    url   += "?type=bird&&min_confidence=0.8&limit=500"
+    url   += "?type=bird&min_confidence=0.8&limit=500"
     url   +='&from='+ttimeformat
     url   +='&geo_lat='+str(vitlat)+'&geo_lon='+str(vitlon)+'&geo_radius='+str(config.BSTOPradius) # add the geofencing parameters
     #print ("URL:", url)
