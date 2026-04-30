@@ -136,7 +136,7 @@ TimeLT24SKYL          = 60     	# time in second from each run
 TimeADSB              = SLEEP	# time in second from each run
 TimeAVX               = 5  	# time in second from each run
 TimeENA		      = 0 	# the waiting is whitin the run
-TimeBSTOP	      = 60 	# the waiting is whitin the run
+TimeBSTOP	      = 0 	# the waiting is whitin the run
 
 # --------------------------------------#
 DBpath = config.DBpath
@@ -244,8 +244,10 @@ if ENA:
 if BSTOP:
     from bstopfuncs import *
     bstopini(prt=prt, aprspush=True)		# init the process
+    sleep(2)				# give a chance
+    print ("MQTT initialized...\n")
     bstopcnt=0
-    SLEEP=60
+    SLEEP=0
 
 
 # --------------------------------------#
@@ -297,10 +299,7 @@ alive(config.DBpath+APP, first='yes')
 #
 now  = naive_utcnow()			# get the UTC time
 day = now.day				# day of the month
-if BSTOP:
-   min5 = timedelta(seconds=3*60*60)	# 3 hours ago
-else:
-   min5 = timedelta(seconds=300)	# 5 minutes ago
+min5 = timedelta(seconds=300)	# 5 minutes ago
 now  = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
 td = now-datetime(1970, 1, 1)
@@ -380,6 +379,8 @@ try:
                 if nerrors > 100:
                    if ENA:
                       enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                   if BSTOP:
+                      bstopfinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                    shutdown(sock, spispotcount)
                    print("Too may errors .............")
                          				# recycle
@@ -392,6 +393,8 @@ try:
             print("End of Day...", day, "New day:", now.day)
             if ENA:
                enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+            if BSTOP:
+               bstopfinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                          				# recycle
             shutdown(sock, spispotcount)
             print(".............")
@@ -471,6 +474,7 @@ try:
 
             if ENA:					# enaire interface
 
+                func='ENA'
                 now = naive_utcnow()			# get the UTC time
                 enarun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
                 now = naive_utcnow()			# get the UTC time
@@ -478,13 +482,9 @@ try:
             if BSTOP:					# if we have the ADSB/AVX according with the configuration
                 					# find the position and add it to the DDBB
                 func='BSTOP'
-                #print ("BSTOP: check for new messages at ", bstopts)
-                (bstopts,cnt) = bstopfindpos(bstopts, conn, prt=prt, store=False, aprspush=True)
-                bstopcnt += cnt				# count the number of APRS messages
-            else:
-                					# number of second until beginning of the day
-                td = now-datetime(1970, 1, 1) 		# Unix time - seconds from the epoch
-                bstopts = int(td.total_seconds())
+                now = naive_utcnow()			# get the UTC time
+                bstoprun(prt=prt, aprspush=True)  	# get the data from Mosquitto and process it         
+                now = naive_utcnow()			# get the UTC time
 
             spispotcount += 1			        # we report a counter of calls to the interfaces
 
@@ -533,7 +533,7 @@ except KeyboardInterrupt:
 if ENA:
    enafinish(prt=prt, aprspush=True)  	# get the data from Mosquitto and proces
 if BSTOP:
-   bstopfinish(bstopcnt,prt=prt, aprspush=True)  # get the data from Bstop and process it
+   bstopfinish(prt=prt, aprspush=True)  # get the data from Bstop and process it
             
 shutdown(sock, spispotcount)
 

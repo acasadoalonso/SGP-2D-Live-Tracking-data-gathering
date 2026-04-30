@@ -198,7 +198,9 @@ try:
     AVXfl = cfg.get('location', 'AVXfl').strip("'").strip('"')
 except:
     AVXfl = '15000'
-
+#
+# Enaire interface
+#
 try:
     ENAtext = cfg.get('location', 'ENA').strip("'").strip('"')
 except:
@@ -231,7 +233,29 @@ try:
     ENAfl = cfg.get('location', 'ENAfl').strip("'").strip('"')
 except:
     ENAfl = '15000'
-
+#
+# Birdstop
+#
+try:
+    BSTOPtext = cfg.get('location', 'BSTOP').strip("'").strip('"')
+except:
+    BSTOPtext = 'False'
+try:
+    BSTOPMQTT = cfg.get('location', 'BSTOPMQTT').strip("'").strip('"')
+except:
+    BSTOPMQTT = 'localhost'
+try:
+    BSTOPTOPIC = cfg.get('location', 'BSTOPTOPIC').strip("'").strip('"')
+except:
+    BSTOPTOPIC = ''
+try:
+    BSTOPUSER = cfg.get('location', 'BSTOPUSER').strip("'").strip('"')
+except:
+    BSTOPUSER = ''
+try:
+    BSTOPPASSWD = cfg.get('location', 'BSTOPPASSWD').strip("'").strip('"')
+except:
+    BSTOPPASSWD = ''
 try:
     BSTOPtext = cfg.get('location', 'BSTOP').strip("'").strip('"')
 except:
@@ -259,7 +283,7 @@ except:
 try:
     BSTOPradius = cfg.get('location', 'BSTOPradius').strip("'").strip('"')
 except:
-    BSTOPradius = '600'
+    BSTOPradius = 600
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
@@ -356,6 +380,10 @@ if (ENAtext == 'True'):
     ENA = True
 else:
     ENA = False
+if (BSTOPtext == 'True'):
+    BSTOP = True
+else:
+    BSTOP = False
 if (ADSBregt == 'True'):
     ADSBreg = True
 else:
@@ -382,10 +410,11 @@ if 'USER' in os.environ and prt:
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
     print("Config APRS values:  ", APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX, "ENA", ENA)
+    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX, "ENA", ENA, "Birdstop=", BSTOP)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0
 SOCK_FILE = 0
 CLIENT = 0
 RegWarning = True
+print("Config completed", BSTOPtext, BSTOP, BSTOPMQTT, BSTOPTOPIC, BSTOPUSER, BSTOPPASSWD, BSTOPhost, BSTOPname, BSTOPloc, BSTOPfl, BSTOPapikey, BSTOPradius)
