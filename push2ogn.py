@@ -24,7 +24,8 @@ import argparse
 import traceback
 from ognddbfuncs import *		        		# import the functions delaing with the Flarm ID
 
-programver = 'V2.9'						# June 2025
+programver = 'V2.10'						# May 2026
+
 #########################################################################
 
 

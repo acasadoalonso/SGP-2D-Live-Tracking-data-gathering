@@ -2,7 +2,21 @@
 #-------------------------------------------------------------------------------------------------------------------#
 # this functions deals with the data received by the birdstop detectors    api.birdstop.io 
 #-------------------------------------------------------------------------------------------------------------------#
-
+# The data is received through a MQTT broker, and we subscribe to the topic that matches the publish topic of the birdstop detectors
+# The data is received in JSON format, and we convert it to a dict, and we extract the information of the fix, and we store it in a buffer, and we push it to the OGN APRS, and we store it in the DDBB
+# The data received is in the format:
+# {
+#   "id": "birdstop_BCN1_1042",
+#   "type": "bird",
+#   "site_id": "BCN1",
+#   "timestamp": "2025-06-12T14:22:05Z			# the time when the bird was seen, in ISO 8601 format
+#   "latitude": 41.3096,
+#   "longitude": 2.0902,
+#   "altitude_m": 45.2,
+#   "speed_ms": 12.3		# the ground speed of the bird, in m/s
+# }
+# 
+#
 # python 3.11
 
 import random
@@ -29,6 +43,7 @@ from   dtfuncs import naive_utcnow, naive_utcfromtimestamp
 #-------------------------------------------------------------------------------------------------------------------#
 # example: curl -G "http://3.22.63.131/v1/detections"   -H "X-API-Key: bsdk_live_ogn_xk9mPqR2vTwL4nYsJ7hB"   --data-urlencode "type=bird"   --data-urlencode "from=2026-03-15T00:00:00"   --data-urlencode "min_confidence=0.8"   --data-urlencode "limit=25" | jq
 #
+
 example= {
   "id": "birdstop_BCN1_1042",
   "type": "bird",
@@ -40,12 +55,16 @@ example= {
   "heading": 182.5,
   "speed_ms": 12.3
 }
+
 global savedtime
 savedtime = time.time()
+prt=False
 
 # ----------------------------------------------------------------------------------------------------------------
-print ("\n\nBSTOP functions ...\n\n")		# just to inform that we are on the BSTOP functionsa
-print(config.BSTOPMQTT, config.BSTOPTOPIC, config.BSTOPUSER, config.BSTOPPASSWD)	# print the configuration for debugging
+if prt:
+   print ("\n\nBSTOP functions ...\n\n")		# just to inform that we are on the BSTOP functionsa
+   print(config.BSTOPMQTT, config.BSTOPTOPIC, config.BSTOPUSER, config.BSTOPPASSWD)	# print the configuration for debugging
+
 # Generate a Client ID with the subscribe prefix.
 client_id = f'BSTOP-{random.randint(0, 100)}' 	# name of the client BSTOP and a random number to avoid conflicts with other clients
 broker    = config.BSTOPMQTT			# URL of the Mosquitto server
@@ -102,7 +121,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
             print("JSON error:>>>>>", message, "<<<<<\n\n")
             return()
         while True:				# check if it is eligible
-           if "timestamp" in msg:		# check if we have the timestamp        
+           if "timestamp" in j_obj:		# check if we have the timestamp        
                t=j_obj['timestamp']	    	# when the aircraft was seen
         					# ISO 8601 format: 2026-03-24T05:59:44
            else:
@@ -115,8 +134,8 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            #tme =  t[11:13]+t[14:16]+t[17:19]	# we use the timestamp as time of the fix, and we ignore the time when we receive the message, because it can be delayed
            lat=   j_obj['latitude']		# latitude
            lon=   j_obj['longitude']		# longitude
-           if     j_obj['altitude']:		# altitude
-                  alt=   j_obj['altitude']
+           if     j_obj['altitude_m']:		# altitude
+                  alt= j_obj['altitude_m']*3.28084	# altitude in meters
            else:
                   alt= -1
                   break				# ignore if no altitude
@@ -126,12 +145,12 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
 
            birdid=j_obj['id']			# the ID of the birdstop device
            src='BSTOP'				# BSTOP is the default
-           if "id" in msg:
+           if "id" in j_obj:			# check if we have the ID of the target
                ID = j_obj['id'].upper()		# aircraft/bird/drone ID
            else:
                print ("BSTOP No id")
                break				# ignore the traffic with no ID
-           ID = ID[-6:]				# get the last 6 characters of the ID
+           ID = ID[-6:].replace('_','0')	# get the last 6 characters of the ID
            if ID.isnumeric():			# in case of number, convert to hex
               ID="%05X"%int(ID)			# convert to hex
            aid="OGNF"+ID[-5:]			# build the ICAO ID for OGN
@@ -139,11 +158,9 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            roc= 0 
            flg=0
            ecat=''
-           if "type" in msg:			# check if drone or bird
-              otype = msg['type']			# get the type of the target
-              ecat = otype.upper()			# get the category	
-
-
+           if "type" in j_obj:			# check if drone or bird
+              otype = j_obj['type']		# get the type of the target
+              ecat = otype.upper()		# get the category	
            if 'speed_ms' in j_obj:		# if provided
                   gs=j_obj['speed_ms']*1.94384 	# ground speed in knots
            else:
@@ -151,7 +168,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
                   break
            if gs > 999.9:
                   gs=999.0
-           gs = int(gs)				# convert it to integera
+           gs = int(gs)				# convert it to integer from float
 
            if     j_obj['heading']:		# true heading
                   trk=   int(j_obj['heading'])
@@ -165,23 +182,21 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            vitlon = config.FLOGGER_LONGITUDE
            distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
 						# the dict with the info
-           pos = {"ICAOID":ID, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'rot':0, 'UnitID':unitid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':ecat}  
+           pos = {"ICAOID":aid, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'rot':0, 'UnitID':unitid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':ecat}  
            foundone = True			# mark that we found one
            userdata[1]["datafix"].append(pos)	# we added to the buffer
            userdata[0]["message_count"] += 1	# increase the counter on the buffer
            break
 
         #print ("LLL", loopcount, userdata[0]["message_count"] )
-
-        if (loopcount - int(loopcount/100)*100) == 0: 	# we send to the APRS in check of 100 messages
-           #print(f"Received `{message}` from `{msg.topic}` topic", loopcount)
-           datafix   = userdata[1]["datafix"]	# we had stored the messages on the datafix array
-           utc = naive_utcnow()
-           if prt:				# for debugging
-              print (">>>BSTOP:", loopcount, len(datafix), utc,  aprspush, prt)
-           if aprspush:				# if we asked for APRSpush
-              bstopaprspush(datafix, prt)		# push the data to the OGN APRS
-              userdata[1]["datafix"]= []	# reset the buffer
+       
+        datafix = userdata[1]["datafix"]	# we had stored the messages on the datafix array
+        utc = naive_utcnow()
+        if prt:					# for debugging
+           print (">>>BSTOP:", loopcount, len(datafix), utc,  aprspush, prt)
+        if aprspush:				# if we asked for APRSpush
+           bstopaprspush(datafix, prt)		# push the data to the OGN APRS
+           userdata[1]["datafix"]= []		# reset the buffer
         if (loopcount - int(loopcount/100000)*100000) == 0: 	# we send to the APRS in check of 100K messages
               global savedtime
               current_time = time.time()
@@ -193,7 +208,8 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               print (">>>BSTOP::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minute, ", utc,  aprspush, prt, "::<<<<\n")
 
 # -------------------------------------------	# end of on_message function
-
+    if prt:
+       print ("Subscribing to topic:", topic)	# just for debugging
     client.subscribe(topic)			# subcribe with that topic
     client.on_message = on_message		# define the function to call for each message
     return (client)				# return the client instance
@@ -204,10 +220,10 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
     datafix   = userdata[1]["datafix"]
     prt       = userdata[2]["prt"]
     aprspush  = userdata[3]["aprspush"]
+    utc = naive_utcnow()
     if prt:
        print ("Disconnecting ...", rc)
-    utc = naive_utcnow()
-    print (">>>bstop:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
+       print (">>>bstop:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
     if aprspush:				# if aprspush ... push the remaining data
        if len(datafix) > 0:			# if we have data on the buffer, push it to the OGN APRS
           bstopaprspush(datafix, prt)		# push the data to the OGN APRS
@@ -246,7 +262,8 @@ def bstoprun(prt=False, aprspush=False):		# run the normal work
 def bstopfinish(prt=False, aprspush=False):	# run the normal work
 
     client=config.CLIENT			# point to the global instance
-    print ("bstop finishing ...")
+    if prt:
+       print ("bstop finishing ...")
     client.disconnect()				# disconnect the mosquitto client
      
 
@@ -259,7 +276,7 @@ def bstopfinish(prt=False, aprspush=False):	# run the normal work
 def bstopstoreitindb(datafix, curs, conn):   	# store the fix into the database
 
     import MySQLdb                          	# the SQL data base routines^M
-    for fix in datafix['bstoppos']:	    	# for each fix on the dict
+    for fix in datafix:	    			# for each fix on the dict
         iid       = fix['ICAOID']	    	# extract the information
         dte       = fix['date']
         hora      = fix['time']
@@ -311,7 +328,7 @@ def bstopaprspush(datafix, prt=False):
     if prt:
         print ("APRSpush start: ", len(datafix))
     cnt=0					# counter of messgages
-    for fix in datafix['bstoppos']:	    	# for each fix on the dict
+    for fix in datafix:	    			# for each fix on the dict
         if prt:
            print ("FIX: ", fix)
         aid      = fix['ICAOID']		# extract the information
@@ -410,66 +427,6 @@ def bstopsetrec(sock, prt=False, store=False, aprspush=False):			# define on APR
     except Exception as e:       
        print ("error on flush: ", e)
     return
-
-#-------------------------------------------------------------------------------------------------------------------#
-# find all the fixes since TTIME . Scan all the BSTOP devices for new data
-#-------------------------------------------------------------------------------------------------------------------#
-
-
-def bstopfindpos(ttime, conn, prt=False, store=False, aprspush=True):		# this is the function called by push2ogn.py module
-    ttime -= 10				 	# we set TTIME 10 seconds before, to avoid missing data due to delays
-    utime=naive_utcfromtimestamp(ttime)		# convert TTIME to a datetime object
-    ttimeformat=utime.strftime("%Y-%m-%dT%H:%M:%SZ")	# and format it in the way that the BSTOP API expects
-    now = naive_utcnow()          		# get the UTC time # number of seconds until beginning of the day 1-1-1970
-    td  = now-datetime(1970, 1, 1)
-    bstopnow = int(td.total_seconds()) 		# Unix time - seconds from the epoch
-    #print ("\nTTT time:", ttime, ttimeformat, "BSTOPnow:", bstopnow, now, "\n")
-    if ttime >= bstopnow:			# if TTIME is in the future, we set it to now, to avoid errors
-        print ("TTIME in the future:", ttime, bstopnow, now)
-        ttime = bstopnow - 60*5			# and we set it to 1 minute before now, to avoid missing data
-        ttimeformat=naive_utcfromtimestamp(ttime).strftime("%Y-%m-%dT%H:%M:%SZ")	# and format it in the way that the BSTOP API expects
-    bstoppos = {"bstoppos": []}			# init the dict
-    vitlat = config.FLOGGER_LATITUDE		# get location of the station to calculate the distance to the targets
-    vitlon = config.FLOGGER_LONGITUDE
-    url    = config.BSTOPhost			# the URL
-    params={					# the parameters for the API call
-        "type": "bird",
-        "from": ttimeformat,
-        "min_confidence": 0.8,
-        "limit": 500,
-	"geo_lat": vitlat,
-	"geo_lon": vitlon,
-	"geo_radius": config.BSTOPradius
-    }
-    if prt:
-    	print ("\nURL:", url,params)		# print the URL for debugging
-    bstopcnt=0
-    tracks = bstopgetapidata(url, params, prt=prt)	# get the JSON data from the BSTOP server
-    if prt:
-        print ("BSTOP tracks received:", len(tracks))
-    if len(tracks) <= 0:			# if no data ...
-        print("\nBSTOPfindpos: Empty msg",  ttimeformat, bstopnow, now)	# print the data
-        return (int(bstopnow), bstopcnt)	# return TTIME for next call
-
-    if prt:
-        print("BSTOPfindpos:", len(tracks), bstopnow)
-    if prt:
-        print("TRACKS len:", len(tracks), json.dumps(tracks, indent=4), "time:", now)  	# convert JSON to string
-
-    						# get all the devices with BSTOP
-    bstopaddpos(tracks, bstoppos, ttime, bstopnow, prt=prt)  # find the airplanes since TTIME
-
-    if prt:
-        print("BSTOPpos:\n", len (bstoppos), bstoppos, "\n\n")		# print the data
-    if store:
-        curs = conn.cursor()            	# set the cursor for storing the fixes
-        bstopstoreitindb(bstoppos, curs, conn) 	# and store it on the DDBB
-    if prt:
-        print ("BSTOPfindpos: ", aprspush, len(bstoppos['bstoppos']), "positions found since", ttimeformat, "BSTOPnow:", bstopnow)	# print 
-    if aprspush:
-        bstopcnt=bstopaprspush(bstoppos, prt=prt)  	# and push it into the OGN APRS
-        					# number of second until beginning of the day of 1-1-1970
-    return (int(bstopnow), bstopcnt)		# return TTIME for next call
 
 #-------------------------------------------------------------------------------------------------------------------#
 if __name__ == '__main__':

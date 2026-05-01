@@ -417,4 +417,4 @@ SOCK = 0
 SOCK_FILE = 0
 CLIENT = 0
 RegWarning = True
-print("Config completed", BSTOPtext, BSTOP, BSTOPMQTT, BSTOPTOPIC, BSTOPUSER, BSTOPPASSWD, BSTOPhost, BSTOPname, BSTOPloc, BSTOPfl, BSTOPapikey, BSTOPradius)
+#print("Config completed", BSTOPtext, BSTOP, BSTOPMQTT, BSTOPTOPIC, BSTOPUSER, BSTOPPASSWD, BSTOPhost, BSTOPname, BSTOPloc, BSTOPfl, BSTOPapikey, BSTOPradius)
