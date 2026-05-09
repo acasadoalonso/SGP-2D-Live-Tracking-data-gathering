@@ -4,6 +4,8 @@ if [ -z $CONFIGDIR ]
 then 
      export CONFIGDIR=/etc/local/
 fi
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=`dirname $SCRIPT`
 pid=$(echo     `grep '^pid' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^pid//g').PUSH2OGN
 DBpath=$(echo  `grep '^DBpath ' $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBpath //g' | sed 's/ //g' )
 if [ ! -f $pid ]
@@ -17,11 +19,13 @@ then
                 fi
 
 #               restart OGN data collector
-                bash ~/src/APRSsrc/sh/PUSH2ogn.sh 
-                logger -t $0 "PUSH2OGN Log seems down, restarting"
+                cd   $SCRIPTPATH/
+                bash $SCRIPTPATH/PUSH2ogn.sh
+	        sleep 15	
+                logger -t $0 "PUSH2OGN Log seems down, restarting ... "$(cat $pid)
                 echo $(date)" - "$(hostname)" - PUSH2OGN "  >>$DBpath/.APRSrestart.log
 else
-                logger -t $0 "PUSH2OGN Log is alive"
+                logger -t $0 "PUSH2OGN Log is alive" "Process: $(cat $pid)"
 fi
 
 DBuser=$(echo    `grep '^DBuser '   $CONFIGDIR/APRSconfig.ini` | sed 's/=//g' | sed 's/^DBuser //g')

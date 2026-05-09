@@ -9,6 +9,7 @@ import MySQLdb                              # the SQL data base routines^M
 import config
 from flarmfuncs import getflarmid, chkflarmid
 from parserfuncs import deg2dmslat, deg2dmslon
+from dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 # get the data from the API server
 
@@ -214,7 +215,7 @@ def inreachaprspush(datafix, prt=False):    # push the data into the OGN APRS
         else:
             lon += 'W'
 
-        aprsmsg = id+">OGINRE,qAS,INREACH:/"+hora+'h'+lat+"/"+lon+"'000/000/"
+        aprsmsg = id+">OGNINRE,qAS,INREACH:/"+hora+'h'+lat+"/"+lon+"'000/000/"
         if altitude > 0:
             aprsmsg += "A=%06d" % int(altitude)
         aprsmsg += " id"+uniqueid+" "+gps+" "+extpos+" "+pilotname+" \n"
@@ -255,13 +256,12 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             url = "http://inreach.garmin.com/feed/share/"+inreachID
         else:
             # get the date in ISO format to be used on the URL
-            tt = datetime.utcfromtimestamp(ttime)
+            tt = naive_utcfromtimestamp(ttime)
             ts = tt.isoformat()
             url = "http://inreach.garmin.com/feed/share/" + \
                 inreachID+"?d1="+str(ts)
         if prt:
             print(url)
-        print(url)
         inreachpos = {"inreachpos": []}     # init the dict
         # get the KML data from the InReach server
         kml = inreachgetapidata(url)
@@ -283,7 +283,7 @@ def inreachfindpos(ttime, conn, prt=False, store=True, aprspush=False):
             inreachaprspush(inreachpos, prt)  # and push the data into the APRS
 
     if foundone:
-        now = datetime.utcnow()
+        now = naive_utcnow()
         # number of second until beginning of the day of 1-1-1970
         td = now-datetime(1970, 1, 1)
         ts = int(td.total_seconds())        # as an integer

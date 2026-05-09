@@ -4,7 +4,8 @@ import config
 dbname='APRSLOG'
 dbuser=config.DBuser
 dbpass=config.DBpasswd
-dbhost='localhost'
+dbhost=config.DBhost
+dbhost="UBU2SQL"
 dbconn=MySQLdb.connect(
     database=dbname, user=dbuser, password=dbpass, host=dbhost)
 query = "select flarmid, lat, lon, altitude, date, time, station from GLIDERS_POSITIONS order by flarmid;"

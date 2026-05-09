@@ -1,5 +1,8 @@
-geopy==2.2.0
-gpiozero==1.6.2
+airportsdata==20241001
+geopy==2.4.1
+GitPython==3.1.50
+GitPython==3.1.46
+gpiozero==2.0.1
 MySQL-python==1.2.5
 ogn_client==1.2.1
 psutil==5.8.0

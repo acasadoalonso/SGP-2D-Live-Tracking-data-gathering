@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l /nfs/OGN/src/APRSsrc/*.py)",
+      "Bash(git:*)",
+      "Bash(grep -r \"MySQLdb\\\\|sqlite3\" /nfs/OGN/src/APRSsrc/*.py)",
+      "Bash(ls -la /nfs/OGN/src/APRSsrc/*.py)"
+    ]
+  }
+}

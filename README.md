@@ -15,11 +15,16 @@ push2ogn.sh		  	The program that collects the positions from the SPOT/SPIDER/INR
 
 config.py		    	The routine that reads the configuration file on /etc/local/APRSconfig.ini and set the configuration parameters
 
-install.sh		  	The script of installation
+FUNCTIONS:
+
 
 ognddbfuncs.py			The table with all the flarms ID and its registration ID
 
 adsbfuncs.py			The ADSB parser routine
+
+avxfuncs.py			The AVIONIX parser routine
+
+enafuncs.py			The ENAIRE parser routine
 
 flarmfuncs.py			The Flarm utility functions
 

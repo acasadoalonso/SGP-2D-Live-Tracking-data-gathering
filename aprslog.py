@@ -5,7 +5,8 @@
 # Version for gathering all the records for the world
 #
 
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import socket
 import time
 import json
@@ -19,12 +20,12 @@ from time import sleep                  # use the sleep function
 from geopy.distance import geodesic     # use the Vincenty algorithm^M
 import MySQLdb                          # the SQL data base routines^M
 import config				# import the configuration details
-from parserfuncs import alive, parseraprs  # the ogn/ham parser functions
-
+from parserfuncs import alive, parseraprs, getinfoairport  # the ogn/ham parser functions
+from dtfuncs import *
 #########################################################################
 
 
-def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS server
+def aprsconnect(sock, login, firsttime=False, prt=True):  # connect to the APRS server
     if not firsttime:
         try:				# reconnect
             sock.shutdown(0)                # shutdown the connection
@@ -36,27 +37,28 @@ def aprsconnect(sock, login, firsttime=False, prt=False):  # connect to the APRS
     if prt or firsttime:
         print("Default RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))  # get the size of the receiving buffer
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2097152)		  # set the receiving buffer to be 2Mb
-    date = datetime.utcnow()            # get the date
+    date = naive_utcnow()        # get the date
     if prt or firsttime:
         print("New     RCVBUF:", sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-    if LASTFIX or FULL:			# if LASTFIX use the non filtered port
+    if LASTFIX or FULL:			    # if LASTFIX use the non filtered port
         print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", 10152, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, 10152))  # use the non filtered port
         #sock.connect(("aprs.glidernet.org", 10152))
-    else:				# if not use the use from the configuration file
+    else:				            # if not use the use from the configuration file
         print("Connecting with APRS HOST:", config.APRS_SERVER_HOST, ":", config.APRS_SERVER_PORT, "Time:", date)
         sock.connect((config.APRS_SERVER_HOST, config.APRS_SERVER_PORT))
     print("Socket sock connected")
-    sock.send(login)			# send the login to the APRS server
+    sock.send(login)			    # send the login to the APRS server
+    #print("Socket send login done")
 
     # Make the connection to the server
-    sock_file = sock.makefile(mode='rw')  # make read/write as we need to send the keep_alive
-    if prt or firsttime:
+    sock_file = sock.makefile(mode='rw', encoding='utf-8', errors='replace')  # make read/write as we need to send the keep_alive
+    if prt or firsttime :
         print("APRS Version:", sock_file.readline())  # report the APRS version
         # for control print the login sent and get the response
         print("APRS Login request:", login)  # print the login command for control
         print("APRS Login reply:  ", sock_file.readline(), "\n")  # report the APRS reply
-    sleep(2)				# just wait to receive the login command
+    sleep(1)				        # just wait to receive the login command
     return (sock, sock_file)		# return sock and sockfile
 
 #########################################################################
@@ -114,18 +116,20 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 #
 ########################################################################
-programver = 'V2.12'			# manually set the program version !!!
+programver = 'V2.18'			# manually set the program version !!!
 
-print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB and LT24 logging: " + programver)
+print("\n\nStart APRS, SPIDER, SPOT, InReach, CAPTURS, Skylines, ADSB, AVX and LT24 logging: " + programver)
 print("==================================================================================")
 #					  report the program version based on file date
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
-date = datetime.utcnow()                # get the date
+import platform
+print("Python version:", platform.python_version())
+date = naive_utcnow()                	# get the date
 dte = date.strftime("%y%m%d")           # today's date
 hostname = socket.gethostname()		# get the hostname
 print("\nDate: ", date, "UTC on SERVER:", hostname, "Process ID:", os.getpid())
 date = datetime.now()
-print("Time now is: ", date, " Local time")
+print("Time now is: ", date, " Local time\n\n")
 
 APP = "APRS"				# the application name
 cin = 0                                 # input record counter
@@ -134,8 +138,8 @@ loopcnt = 0                             # loop counter
 err = 0				        # number of read errors
 day = 0				        # day of running
 commentcnt = 0				# counter of comment lines
-maxnerrs = 99                           # max number of error before quiting
-SLEEPTIME = 2				# time to sleep in case of errors
+maxnerrs = 99		                # max number of error before quiting
+SLEEPTIME = 5				# time to sleep in case of errors
 comment = False				# comment line from APRS server
 datafile = False			# use the datafile on|off
 COMMIT = True				# commit every keep lives
@@ -155,8 +159,9 @@ fslal = {'NONE  ': 0.0}                 # station location altitude
 fslod = {'NONE  ': (0.0, 0.0)}          # station location - tuple
 fsmax = {'NONE  ': 0.0}                 # maximun coverage
 fsalt = {'NONE  ': 0}                   # maximun altitude
-fsour = {}			 	# sources
+fsour = {}  		 	        # sources
 acfttype = []			 	# aircraft types
+unkacft= {}				# list of unkown aircraft types
 fdtcnt = {}			 	# device type counter
 flastfix = {}				# table with the LAST FIXES
 lastfix = []				# list of last fix from DB
@@ -218,10 +223,10 @@ if LASTFIX :
         except MySQLdb.Error as e:
             try:
      
-                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), datetime.utcnow()   , file=sys.stderr)
+                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]), naive_utcnow()   , file=sys.stderr)
             except IndexError:
-                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
-        print("Number of IDs on the DB: ", len(lastfix))
+                print(">>>>: MySQL Error2: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
+        print("Number of IDs on current LASTFIX DB: ", len(lastfix), "\n")
 if DATA:
     config.LogData = True
 
@@ -245,9 +250,16 @@ if os.path.isfile(compfile):
     print("Competition file: ", compfile)
     fd = open(compfile, 'r')  		# open and read the file
     j = fd.read()
-    clist = json.loads(j)
+    if len(j) > 0:
+       try:
+          clist = json.loads(j)
+       except:
+          clist=[]
+          print ("Competition file empty:", clist)
+    else:
+       print ("Competition file empty:", clist)
     fd.close()				# close it
-    if clist[0][0:3] != 'OGN' and clist[1][0:3] == 'OGN':		# if the pairing is there on the competition table???
+    if len(clist) > 0 and clist[0][0:3] != 'OGN' and clist[1][0:3] == 'OGN': # if the pairing is there on the competition table???
        OGNT = False			# we do not need to use the TRACKERDEV DB table
        tl=len(clist)			# check the number of entries ???
        idx=0				# index into the table      
@@ -279,10 +291,12 @@ if len(clist) > 0 and not LASTFIX and not STATIONS and not FULL: # if we are in 
     afilter += "\n"
     # in case of competition we filter to just the competition gliders and their OGNT pairs
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, afilter)
+elif STATIONS :
+    # normal case either STD or STATIONS
+    login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* t/s \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 else:
     # normal case either STD or STATIONS
     login = 'user %s pass %s vers APRSLOG %s filter d/TCPIP* %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, config.APRS_FILTER_DETAILS)
-
 if LASTFIX or FULL:				# if we want just status or receivers and glider LASTFIX, use not filtered PORT
     login = 'user %s pass %s vers APRSLOG %s  \n' % (config.APRS_USER, config.APRS_PASSCODE, programver)
 login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
@@ -293,8 +307,10 @@ login = login.encode(encoding='utf-8', errors='strict') 	# encode on UTF-8
 sock = False
 Ntries = 0
 (sock, sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
+print("Initial sock creation  ...\n\n")
 if sock == False:
     while Ntries < 10:
+        print("Initial sock false ... error\n")
         (sock, sock_file) = aprsconnect(sock, login, firsttime=True, prt=prt)
         if sock != False:
             break
@@ -319,12 +335,12 @@ alive(config.APP + hostname, first='yes')  # create the ALIVE file/lock
 #
 # -----------------------------------------------------------------
 #
-now = datetime.utcnow()			# get the UTC time
+now = naive_utcnow()			# get the UTC time
 day = now.day				# day of the month
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now = now - min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
-td = now - datetime(1970, 1, 1)
+td = now.replace(tzinfo=None) - datetime(1970, 1, 1)
 ts = int(td.total_seconds())		# Unix time - seconds from the epoch
 tc = ts					# init the variables
 ty = ts
@@ -340,7 +356,7 @@ try:
     while True:				# forever
         current_time = time.time()
         local_time = datetime.now()
-        now = datetime.utcnow()		# get the UTC time
+        now = naive_utcnow()		# get the UTC time
         if now.day != day:	        # check if day has changed
             print("End of Day...Day: ", day, "\n\n")  # end of UTC day
             shutdown(sock, datafile)  # recycle
@@ -351,7 +367,8 @@ try:
         elapsed_time = current_time - keepalive_time
         if (current_time - keepalive_time) > 5 * 60:  # keepalives every 5 mins
             # and mark that we are still alive
-            alive(config.APP + hostname)  # set the mark on the aliave file
+            alive(config.APP + hostname, keepalive=keepalive_count)  # set the mark on the alive file
+            print("Alive#", keepalive_count, current_time - keepalive_time, now, "\n\n\n")  # report the alive
             try:			# send a comment to the APRS server
                 rtn = sock_file.write("# Python APRSLOG App \n")
                 sock_file.flush() 	# Make sure keepalive gets sent. If not flushed then buffered
@@ -363,10 +380,10 @@ try:
                     datafile.flush()
                 keepalive_time = current_time
                 keepalive_count = keepalive_count + 1
-                now = datetime.utcnow()  # get the UTC time
+                now = naive_utcnow()  # get the UTC time
             except Exception as e:
                 print(('>>>>: something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
-                now = datetime.utcnow()  # get the UTC time
+                now = naive_utcnow()  # get the UTC time
                 print("UTC time is now: ", now)
                 err += 1
                 if err > maxnerrs:
@@ -374,6 +391,9 @@ try:
                     date = datetime.now()
                     break
                 sleep(SLEEPTIME) 	# wait X seconds
+                keepalive_time = current_time
+                keepalive_count = keepalive_count + 1
+                now = naive_utcnow()  # get the UTC time
                 continue
             if OGNT and not LASTFIX:    # if we need aggregation of FLARM and OGN trackers data
                 # rebuild the table from the TRKDEVICES DB table
@@ -383,7 +403,7 @@ try:
             sys.stderr.flush()		# flush the print messages
             if COMMIT:
                 conn.commit()		# commit to the DB every 5 minutes
-            continue			# next APRSMSG
+            continue         		# next APRSMSG
 
         if prt:
             print("In main loop. Count= ", loopcnt)
@@ -402,17 +422,22 @@ try:
         except socket.error as e:
             err += 1
             print(">>>>: Socket error on readline: ", loopcnt, packet_str, current_time, file=sys.stderr)
-            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))), file=sys.stderr)
-            (sock, sock_file) = aprsconnect(sock, login, prt=prt)
+            print(('>>>>: something\'s wrong with socket readline Exception type is %s' % (repr(e))), sock, sock_file, file=sys.stderr)
+            if (not sock or not sock_file):
+               (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             continue
         except KeyboardInterrupt:
             print("Keyboard input received, Bye Bye", file=sys.stderr)
             shutdown(sock, datafile)
             print("Bye ...\n\n\n")
             os._exit(0)
-        except:
+        except Exception as errt:
+            now = naive_utcnow()		        # get the UTC time
             print(">>>>: Error on readline", now, file=sys.stderr)
-            print(">>>>: ", packet_str, file=sys.stderr)
+            if len(packet_str) > 0:
+               print(">>>>: ", ":".join("{:02x}".format(ord(c)) for c in packet_str), ":<<<<", len(packet_str), file=sys.stderr)
+               print(f"{type(errt).__name__} was raised: {errt}", file=sys.stderr)
+               print(">>>>:",packet_str, ":<<<<", file=sys.stderr)
             rtn = sock_file.write("# Python APRSLOG App\n")
             continue
 
@@ -426,9 +451,11 @@ try:
 
         # A zero length line should not be return if keepalives are being sent
         # A zero length line will only be returned after ~30m if keepalives are not sent
-        if len(packet_str) == 0:  # socket error ?
+        if len(packet_str) == 0:  		# socket error ?
             err += 1
-            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err, file=sys.stderr)
+            print("packet_str empty, loop count:", loopcnt, keepalive_count, now, "Num errs:", err, "\n",  file=sys.stderr)
+            sleep(SLEEPTIME) 			# wait 5 seconds
+            print("Reconnecting ...Nerrs:", err)
             (sock, sock_file) = aprsconnect(sock, login, prt=prt)
             if err > maxnerrs:
                 print(">>>>: Too many errors reading APRS messages.  Orderly closeout", file=sys.stderr)
@@ -436,7 +463,6 @@ try:
                 print("UTC now is: ", date)
                 break
             else:
-                sleep(SLEEPTIME) 		# wait 5 seconds
                 continue
 
         ix = packet_str.find('>')
@@ -451,6 +477,9 @@ try:
             msg = parseraprs(packet_str, msg)		# parse the APRS message
             if msg == -1:				# if errors
                 continue
+            if not hasattr(msg, '__iter__'):
+                continue
+
             data = packet_str
             if prt:
                 print("MSG:  ", msg)
@@ -459,15 +488,17 @@ try:
             else:
                 print(">>>>: Missing ID:>>>", data)
                 continue
-            aprstype = msg['aprstype']			# APRS msg type
+            aprstype  = msg['aprstype']			# APRS msg type
+            if not 'longitude' in msg:          # WX type
+                continue
             longitude = msg['longitude']
-            latitude = msg['latitude']
-            altitude = msg['altitude']
-            path = msg['path']
-            relay = msg['relay']
-            otime = msg['otime']
-            source = msg['source']
-            station = msg['station']
+            latitude  = msg['latitude']
+            altitude  = msg['altitude']
+            path      = msg['path']
+            relay     = msg['relay']
+            otime     = msg['otime']
+            source    = msg['source']
+            station   = msg['station']
             if prt:
                 print('Packet returned is: ', packet_str)
                 print('Callsign is: ', ident, path, otime, aprstype)
@@ -478,10 +509,8 @@ try:
                 fsour[source] += 1	    		# increase the counter
 
             if source == 'FANE' or source == 'UNKW':  	# ignore those messages
-                if source == 'UNKW':
-                   print("SOURCE Error: >>>>", source,msg, packet_str) 
-                   sys.stdout.flush()					# flush the print messages
-                   sys.stderr.flush()					# flush the print messages
+                continue
+            if source == 'NEMO' :		  	# ignore those messages
                 continue
             if source == 'DLYM' and prt:		# DELAY and PRINT ???
                 print("OGNT DLY>>>>:", msg, "<<<<")
@@ -489,8 +518,9 @@ try:
             if 'acfttype' in msg:
                 acftt = msg['acfttype']
                 if acftt == "UNKNOWN":
-                   if station != 'NEMO':		# temp patch
-                      print ("Wrong aircraft type:", acftt, packet_str, file=sys.stderr)
+                   if station not in unkacft:
+                      unkacft[station] = 1
+                      print ("Wrong aircraft type:", acftt, packet_str, msg, file=sys.stderr)
                    continue
                 elif acftt not in acfttype:
                    acfttype.append(acftt)
@@ -533,7 +563,7 @@ try:
                     latitude = fslla[ident]
                     longitude = fsllo[ident]
                     altitude = fslal[ident]
-                    otime = datetime.utcnow()
+                    otime = naive_utcnow()
                     # print "TTT:", ident, latitude, longitude, altitude, otime, version, cpu, temp, rf, status
                 if ident not in fslod:			# if we not have it yeat on the table
                     # save the location of the station
@@ -563,30 +593,26 @@ try:
                 except:
                     print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
 
-                #if cc == "SpainMobi":
-                #    print("InsCmd: >>>>", cc, latitude, longitude, altitude, otime, "V:", version, "C:", cpu, "T:", temp, "R:", rf, status, "\nMGS:", msg)
-                #    sys.stdout.flush()					# flush the print messages
-                #    sys.stderr.flush()					# flush the print messages
                 try:
                     curs.execute(inscmd)  		# insert data into RECEIVERS table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(),inscmd, file=sys.stderr)
+                        print(">>>>: MySQL1 Error1a [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), inscmd, file=sys.stderr)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL2 Error1a: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error1a:", cout, inscmd,naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,naive_utcnow(), file=sys.stderr)
                 cout += 1				# number of records saved
                 continue
 
-            if aprstype == 'status' and TRKSTATUS:			# if status report
+            if aprstype == 'status' and TRKSTATUS:	# if status report
                 #           TRACKER STATUS CASE ------------------------------------------------------#
                 status = msg['status']			# get the status message
                 # and the station receiving that status report
                 station = msg['station']
                 if station == 'NEMO':
                    continue
-                otime = datetime.utcnow()  		# get the time from the system
+                otime = naive_utcnow()  		# get the time from the system
                 if len(status) > 254:
                     status = status[0:254]
                 #print ("Status report:", ident, station, otime, status)
@@ -596,11 +622,11 @@ try:
                     curs.execute(inscmd)  		# insert data into trackstatus table
                 except MySQLdb.Error as e:
                     try:
-                        print(">>>>: MySQL1 Error [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
+                        print(">>>>: MySQL1 Error2a [%d]: %s" % ( e.args[0], e.args[1]), inscmd)
                     except IndexError:
-                        print(">>>>: MySQL2 Error: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL3 error:", cout, inscmd,datetime.utcnow(), file=sys.stderr)
-                    print(">>>>: MySQL4 data :", data,datetime.utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL2 Error2a: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL3 error2a:", cout, inscmd,naive_utcnow(), file=sys.stderr)
+                    print(">>>>: MySQL4 data :", data,naive_utcnow(), file=sys.stderr)
 
                 cout += 1				# number of records saved
 
@@ -616,16 +642,30 @@ try:
             if 'speed' in msg:
                 speed = msg['speed']
             else:
-                print("MMMMM>>>>", msg)
-            course = msg['course']
-            uniqueid = msg['uniqueid']
+                print("MMM No speed>>>>", msg)
+            course = 0
+            if 'course' in msg:
+               course = msg['course']
+            uniqueid = 'NOID'
+            if 'uniqueid' in msg:
+                uniqueid = msg['uniqueid']
             if len(uniqueid) > 16:
                 uniqueid = uniqueid[0:16]  		# limit to 16 chars
-            extpos = msg['extpos']
-            roclimb = msg['roclimb']
-            rot = msg['rot']
-            sensitivity = msg['sensitivity']
-            gps = msg['gps']
+            extpos = 'W00'
+            if 'extpos' in msg:
+                extpos = msg['extpos']
+            roclib = 0
+            if 'roclimb' in msg:
+                roclimb = msg['roclimb']
+            rot = 0
+            if 'rot' in msg:
+                rot = msg['rot']
+            sensitivity = 0
+            if 'sensitivyty' in msg:
+                sensitivity = msg['sensitivity']
+            gps = 'NOGPS'
+            if 'gps' in msg:
+                gps = msg['gps']
             if len(gps) > 6:
                 gps = gps[0:6]
             hora = msg['time']				# timestamp
@@ -643,8 +683,16 @@ try:
                         print("distcheck: ", distance, data)  # report it only once
                     fdistcheck[ident] = distance
             if source != 'OGN':				# in the case of a NON OGN we use the base as reference point
-                vitlat = config.location_latitude
-                vitlon = config.location_longitude
+                if getinfoairport (config.location_name) != None:
+                  #print(getinfoairport (config.location_name))
+                  location_latitude = getinfoairport (config.location_name)['lat']
+                  location_longitude = getinfoairport (config.location_name)['lon']
+                else:
+                  location_latitude=config.location_latitude
+                  location_longitude=config.location_longitude
+
+                vitlat = location_latitude
+                vitlon = location_longitude
                 # distance to the BASE
                 dist = geodesic((latitude, longitude), (vitlat, vitlon)).km
 #           -----------------------------------------------------------------
@@ -665,7 +713,7 @@ try:
 
                         # get the date from the system as the APRS packet does not contain the date
                         # get the date from the system as the APRS packet does not contain the date
-                dateutc = datetime.utcnow()
+                dateutc = naive_utcnow()
                 dte = dateutc.strftime("%y%m%d")  	# today's date
                 if len(source) > 4:
                     source = source[0:4]  		# restrict the length to 4 chars
@@ -694,11 +742,11 @@ try:
                             curs.execute(cmd1)
                         except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                                print(">>>>: MySQL Error1c [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                             except IndexError:
-                                print(">>>>: MySQL Error2: [%s]" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3 [count & cmd] :", cout, cmd1,datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
+                                print(">>>>: MySQL Error2c: [%s]" % str(e),naive_utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL error3c [count & cmd] :", cout, cmd1,naive_utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
 
                         row = curs.fetchone()		# get the counter 0 or 1 ???
                         if row[0] == 0 and source != "UNKW":  # if not add the entry to the tablea
@@ -710,41 +758,66 @@ try:
                         try:
                             #print    ("CMD2", ident, latitude, longitude, altim, course, dte, hora, "ROT", rot, speed, dist, "ROC", roclimb, station, "SENS", sensitivity, gps, otime, source)
                             cmd2 = "INSERT INTO GLIDERS_POSITIONS  VALUES ('%s', %f, %f, %f, %f, '%s', '%s', %f, %f, %f, %f, '%s', %f, '%s', '%s', -1, '%s');" % \
-                                (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
-                        except TypeError:
-                            print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
-                        if prt:
-                            print("CMD2>>>", cmd2)
-                        try:
-                            curs.execute(cmd2)  	# insert the data on the DB
-                        except MySQLdb.Error as e:
+                                (ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, dateutc, source)
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
-                            except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd2,datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
+                               curs.execute(cmd2)  	# insert the data on the DB
+                            except MySQLdb.Error as e:
+                               try:
+                                   print(">>>>: MySQL Error1d [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
+                               except IndexError:
+                                   print(">>>>: MySQL Error2d: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL error3d:", cout, cmd2,naive_utcnow(), file=sys.stderr)
+                                   print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
+                        except TypeError:		# type error building the INSERT cmd
+                            if source != 'NEMO' and source != 'OGNB':		# temp patch
+                               print(">>>>cmd2:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, dateutc, "::",source,"::")
+                        if False:
+                            print("CMD2>>>", cmd2)
 
                     else:				# if found just update the entry on the table
+
+                        if course == None:
+                           course = 0
+                        if speed == None:
+                           speed = 0
+                        if roclimb == None:
+                           roclimb = 0
+                        if rot == None:
+                           rot = 0
+                        if sensitivity == None:
+                           sensitivity = 0
                         try:
                             cmd3 = "UPDATE GLIDERS_POSITIONS SET lat='%f', lon='%f', altitude='%f', course='%f', date='%s', time='%s', rot='%f', speed='%f', distance='%f', climb='%f', station='%s', gps='%s', sensitivity='%f', lastFixTx=NOW(), source='%s' where flarmId='%s';" % \
                                 (latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, gps, float(sensitivity), source, ident)
-                        except TypeError:
-                            print(">>>>cmd3:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
-                        if prt:
-                            print("CMD3>>>", cmd3)
-                        try:
-                            curs.execute(cmd3)  	# update the data on the DB
-                        except MySQLdb.Error as e:
                             try:
-                                print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
-                            except IndexError:
-                                print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL error3:", cout, cmd3,datetime.utcnow(), file=sys.stderr)
-                            print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
+                                curs.execute(cmd3)  	# update the data on the DB
+                            except MySQLdb.Error as e:
+                                try:
+                                    print(">>>>: MySQL Error1e [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
+                                except IndexError:
+                                    print(">>>>: MySQL Error2e: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL error3e:", cout, cmd3,naive_utcnow(), file=sys.stderr)
+                                    print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
+                        except TypeError:
+                            if source != 'NEMO' and source != 'OGNB':		# temp patch
+                               print(">>>>cmd3e:", ident, latitude, longitude, altim, course, dte, hora, float(rot), speed, dist, float(roclimb), station, float(sensitivity), gps, otime, source)
+                        if prt:
+                            print("CMD3e>>>", cmd3)
 
 #               STD   and FULL CASE NOT LASTFIX ------------------------------------------------------#
+
+
                 else:					# if we just is normal option, just add the data to the OGNDATA table
+                    if course == None:
+                       course = 0
+                    if speed == None:
+                       speed = 0
+                    if roclimb == None:
+                       roclimb = 0
+                    if rot == None:
+                       rot = 0
+                    if sensitivity == None:
+                       sensitivity = 0
                     addcmd = "insert into OGNDATA values ('" + ident + "','" + dte + "','" + hora + "','" + station + "'," + \
                         str(latitude) + "," + str(longitude) + "," + str(altim) + "," + str(speed) + "," + \
                         str(course) + "," + str(roclimb) + "," + str(rot) + "," + str(sensitivity) + \
@@ -757,11 +830,11 @@ try:
                         curs.execute(addcmd)
                     except MySQLdb.Error as e:
                         try:
-                            print(">>>>: MySQL Error1 [%d]: %s" % (e.args[0], e.args[1]),datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL Error1f [%d]: %s" % (e.args[0], e.args[1]),naive_utcnow(), file=sys.stderr)
                         except IndexError:
-                            print(">>>>: MySQL Error2: %s" % str(e),datetime.utcnow(), file=sys.stderr)
-                        print(">>>>: MySQL error3:", cout, addcmd,datetime.utcnow(), file=sys.stderr)
-                        print(">>>>: MySQL data :", data,datetime.utcnow(), file=sys.stderr)
+                            print(">>>>: MySQL Error2f: %s" % str(e),naive_utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL error3f:", cout, addcmd,naive_utcnow(), file=sys.stderr)
+                        print(">>>>: MySQL data :", data,naive_utcnow(), file=sys.stderr)
                     conn.commit()			# commit to the DB  right away
 
                 cout += 1  				# number of records saved
@@ -770,17 +843,17 @@ try:
 # end of infinity while
 # --------------------------------------------------------------------------------------
 except SystemExit:
-    print(datetime.utcnow(),">>>>: System EXIT <<<<<<\n\n")
+    print(naive_utcnow(), "System EXIT <<<<<<\n\n")
     os._exit(1)
 except KeyboardInterrupt:
-    print(datetime.utcnow(),">>>>: Keyboard Interrupt <<<<<<\n\n")
+    print(naive_utcnow(), " Keyboard Interrupt <<<<<<\n\n")
 
-print(datetime.utcnow(),">>>>: end of loop ... error detected or SIGTERM <<<<<<\n\n")
+print(naive_utcnow(), " end of loop ... error detected or SIGTERM <<<<<<\n\n")
 shutdown(sock, datafile)  				# close down everything
-print(datetime.utcnow(),"Exit now ... Number of errors: ", err, "\n")
+print(naive_utcnow(), "Exit now ... Number of errors: ", err, "Number of records saved:", cout, "\n")
 
 if err > maxnerrs:
-    now = datetime.utcnow()				# get the UTC time
+    now = naive_utcnow()				# get the UTC time
     print("\nRestarting the python program ...", now, sys.executable, file=sys.stderr)
     print("==================================================\n\n",   file=sys.stderr)
     if os.path.exists(config.PIDfile):

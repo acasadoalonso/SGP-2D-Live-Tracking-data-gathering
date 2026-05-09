@@ -26,6 +26,8 @@ from ogntfuncs import ogntbuildtable
 from geopy.distance import geodesic     # use the Vincenty algorithm
 from Keysfuncs import getprivatekey, getkeyfromencryptedfile, getkeys
 from collections import deque
+from parserfuncs import getinfoairport
+from dtfuncs import naive_utcnow, naive_utcfromtimestamp
 
 #########################################################################
 #
@@ -54,7 +56,7 @@ def shutdown(sock, conn, prt=False):    # shutdown routine, close files and repo
     except Exception as e:
         print("Commit error...", e, datetime.now(), "Ignored at this time\n", file=sys.stderr)
     local_time = datetime.now()         # report date and time now
-    now = datetime.utcnow()    		# get the date
+    now = naive_utcnow()    		# get the date
     print("\n\n=================================================\nQueue: ", len(queue), now, "\n\n")
     i=1
     for e in queue:			# dump the entries on the queue
@@ -105,7 +107,7 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 
 def prttime(unixtime):
     # get the time from the timestamp
-    tme = datetime.utcfromtimestamp(unixtime)
+    tme = naive_utcfromtimestamp(unixtime)
     return(tme.strftime("%H%M%S"))			# the time
 
 
@@ -168,7 +170,7 @@ def genaprsmsg(entry):					# format the reconstructed APRS message
     if altitude > 0:
         altitude=int(altitude*3.28084)		# convert to feet
         aprsmsg += "A=%06d" % altitude
-    aprsmsg += " "+daotxt+" id06"+ID[3:]+" %+04dfpm " % (int(roclimb))+"%+04.1frot" % (float(RoT)) +rt+" "+gpstxt
+    aprsmsg += " "+daotxt+" id07"+ID[3:]+" %+04dfpm " % (int(roclimb))+"%+04.1frot" % (float(RoT)) +rt+" "+gpstxt
 
     return(aprsmsg)
 ########################################################################
@@ -256,7 +258,7 @@ def connect_aprs(programver, sock=0, firsttime=False, prt=False):
    config.APRS_USER='DLY2APRS'
    config.APRS_PASSCODE='32159'
 
-   login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/OBS2OGN p/OBS2OGN \n")
+   login = 'user %s pass %s vers DLY2APRS %s filter %s' % (config.APRS_USER, config.APRS_PASSCODE, programver, " b/OGN* d/TTN3OGN p/TTN3OGN \n")
    login=login.encode(encoding='utf-8', errors='strict')
    sock.send(login)
 
@@ -276,17 +278,25 @@ def connect_aprs(programver, sock=0, firsttime=False, prt=False):
 ###################   MAIN Program  #####################################################
 #
 
-programver = 'V1.5'
+programver = 'V1.6'
 print("\n\nStart DLYM2OGN "+programver)
 print("===================")
 
 print("Program Version:", time.ctime(os.path.getmtime(__file__)))
 print("==========================================")
-date = datetime.utcnow()                # get the date
+import platform
+print("Python version:", platform.python_version())
+date = naive_utcnow()                # get the date
 dte = date.strftime("%y%m%d")           # today's date
 print("\nDate: ", date, "UTC on SERVER:", socket.gethostname(), "Process ID:", os.getpid())
-location_latitude=config.location_latitude
-location_longitude=config.location_longitude
+if getinfoairport (config.location_name) != None:
+   print(getinfoairport (config.location_name))
+   location_latitude = getinfoairport (config.location_name)['lat']
+   location_longitude = getinfoairport (config.location_name)['lon']
+   
+else:
+   location_latitude=config.location_latitude
+   location_longitude=config.location_longitude
 print("Location coordinates:", location_latitude, location_longitude, "at: ", config.location_name)
 date = datetime.now()			# local time
 
@@ -427,7 +437,7 @@ alive(config.DBpath+APP, first='yes')
 # Initialise API for DLYM2OGN
 #-----------------------------------------------------------------#
 #
-now = datetime.utcnow()			# get the UTC timea
+now = naive_utcnow()			# get the UTC timea
 min5 = timedelta(seconds=300)		# 5 minutes ago
 now = now-min5				# now less 5 minutes
 # number of seconds until beginning of the day 1-1-1970
@@ -469,12 +479,12 @@ try:
 
             except Exception as e:
                 print(('Something\'s wrong with socket write. Exception type is %s' % (repr(e))), file=sys.stderr)
-                now = datetime.utcnow()		        # get the UTC time
+                now = naive_utcnow()		        # get the UTC time
                 print("UTC time is now: ", now, keepalive_count, run_time, file=sys.stderr)
                 connect_aprs(programver, sock, firsttime=False)
                 continue
 
-        now = datetime.utcnow()				# get the UTC time
+        now = naive_utcnow()				# get the UTC time
         # number of second until beginning of the epoch
         tt = int((now-datetime(1970, 1, 1)).total_seconds())
         if now.day != day:				# check if day has changed
@@ -660,7 +670,7 @@ try:
                 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
                 # everything seems to be OK, so lets place the entry on the queue
-                now = datetime.utcnow()  	# get the UTC time
+                now = naive_utcnow()  	# get the UTC time
 						# ------------------------------------------------------------------------------------- #
                 # place it on the queue
                 qentry= {"NumDec": numdecodes, "TIME": now, "ID": ID, "station": station, "hora": hora, "rest": rest, "DECODE": decode}
@@ -726,7 +736,7 @@ try:
         mem = process.memory_info().rss  	# in bytes
 
         if prt or mem < 2*1024*1024 or (loopcount - int(loopcount/1000)*1000) == 0:        	# if less that 2 Mb
-            now = datetime.utcnow()		# get the UTC time
+            now = naive_utcnow()		# get the UTC time
             print(">>>:##MEM##>>> Ndec:", numdecodes, "Qlen:", len(queue), "Delta:", ddd, "<<<", process.memory_info().rss, ">>>", now)  # in bytes
 
 

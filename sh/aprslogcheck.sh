@@ -35,7 +35,11 @@ then
                 then
 			pnum=$(cat $pid)
                 	logger -t $0 "APRS killing Process0: "$pid $pnum" - "$alive
-                        sudo kill $pnum 
+                        if [ "$(id -u)" != "0" ]; then
+                           sudo kill -9 $pnum 
+                        else
+                           kill -9 $pnum 
+                        fi
                         rm $pid 2>/dev/null
                 fi
 #               restart OGN data collector
@@ -70,10 +74,14 @@ else
                         else 
                            ps="python3 $SCRIPTPATH/../aprslog.py "$param
                            pnum=$(pgrep -a -f -x -c "$ps")
-                           pnum=$(pgrep -a -c python )
+                           pnum=$(pgrep -a  python | grep aprslog.py | wc -l)
                            if [ $pnum -ne 1 ] # if aprslog is  not running
 		           then
-                              sudo kill $(cat $pid)
+                              if [ "$(id -u)" != "0" ]; then
+                                 sudo kill $(cat $pid)
+                              else
+                                 kill $(cat $pid)
+                              fi
                 	      logger -t $0 "APRS killing Process1: "$pnum" - "
                               rm $pid 2>/dev/null
 #                             restart OGN data collector

@@ -11,29 +11,38 @@ import os
 import sys
 import atexit
 import socket
-from datetime import datetime
+import airportsdata
+from urllib.error import HTTPError
+from suntime import Sun, SunTimeException
+
 from ogn.parser import parse
-import ksta			# list of know stations
+from datetime import datetime, timezone
+from dtfuncs  import naive_utcnow, naive_utcfromtimestamp
 
 # --------------------------------------------------------------------------
 aprssources = {			# sources based on the APRS TOCALL
-    "APRS":   "OGN",		# old tocall
+    "APRS"  : "OGN",		# old tocall
     "OGNSDR": "OGN",		# station Sofware defined radio
-    "OGFLR":  "OGN",		# Flarm
+    "OGFLR" : "OGN",		# Flarm
     "OGNFLR": "OGN",		# Flarm
+    "OGFLR6": "OGN",		# Flarm
+    "OGFLR7": "OGN",		# Flarm
     "OGNTRK": "OGN",		# OGN Tracker
     "OGNDSX": "OGN",		# old DSX
+    "OGNDVS": "WTX",		# Weather stations
+    "APYSNR": "WTX",		# Weather stations
     "OGNTTN": "TTN",		# the things LoRaWan network
     "OGTTN2": "TTN",		# the things LoRaWan network V2 - deprecated
     "OGTTN3": "TTN",		# the things LoRaWan network V3 - cumunity edition
     "OGNHEL": "HELI",		# helium LoRaWan
-    "OGOBS":  "OBS",		# OBS LoRaWan
+    "OGOBS" : "OBS",		# OBS LoRaWan
     "OGADSB": "ADSB",		# ADSB
+    "ONADSB": "ADSB",		# ADSB
     "OGADSL": "ADSL",		# ADS-L
     "OGNFNT": "FANE",		# FANET
-    "OGFNT":  "FANE",		# FANET
+    "OGFNT" : "FANE",		# FANET
     "OGNPAW": "PAW",		# PilotAware
-    "OGPAW":  "PAW",		# PilotAware
+    "OGPAW" : "PAW",		# PilotAware
     "OGSPOT": "SPOT",		# SPOT
     "OGINRE": "INREACH",        # Garmin InReach
     "OGFLYM": "FLYM",		# FlyMaster
@@ -50,7 +59,14 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNEMO": "NEMO",		# Canadian NEMO
     "OGNFNO": "NEURONE",	# Neurone
     "OGNSXR": "OGNB",	   	# OGNbase
-    "OGNDLY": "DLYM"		# Delayed fixes (IGC mandated)
+    "OGAIRM": "AIRM",	   	# Airmate
+    "OGNMYC": "MYC",	   	# My cloud base
+    "FXCAPP": "FXC",	   	# FXC 
+    "OGMSHT": "MSHT",	   	# Metashtic
+    "OGNPUR": "PURT",	   	# Pure track
+    "OGNDLY": "DLYM",		# Delayed fixes (IGC mandated)
+    "OGNVOL": "VOLA",		# Volandoo
+    "OGAPIK": "APIK"		# ?
 }
 # --------------------------------------------------------------------------
 aprssymtypes=[
@@ -69,7 +85,8 @@ aprssymtypes=[
     "/O",                   # C = airship (seen once)
     "/'",                   # D = UAV (drones, can become very common)
     "/z",                   # E = ground support (ground vehicles at airfields)
-    "\\n"                   # F = static object (ground relay ?)
+    "\\n",                  # F = static object (ground relay ?)
+    "/n"                    # F = Node
 ]
 # --------------------------------------------------------------------------
 aprstypes=[
@@ -88,12 +105,14 @@ aprstypes=[
     "Airship",              # C = airship (seen once)
     "Drone",                # D = UAV (drones, can become very common)
     "GroundVehicle",        # E = ground support (ground vehicles at airfields)
-    "GroundStation"         # F = static object (ground relay ?)
+    "GroundStation",        # F = static object (ground relay ?)
+    "StaticObject"          # F = static object (ground relay ?)
 ]
 # --------------------------------------------------------------------------
 def isfloat(s):
     return (s.replace('.','',1).isdigit())
 
+unkacft={}				# list of unknow aircraft types
 def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the symbol table
 
     sym=sym1 +sym2
@@ -104,8 +123,10 @@ def get_aircraft_type(sym1, sym2):      # return the aircraft type based on the 
         idx += 1
     # deal with the NEMO for the time being
     if sym1 == 'I' and sym2 == '&':
-        return ("UNKNOWN")
-    print (">>> Unknown Acft Type", sym1, sym2, "<<<", file=sys.stderr)
+        return ("Station")
+    if sym not in unkacft:		# print the error once
+        unkacft[sym]=1
+        print (">>> Unknown or Wrong Acft Type", sym1, sym2, "<<<", file=sys.stderr)
     return ("UNKNOWN")
 
 
@@ -117,7 +138,7 @@ def isFloat(string):
         return False
 
 #
-# low lever parser functions
+# low level parser functions
 #
 
 
@@ -144,6 +165,12 @@ def get_altitude(packet):
         altitude = -1
     return altitude
 
+def getinfoairport(icao):
+    airports = airportsdata.load()  # key is the ICAO identifier (the default)
+    if icao in airports:
+       return(airports[icao])
+    else:
+       return (None)
 
 # def get_daodatum(packet):
     # try:
@@ -239,7 +266,10 @@ def get_otime(packet):
     if 'timestamp' in packet:
         otime = packet['timestamp']
     else:
-        otime = datetime.utcfromtimestamp(0)
+        if hasattr(datetime, 'naive_utcfromtimestamp'):
+           otime = datetime.naive_utcfromtimestamp(0)
+        else:
+           otime = datetime.utcfromtimestamp(0)
     return otime
 
 
@@ -250,14 +280,15 @@ def get_station(packet):
     else:
         station=''
     return (station)
-# #######################################################################
-
-
+unksrc={}					# list of unknow sources
 def get_source(dstcallsign):
     src = str(dstcallsign)
     if src in aprssources:
         return (aprssources[src])
-    print(">>> Unknown SOURCE:", src, "<<<", file=sys.stderr)
+    if src not in unksrc:
+        print(">>> Unknown SOURCE:", src, naive_utcnow(),"<<<", file=sys.stderr)
+        unksrc[src]=1
+        
     return ("UNKW")
 # ########################################################################
 
@@ -268,6 +299,16 @@ def gdatal(data, typer):               	        # get data on the left
         return (" ")
     pb = p
     while (data[pb] != ' ' and data[pb] != '/' and pb >= 0):
+        pb -= 1
+    ret = data[pb +1:p]                  	# return the data requested
+    return(ret)
+# #######################################################################
+def gdatall(data, typer):              	        # get data on the left
+    p = data.find(typer)              	        # scan for the type requested
+    if p == -1:
+        return (" ")
+    pb = p
+    while (data[pb] != ' ' and pb >= 0):
         pb -= 1
     ret = data[pb +1:p]                  	# return the data requested
     return(ret)
@@ -288,71 +329,12 @@ def gdatar(data, typer):               	# get data on the  right
         pb += 1
     ret = data[p:pb]                 	# return the data requested
     return(ret)
+
 # #######################################################################
 #
 # geo specifics validations
 #
-
-
-def spanishsta(station):                # return true if is an Spanish station
-    if (station) is None:
-        return False
-    if station[0:2] == 'LE' or station[0:2] == "LP" or	\
-            station[0:5] == 'CREAL'     or 	\
-            station[0:4] == 'MORA'      or 	\
-            station[0:4] == 'LUGO'      or 	\
-            station[0:6] == 'MADRID'    or 	\
-            station[0:8] == 'LEMDadsb'  or 	\
-            station[0:7] == 'TTN2OGN'   or 	\
-            station[0:5] == 'AVILA'     or	\
-            station[0:9] == 'ALCAZAREN' or	\
-            station[0:7] == 'ANDORRA'   or	\
-            station[0:9] == 'STOROE'    or	\
-            station[0:9] == 'STOROW'    or	\
-            station[0:5] == 'PALOE'     or	\
-            station[0:5] == 'PALOW'     or	\
-            station[0:8] == 'BOITAULL'  or  	\
-            station[0:6] == 'TAULL2'    or  	\
-            station[0:6] == 'Taull2'    or  	\
-            station[0:8] == 'LAMOLINA'  or	\
-            station[0:6] == 'MATARO'    or	\
-            station[0:6] == 'CEREJA'    or	\
-            station[0:9] == 'FLYMASTER' or	\
-            station[0:4] == 'SPOT'      or	\
-            station[0:6] == 'PWLERM'    or	\
-            station[0:9] == 'CASTEJONS' or	\
-            station[0:9] == 'BELAVISTA' or	\
-            station[0:9] == 'ALDEASEST' or	\
-            station[0:9] == 'AldeaSEst' or	\
-            station[0:9] == 'MADRUEDAN' or	\
-            station[0:9] == 'Madruedan' or	\
-            station[0:9] == 'PCARRASCO' or	\
-            station[0:9] == 'PCarrasco' or	\
-            station[0:8] == 'SMUERDO'   or	\
-            station[0:8] == 'SMuerdo'   or	\
-            station[0:9] == 'SSALVADOR' or	\
-            station[0:9] == 'SSalvador' or	\
-            station[0:9] == 'RinconCie' or	\
-            station[0:8] == 'PORTAINE'  or      \
-            station in ksta.ksta and station[0:2] != 'LF' and station != 'Roquefort' :
-        return True
-    return False
-
-
-def frenchsta(station):                # return true if is an French station
-    if (station) is None:
-        return False
-    if station[0:2] == 'LF' or \
-       station[0:4] == 'BRAM' or \
-       station[0:7] == 'POUBEAU' or \
-       station[0:7] == 'CANOHES' or \
-       station[0:7] == 'FONTROMEU' or \
-       station[0:7] == 'ROCAUDE':
-        return True
-    return False
-# ########################################################################
-
-
+# #######################################################################
 
 def dao(dd):                           	# return the 3 digit of the decimal minutes
     dd1 = abs(float(dd))
@@ -392,11 +374,14 @@ def decdeg2dms(dd):			# convert degress float into DDMMSS
 #
 # High level APRS parser function
 #
+# ########################################################################
 
 
 def parseraprs(packet_str, msg):
+    rc=packet_str.find(":/______")
+    if rc != -1:
+       return -2
     # args: packet_str the packet stream with the data, msg the dict where to return the parsed data
-    # patch #######
     try:
         packet = parse(packet_str)
     except:
@@ -404,45 +389,142 @@ def parseraprs(packet_str, msg):
     # print (">>>Packet:", packet, file=sys.stderr)
     # ignore if do data or just the keep alive message
     if len(packet_str) > 0 and packet_str[0] != "#":
-        date = datetime.utcnow() 			# get the date
+        date = naive_utcnow() 			# get the date
         if 'name' in packet:
             callsign = packet['name']               	# get the call sign FLARM ID or station name
             gid = callsign                  	        # id
         else:
             return -1
         longitude = get_longitude(packet)
-        latitude = get_latitude(packet)
-        altitude = get_altitude(packet)
+        latitude  = get_latitude(packet)
+        altitude  = get_altitude(packet)
         # resolution = get_resolution(packet)
         # daodatum = get_daodatum(packet)
-        speed = get_speed(packet)                       # ground_speed
-        course = get_course(packet)                     # track
-        path = get_path(packet)                         # aprs_receiver, tracker, aprs_aircraft
-        relay = get_relay(packet)                       # relay TCPIP, OGN123456*, RELAY* , OGNDLY*
-        aprstype = get_aprstype(packet)                 # aprs type: status or position
+        speed     = get_speed(packet)                   # ground_speed
+        course    = get_course(packet)                  # track
+        path      = get_path(packet)                    # aprs_receiver, tracker, aprs_aircraft
+        relay     = get_relay(packet)                   # relay TCPIP, OGN123456*, RELAY* , OGNDLY*
+        aprstype  = get_aprstype(packet)                # aprs type: status or position
         dst_callsign = get_dst_callsign(packet)         # APRS, OGNTRK,
-        source = get_source(dst_callsign)               # convert to SOURCE
+        source    = get_source(dst_callsign)            # convert to SOURCE
         destination = get_destination(packet)           # receiver name
-        # header = get_header(packet)                     # aprs type
-        otime = get_otime(packet)                       # msg time
-        data = packet_str
+        # header = get_header(packet)                   # aprs type
+        otime     = get_otime(packet)                   # msg time
+        data      = packet_str
         ix = packet_str.find('>')
         cc = packet_str[0:ix]
         ix = packet_str.find(':')     # look for the message type
         # check if it is position report or status report
         msgtype = packet_str[ix +1:ix +2]
-        if msgtype != '>' and msgtype != '/':   # only status or location messages
-            print("MMM>>>", aprstype, data, file=sys.stderr)
+        if msgtype != '>' and msgtype != '/' and aprstype != 'position_weather':   	# only status or location messages
+            print("MMM Check APRStype >>>", aprstype, data, file=sys.stderr)
+# ===================================================================================================== #
+        # if TCPIP records            			The the WX
+        if dst_callsign == 'OGNDVS':			# if it is a wether station ??
+           windspeed = gdatall(data, 'kt ')
+           temp      = gdatal (data, 'F ')
+           humidity  = gdatal (data, '% ')
+           rain      = gdatal (data, 'mm/h')
+           msg['id']       = gid	        	# return the parsed data into the dict
+           msg['path']     = path
+           msg['relay']    = relay
+           msg['station']  = gid
+           msg['aprstype'] = aprstype
+           msg['otime']    = otime
+           msg['windspeed']= windspeed
+           msg['temp']     = temp
+           msg['humidity'] = humidity
+           msg['rain']     = rain
+           msg['source']   = 'WTX'
+           return (msg)
+        if aprstype == 'position_weather':		# if it is a wether station ??
+           msg['id']       = gid	        	# return the parsed data into the dict
+           msg['path']     = path
+           msg['relay']    = relay
+           msg['station']  = gid
+           msg['aprstype'] = aprstype
+           msg['otime']    = otime
+           #print ("WTXin:", packet)
+           if   "comment" in packet:
+              wtx = packet['comment'].rstrip()  	# status informationa
+           elif "user_comment" in packet:
+              wtx = packet['user_comment'].rstrip()  	# status informationa
+           else:
+              return (msg)
+           if len(wtx) == 0 or 'wind_speed' in packet:	# if info is already parsered 
+              if 'wind_speed' in packet:
+                 msg['wind_speed']       = packet['wind_speed']
+              if 'wind_direction' in packet:
+                 msg['wind_direction']   = packet['wind_direction']
+              if 'wind_speed_peek' in packet:
+                 msg['wind_speed_peak']  = packet['wind_speed_peak']
+              if 'temperature' in packet:
+                 msg['temperature']      = packet['temperature']
+              if 'humidity' in packet:
+                 msg['humidity']         = packet['humidity']
+              if 'rainfall_1h' in packet:
+                 msg['rainfall_1h']      = packet['rainfall_1h']
+              if 'rainfall_24h' in packet:
+                 msg['rainfall_24h']     = packet['rainfall_24h']
+              if 'barometric_pressure' in packet:
+                 msg['barometric_pressure'] = packet['barometric_pressure']
+              msg['source']   = 'WTX'
+              return (msg)
+
+              
+          						# parse the APRS weather messagea
+           temp      = 0
+           gust      = 0
+           humidity  = 0
+           rain      = 0
+           rain24    = 0
+           baro      = 0
+
+           print("WTX", packet)
+           if len(wtx) < 27:
+              return (msg)
+           if wtx[3]=='g' and len(wtx)  >6  and wtx[4:6]   != '...'   and wtx[4:6]   != '   ':
+              gust=int(wtx[4:6])			# gust
+           if wtx[7]=='t' and len(wtx)  >10 and wtx[8:10]  != '...'   and wtx[8:10]  != '   ':
+              temp=int(wtx[8:10])			# temperature
+           if wtx[11]=='r' and len(wtx) >14 and wtx[12:14] != '...'   and wtx[12:14] != '   ':
+              rain=int(wtx[12:14])			# rainfall
+           if wtx[15]=='p' and len(wtx) >18 and wtx[16:18] != '...'   and wtx[16:18] != '   ':
+              rain24=int(wtx[16:18])			# rainfall
+           if wtx[19]=='b' and len(wtx) >24 and wtx[20:24] != '.....' and wtx[20:24] != '     ':
+              baro=int(wtx[20:24])			# barometric presure
+           if wtx[25]=='h' and len(wtx) >27 and wtx[26:27] != '..'    and wtx[26:27] != '  ':
+              humidity=int(wtx[26:27])			# humidity
+
+           msg['wind_speed']    = packet['wind_speed']
+           msg['wind_direction']= packet['wind_direction']
+           msg['temperature']   = temp
+           msg['humidity']      = humidity
+           msg['rainfall_1h']   = rain
+           msg['rainfall_24h']  = rain24
+           msg['barometric_pressure'] = baro
+           msg['wind_speed_peak']     = gust
+           msg['source']   = 'WTX'
+           #print ("WTXout:", msg)
+           return (msg)
+               
+# ===================================================================================================== #
+        # if TCPIP records            			The station records
         if (path == 'aprs_receiver' or path == 'receiver') and (msgtype == '>' or msgtype == '/'):  # handle the TCPIP
             if cc.isupper():
                 gid = callsign
             else:
                 gid = cc
             station = gid
+	
             # scan for the body of the APRS message
             p = data.find(' v0.')                       # the comment side
+            status = " "
             if aprstype == 'status':
-                status = packet['comment'].rstrip()     # status informationa
+                if   "comment" in packet:
+                   status = packet['comment'].rstrip()  # status informationa
+                elif "user_comment" in packet:
+                   status = packet['user_comment'].rstrip()  # status informationa
             else:
                 status = " "
             if 'cpu_temp' in packet:
@@ -635,6 +717,7 @@ def parseraprs(packet_str, msg):
         return -1				# if length ZERO or just the keep alive
 #
 # #######################################################################
+#
 
 
 def SRSSgetapidata(url):                    # get the data from the API server
@@ -642,21 +725,30 @@ def SRSSgetapidata(url):                    # get the data from the API server
     req = urllib.request.Request(url)       # buil the request
     req.add_header("Content-Type", "application/json")
     req.add_header("Content-type", "application/x-www-form-urlencoded")
-    r = urllib.request.urlopen(req)         # open the url resource
-    js=r.read().decode('UTF-8')
-    j_obj = json.loads(js)                  # convert to JSON
-    return j_obj                            # return the JSON object
+    try:
+       r = urllib.request.urlopen(req)      # open the url resource
+       js=r.read().decode('UTF-8')
+       j_obj = json.loads(js)               # convert to JSON
+       return j_obj                         # return the JSON object
+    except HTTPError as err:
+       print ("Error gathering SRSS from api.sunrise-sunset.org", err)
+    return ({})
 
+#
+# routines to get the sunrise or sunset for an specific location
+#
 
 def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
 
     ts = 0                                  # init the return time since epoch
+                                            # let try first to use the web api
     url = "http://api.sunrise-sunset.org/json?lat=" +lat +"&lng=" +lon +"&formatted=0"
     jsondata = SRSSgetapidata(url)          # get the data from the web
     # print jsondata
     if prt:                                 # if print requested
         print(json.dumps(jsondata, indent=4))
-    if jsondata['status'] == "OK":          # only if results are OK
+
+    if 'status' in jsondata and jsondata['status'] == "OK": # only if results are OK
         results = jsondata["results"]       # get the reults part
         timeref = results[obj]         	    # get the object that we need
         print(jsondata['status'], obj, timeref)
@@ -664,13 +756,30 @@ def SRSSgetjsondata(lat, lon, obj='sunset', prt=False):
         ttt = datetime.strptime(timeref, "%Y-%m-%dT%H:%M:%S+00:00")
         # number of second until beginning of the day
         td = ttt -datetime(1970, 1, 1)
-        ts = int(td.total_seconds())      # Unix time - seconds from the epoch
+        ts = int(td.total_seconds())        # Unix time - seconds from the epoch
+    else:
+        if obj=='sunset':		    # lets try using the suntime module
+           sun=Sun(float(lat),float(lon))
+           ttt=sun.get_sunset_time()
+           print("Sunset from suntime:", ttt)
+           naive = ttt.replace(tzinfo=None)
+           td = naive -datetime(1970, 1, 1)
+           ts = int(td.total_seconds())     # Unix time - seconds from the epoch
+        if obj=='sunrise':
+           sun=Sun(float(lat),float(lon))
+           ttt=sun.get_sunrise()
+           print("Sunrise from suntime:", ttt)
+           naive = ttt.replace(tzinfo=None)
+           td = naive -datetime(1970, 1, 1)
+           ts = int(td.total_seconds())     # Unix time - seconds from the epoch
     return (ts)                             # return it
 
+#
 # ########################################################################
+#
 
 
-def alive(app, first='no', register=False):
+def alive(app, keepalive=0, first='no', register=False):
 
     alivename = app +".alive"
     hostname = socket.gethostname()
@@ -685,7 +794,7 @@ def alive(app, first='no', register=False):
         alivefile = open(alivename, 'a')
     local_time = datetime.now()
     alivetime = local_time.strftime("%y-%m-%d %H:%M:%S")
-    alivefile.write(alivetime +":" +hostname +"\n")  # write the time as control
+    alivefile.write(alivetime +":" +hostname +" "+str(keepalive)+" \n")  # write the time as control
     alivefile.close()               # close the alive file
     return()
 # ########################################################################

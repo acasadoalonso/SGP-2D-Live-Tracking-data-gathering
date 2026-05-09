@@ -70,6 +70,7 @@ sudo apt install -y mariadb-client				#
 sudo apt install -y libmariadb-dev				#
 sudo apt install -y python3-dev python3-pip 			#
 sudo apt install -y python3-autopep8				#
+sudo setcap cap_net_raw+ep $(realpath $(which python3))		#
 if [ $sql = 'MariaDB' ]						#
 then								#
      sudo apt install -y mariadb-server 			#
@@ -85,7 +86,7 @@ then								#
 fi								#
 sudo apt-get install -y percona-toolkit				#
 sudo apt-get install -y sqlite3 ntpdate				#
-sudo apt-get install -y figlet inetutils-* 			#
+sudo apt-get install -y figlet inetutils-* nmap net-tools	#
 sudo apt-get install -y avahi-daemon libcurl4-openssl-dev       #
 sudo apt-get install -y dos2unix libarchive-dev	 autoconf mc	#
 sudo apt-get install -y pkg-config git	mutt vim		# 
@@ -98,10 +99,13 @@ sudo apt-get install -y apache2 php 				#
 sudo apt-get install -y php-sqlite3 php-cli 			#
 sudo apt-get install -y php-mysql 				#
 sudo apt-get install -y php-mbstring php-json			#
-sudo apt-get install -y php8.1	php8.1-mysql			#
+sudo apt-get install -y php8.3	php8.3-mysql			#
 sudo a2enmod rewrite						#
 sudo phpenmod mbstring						#
 sudo a2enmod headers						#
+sudo a2dismod mpm_event						# 
+sudo a2enmod mpm_prefork					# 
+sudo a2enmod php8.3						#
 echo "==========================="                              #
 echo "Install now other utilities"				#
 echo "==========================="                              #
@@ -139,29 +143,35 @@ echo "Installing the PYTHON modules required  ..."		#
 echo "=================================================="	#
 echo " "							#
 echo								#
-sudo -H python3 -m pip install --upgrade pip			#
+pip install --upgrade pip					#
 pip3 -V								#
-sudo -H python3 -m pip install ephem pytz geopy configparser 	#
-sudo -H python3 -m pip install pycountry uritemplate requests	#
-sudo -H python3 -m pip install beeprint ogn.client		#
-sudo -H python3 -m pip install tqdm psutil python-dateutil	#
-sudo -H python3 -m pip install ping3               		#
-sudo -H python3 -m pip install pipreqs               		#
-sudo -H python3 -m pip install ttn               		#
-sudo -H python3 -m pip install paho-mqtt			#
-sudo -H python3 -m pip install pyserial 			#
-sudo -H python3 -m pip install pyopenssl 			#
-sudo -H python3 -m pip install eciespy pycryptodome rsa         #
-sudo -H python3 -m pip install ansible               		#
-sudo -H python3 -m pip install ansible-lint            		#
-sudo -H python3 -m pip install molecule               		#
-sudo -H python3 -m pip install docker               		#
-sudo -H python3 -m pip install yamllint               		#
-sudo -H python3 -m pip install setuptools 			#
-sudo -H python3 -m pip install flake8               		#
-sudo -H python3 -m pip install httpx               		#
-sudo -H python3 -m pip install mysqlclient			#
-sudo -H python3 -m pip install timezonefinder zoneinfo		#
+sudo -H python3 -m pip install ephem pytz geopy configparser 	--break-system-packages
+sudo -H python3 -m pip install pycountry uritemplate requests	--break-system-packages
+sudo -H python3 -m pip install beeprint ogn.client		--break-system-packages
+sudo -H python3 -m pip install tqdm psutil python-dateutil	--break-system-packages
+sudo -H python3 -m pip install ping3 suntime          		--break-system-packages
+sudo -H python3 -m pip install pipreqs               		--break-system-packages
+sudo -H python3 -m pip install ttn               		--break-system-packages
+sudo -H python3 -m pip install paho-mqtt			--break-system-packages
+sudo -H python3 -m pip install pyserial 			--break-system-packages
+sudo -H python3 -m pip install pyopenssl 			--break-system-packages
+sudo -H python3 -m pip install eciespy pycryptodome rsa         --break-system-packages
+sudo -H python3 -m pip install ansible               		--break-system-packages
+sudo -H python3 -m pip install ansible-lint            		--break-system-packages
+sudo -H python3 -m pip install molecule               		--break-system-packages
+sudo -H python3 -m pip install docker               		--break-system-packages
+sudo -H python3 -m pip install yamllint               		--break-system-packages
+sudo -H python3 -m pip install setuptools 			--break-system-packages
+sudo -H python3 -m pip install flake8 icecream         		--break-system-packages
+sudo -H python3 -m pip install httpx               		--break-system-packages
+sudo -H python3 -m pip install mysqlclient			--break-system-packages
+sudo -H python3 -m pip install timezonefinder 			--break-system-packages
+sudo -H python3 -m pip install airportsdata			--break-system-packages
+sudo -H python3 -m pip install termcolor			--break-system-packages
+sudo -H python3 -m pip install gitpython			--break-system-packages
+sudo -H python3 -m pip install beautifulsoup4			--break-system-packages
+sudo -H python3 -m pip install simplejson 			--break-system-packages
+pipreqs  --force .
 if [ $sql = 'MySQL' ]						#	
 then								#
 	sudo -H pip3 uninstall mysqlclient			#

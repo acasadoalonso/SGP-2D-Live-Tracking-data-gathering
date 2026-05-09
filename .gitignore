@@ -24,8 +24,8 @@ BasicAircraftLookup.sqb
 flightaware*
 keyfile.encrypt
 Keysfuncs.py
-ADSBreg.py
 sh/APRSlogcheck.sh
 sh/APRSlog.sh
 sh/param
 node_modules/
+ADSBreg.py

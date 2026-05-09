@@ -1,5 +1,5 @@
 #-------------------------------------
-# OGN-SAR Spain interface --- Settings
+# OGN-APRSLOG Spain interface --- Settings
 #-------------------------------------
 #
 #-------------------------------------
@@ -9,6 +9,7 @@
 import socket
 import os
 from configparser import ConfigParser
+from parserfuncs import  getinfoairport  # the ogn/ham parser functions
 configdir = os.getenv('CONFIGDIR')
 if configdir == None:
     configdir = '/etc/local/'
@@ -24,7 +25,7 @@ else:
     exit(-1)
 hostname = socket.gethostname()
 processid = str(os.getpid())
-
+print("Starting Config...")
 APRS_SERVER_HOST = cfg.get('APRS', 'APRS_SERVER_HOST').strip("'").strip('"')
 APRS_SERVER_PORT = int(cfg.get('APRS', 'APRS_SERVER_PORT'))
 APRS_USER = cfg.get('APRS', 'APRS_USER').strip("'").strip('"')
@@ -46,15 +47,26 @@ try:
 except:
     PUSH2OGNtext = "False"
 
-location_latitude = cfg.get(
-    'location', 'location_latitude').strip("'").strip('"')
-location_longitude = cfg.get(
-    'location', 'location_longitud').strip("'").strip('"')
+try:
+    location_name = cfg.get('location', 'location_name').strip("'").strip('"')
+except:
+    location_name = ' '
+if getinfoairport (location_name) != None:
+    #print(getinfoairport (config.location_name))
+    location_latitude  = getinfoairport (location_name)['lat']
+    location_longitude = getinfoairport (location_name)['lon']
+    FLOGGER_LATITUDE   = location_latitude
+    FLOGGER_LONGITUDE  = location_longitude
+else:
+    location_latitude = cfg.get(
+        'location', 'location_latitude').strip("'").strip('"')
+    location_longitude = cfg.get(
+        'location', 'location_longitud').strip("'").strip('"')
 
-FLOGGER_LATITUDE = cfg.get(
-    'location', 'location_latitude').strip("'").strip('"')
-FLOGGER_LONGITUDE = cfg.get(
-    'location', 'location_longitud').strip("'").strip('"')
+    FLOGGER_LATITUDE = cfg.get(
+        'location', 'location_latitude').strip("'").strip('"')
+    FLOGGER_LONGITUDE = cfg.get(
+        'location', 'location_longitud').strip("'").strip('"')
 
 try:
     cucFileLocation = cfg.get('server', 'cucFileLocation').strip("'").strip('"')
@@ -66,10 +78,6 @@ try:
 except:
     DELAY = 1200				# default 20 munutes = 1200 seconds
 
-try:
-    location_name = cfg.get('location', 'location_name').strip("'").strip('"')
-except:
-    location_name = ' '
 try:
     SPOTtext = cfg.get('location', 'SPOT').strip("'").strip('"')
 except:
@@ -155,6 +163,127 @@ try:
     ADSBOpenSkyBox4 = cfg.get('location', 'ADSBOpenSkyBox4').strip("'").strip('"')
 except:
     ADSBOpenSkyBox4 = ''
+try:
+    ADSBOpenSkyName = cfg.get('location', 'ADSBOpenSkyName').strip("'").strip('"')
+except:
+    ADSBOpenSkyName = ''
+try:
+    ADSBOpenSkyPswd = cfg.get('location', 'ADSBOpenSkyPswd').strip("'").strip('"')
+except:
+    ADSBOpenSkyPswd = ''
+try:
+    ADSBfl = cfg.get('location', 'ADSBfl').strip("'").strip('"')
+except:
+    ADSBfl = '15000'
+
+
+
+try:
+    AVXtext = cfg.get('location', 'AVX').strip("'").strip('"')
+except:
+    AVXtext = 'False'
+try:
+    AVXhost = cfg.get('location', 'AVXHOST').strip("'").strip('"')
+except:
+    AVXhost = 'localhost'
+try:
+    AVXname = cfg.get('location', 'AVXname').strip("'").strip('"')
+except:
+    AVXname = 'AVXrecvr'
+try:
+    AVXloc = cfg.get('location', 'AVXloc').strip("'").strip('"')
+except:
+    AVXloc = ''
+try:
+    AVXfl = cfg.get('location', 'AVXfl').strip("'").strip('"')
+except:
+    AVXfl = '15000'
+#
+# Enaire interface
+#
+try:
+    ENAtext = cfg.get('location', 'ENA').strip("'").strip('"')
+except:
+    ENAtext = 'False'
+try:
+    ENAMQTT = cfg.get('location', 'ENAMQTT').strip("'").strip('"')
+except:
+    ENAMQTT = 'localhost'
+try:
+    ENATOPIC = cfg.get('location', 'ENATOPIC').strip("'").strip('"')
+except:
+    ENATOPIC = ''
+try:
+    ENAUSER = cfg.get('location', 'ENAUSER').strip("'").strip('"')
+except:
+    ENAUSER = ''
+try:
+    ENAPASSWD = cfg.get('location', 'ENAPASSWD').strip("'").strip('"')
+except:
+    ENAPASSWD = ''
+try:
+    ENAname = cfg.get('location', 'ENAname').strip("'").strip('"')
+except:
+    ENAname = 'ENArecvr'
+try:
+    ENAloc = cfg.get('location', 'ENAloc').strip("'").strip('"')
+except:
+    AVXloc = ''
+try:
+    ENAfl = cfg.get('location', 'ENAfl').strip("'").strip('"')
+except:
+    ENAfl = '15000'
+#
+# Birdstop
+#
+try:
+    BSTOPtext = cfg.get('location', 'BSTOP').strip("'").strip('"')
+except:
+    BSTOPtext = 'False'
+try:
+    BSTOPMQTT = cfg.get('location', 'BSTOPMQTT').strip("'").strip('"')
+except:
+    BSTOPMQTT = 'localhost'
+try:
+    BSTOPTOPIC = cfg.get('location', 'BSTOPTOPIC').strip("'").strip('"')
+except:
+    BSTOPTOPIC = ''
+try:
+    BSTOPUSER = cfg.get('location', 'BSTOPUSER').strip("'").strip('"')
+except:
+    BSTOPUSER = ''
+try:
+    BSTOPPASSWD = cfg.get('location', 'BSTOPPASSWD').strip("'").strip('"')
+except:
+    BSTOPPASSWD = ''
+try:
+    BSTOPtext = cfg.get('location', 'BSTOP').strip("'").strip('"')
+except:
+    BSTOPtext = 'False'
+try:
+    BSTOPhost = cfg.get('location', 'BSTOPHOST').strip("'").strip('"')
+except:
+    BSTOPhost = 'localhost'
+try:
+    BSTOPname = cfg.get('location', 'BSTOPname').strip("'").strip('"')
+except:
+    BSTOPname = 'BSTOPrecvr'
+try:
+    BSTOPloc = cfg.get('location', 'BSTOPloc').strip("'").strip('"')
+except:
+    BSTOPloc = ''
+try:
+    BSTOPfl = cfg.get('location', 'BSTOPfl').strip("'").strip('"')
+except:
+    BSTOPfl = '15000'
+try:
+    BSTOPapikey = cfg.get('location', 'BSTOPapikey').strip("'").strip('"')
+except:
+    BSTOPapikey = ''
+try:
+    BSTOPradius = cfg.get('location', 'BSTOPradius').strip("'").strip('"')
+except:
+    BSTOPradius = 600
 
 try:
     prttext = cfg.get('server', 'prt').strip("'")
@@ -168,17 +297,17 @@ except:
 try:
     DDBhost = cfg.get('server', 'DDBhost').strip("'")
 except:
-    DDBhost = 'acasado.es'
+    DDBhost = 'ddb.glidernet.org'
 
 try:
     DDBport = cfg.get('server', 'DDBport').strip("'")
 except:
-    DDBport = '60082'
+    DDBport = '80'
 
 try:
     DDBurl1 = cfg.get('server', 'DDBurl1').strip("'")
 except:
-    DDBurl1 = 'http://ddb.acasado.name:60082/download/?j=2'
+    DDBurl1 = 'http://ddb.glidernet.org/download/?j=2'
 
 try:
     DDBurl2 = cfg.get('server', 'DDBurl2').strip("'")
@@ -243,6 +372,18 @@ if (ADSBtext == 'True'):
     ADSB = True
 else:
     ADSB = False
+if (AVXtext == 'True'):
+    AVX = True
+else:
+    AVX = False
+if (ENAtext == 'True'):
+    ENA = True
+else:
+    ENA = False
+if (BSTOPtext == 'True'):
+    BSTOP = True
+else:
+    BSTOP = False
 if (ADSBregt == 'True'):
     ADSBreg = True
 else:
@@ -269,9 +410,11 @@ if 'USER' in os.environ and prt:
     print("Hostname:            ", hostname, " and config file: ", configfile, processid, user)
     print("Config server values:", "MySQL =", MySQL, DBhost, DBuser, DBname, DBpath)
     print("Config APRS values:  ", APRS_SERVER_HOST, APRS_SERVER_PORT, APRS_SERVER_PUSH, PUSH2OGN, APRS_USER, APRS_PASSCODE, APRS_FILTER_DETAILS)
-    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky)
+    print("Config location:     ", location_name, FLOGGER_LATITUDE, FLOGGER_LONGITUDE, "\nSPIDER=", SPIDER, "SPOT=", SPOT, "InReach=", INREACH, "CAPTURS=", CAPTURS, "LT24=", LT24, "SKYLINE=", SKYLINE, "\nOGN Tracker pairing=", OGNT, "ADSB=", ADSB, "ADSB Reg=", ADSBreg, "ADSB OpenSky=", ADSBOpenSky, "AVX", AVX, "ENA", ENA, "Birdstop=", BSTOP)
 # --------------------------------------#
 APP = 'APRS'					# alternate PUSH2OGN
 SOCK = 0
 SOCK_FILE = 0
+CLIENT = 0
 RegWarning = True
+#print("Config completed", BSTOPtext, BSTOP, BSTOPMQTT, BSTOPTOPIC, BSTOPUSER, BSTOPPASSWD, BSTOPhost, BSTOPname, BSTOPloc, BSTOPfl, BSTOPapikey, BSTOPradius)
