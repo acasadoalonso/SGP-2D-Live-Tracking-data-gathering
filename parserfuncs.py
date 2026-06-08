@@ -108,6 +108,7 @@ aprstypes=[
     "GroundStation",        # F = static object (ground relay ?)
     "StaticObject"          # F = static object (ground relay ?)
 ]
+APRSerrs=[]		# list of unknown APRS types
 # --------------------------------------------------------------------------
 def isfloat(s):
     return (s.replace('.','',1).isdigit())
@@ -417,7 +418,11 @@ def parseraprs(packet_str, msg):
         # check if it is position report or status report
         msgtype = packet_str[ix +1:ix +2]
         if msgtype != '>' and msgtype != '/' and aprstype != 'position_weather':   	# only status or location messages
-            print("MMM Check APRStype >>>", aprstype, data, file=sys.stderr)
+            if gid not in APRSerrs:
+               print("MMM Check APRStype >>>", aprstype, "ID:", gid, "Msg:", data, file=sys.stderr)
+               APRSerrs.append(gid)			# print the error only oncea
+            msg['id']       = gid	        	# return the parsed data into the dict
+            return (-1)
 # ===================================================================================================== #
         # if TCPIP records            			The the WX
         if dst_callsign == 'OGNDVS':			# if it is a wether station ??

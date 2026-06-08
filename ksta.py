@@ -175,6 +175,7 @@ ksta = {
 "Pitolero"  : "Pico del Pitolero, Caceres ",
 "AVX920"    : "Madrid, Barajas",
 "ElPerdon"  : "El Perdon, Navarra ",
+"ELPERDON"  : "El Perdon, Navarra ",
 "AltoLeons" : "Alto de los Leones, Madrid",
 "Paracuell" : "Paracuellos Madrid",
 "SSCC-RDAR" : "Estacion radar Paracuellos, Madrid ",

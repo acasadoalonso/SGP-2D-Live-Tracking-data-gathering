@@ -62,7 +62,7 @@ port      = 1883				# the default
 topic     = config.ENATOPIC			# the susbcrive TOPIC that matches the publish topic
 username  = config.ENAUSER			# the user
 password  = config.ENAPASSWD			# the passowrd 
-
+totalfixes = 0					# just a counter of the total fixes received
 
 def on_connect(client, userdata, flags, rc):	# function clled on connect
 
@@ -175,7 +175,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
            datafix   = userdata[1]["datafix"]	# we had stored the messages on the datafix array
            utc = naive_utcnow()
            if prt:				# for debugging
-              print (">>>ENA:", loopcount, len(datafix), utc,  aprspush, prt)
+              print (">>>ENA Msg received:", loopcount, len(datafix), utc,  aprspush, prt)
            if aprspush:				# if we asked for APRSpush
               enaaprspush(datafix, prt)		# push the data to the OGN APRS
               userdata[1]["datafix"]= []	# reset the buffer
@@ -187,7 +187,7 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               mpsec=int(6000000.0/timediff)		# request per minute
               savedtime=current_time
         
-              print (">>>ENA::", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minute, ", utc,  aprspush, prt, "::<<<<\n")
+              print (">>>ENA:: Msgs so far:", loopcount, "TimeDiff:", int(timediff),"Secs. ", mpsec, "msgs per minute, ", utc,  aprspush, prt, "::<<<<\n")
 
 # -------------------------------------------	# end of on_message function
 
@@ -208,7 +208,7 @@ def on_disconnect(client, userdata, rc):	# in the case of disconnect try to send
        userdata[0]["message_count"] = 0
        userdata[1]["datafix"]= []
     utc = naive_utcnow()
-    print (">>>ENA:::", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
+    print (">>>ENA::: Msgs received", loopcount, len(datafix), utc,  aprspush, prt, rc, "<<<")
     client = 0					# reset the mqtt instance
     config.CLIENT = 0				# and the global pointer
     sleep (2)					# give it a chance to recover
@@ -241,7 +241,7 @@ def enarun(prt=False, aprspush=False):		# run the normal work
      
 def enafinish(prt=False, aprspush=False):	# run the normal work
 
-    print ("ENA finishing ...")
+    print ("ENA finishing ... disconnecting now", time.time())
     client=config.CLIENT			# point to the global instance
     client.disconnect()				# disconnect the mosquitto client
      

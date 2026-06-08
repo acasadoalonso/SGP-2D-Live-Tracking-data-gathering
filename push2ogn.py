@@ -191,7 +191,7 @@ if os.path.exists(config.PIDfile+".PUSH2OGN"):
     raise RuntimeError("APRSpush already running !!!")
     exit(-1)
 
-print("Setup: \nPRINT:", prt, "\nSPIDER:", SPIDER, "\nSPOT:", SPOT, "\nINREACH:", INREACH, "\nCAPTURS:", CAPTURS, "\nSKLYLINE:", SKYLINE, "\nLT24:", LT24, "\nADSB:", ADSB, "\nAVX:", AVX, "\nENA:", ENA, "\nBSTOP", BSTOP,"\n")
+print("\nSetup: \nPRINT:", prt, "\nSPIDER:", SPIDER, "\nSPOT:", SPOT, "\nINREACH:", INREACH, "\nCAPTURS:", CAPTURS, "\nSKLYLINE:", SKYLINE, "\nLT24:", LT24, "\nADSB:", ADSB, "\nAVX:", AVX, "\nENA:", ENA, "\nBSTOP", BSTOP,"\n\n")
 # --------------------------------------#
 
 if SPIDER:

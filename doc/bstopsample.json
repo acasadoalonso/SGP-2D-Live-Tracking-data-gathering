@@ -1,0 +1,4 @@
+{"id":"birdstop_BCN1_1042","type":"bird","site_id":"BCN1","timestamp":"2025-06-12T14:22:05Z","latitude":41.3096,"longitude":2.0902,"altitude_m":45.2,"heading":182.5,"speed_ms":12.3,"confidence":0.95,"vertical_rate":-120,"track_deg":182.5}
+
+{"id":"birdstop_BCN1_1042","type":"bird","site_id":"BCN1","timestamp":"2025-06-12T14:22:05Z","latitude":41.3096,"longitude":2.0902,"altitude_m":45.2,"heading":182.5,"speed_ms":12.3,"confidence":0.95,"vertical_rate":-120,"track_deg":182.5,"rot":0.0}
+

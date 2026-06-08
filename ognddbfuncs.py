@@ -115,7 +115,7 @@ def getddbdata(prt=False):                  		# get the data from the API server
        r.close()			    # close the file now
        _ogninfo_ = j_obj                    # save the data on the global storage
 
-    print ("Size of DDB:", len(j_obj))      # always 1
+    #print ("Size of DDB:", len(j_obj))      # always 1
     return j_obj                            # return the JSON object
 
 ####################################################################
