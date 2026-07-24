@@ -9,6 +9,6 @@ psutil==5.8.0
 pycryptodome==3.19.1
 requests==2.33.0
 rsa==4.8
-setuptools==65.5.1
+setuptools==83.0.0
 sphinx_rtd_theme==1.0.0
 tqdm==4.66.3
