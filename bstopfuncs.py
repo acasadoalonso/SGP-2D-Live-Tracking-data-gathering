@@ -53,8 +53,13 @@ example= {
   "longitude": 2.0902,
   "altitude_m": 45.2,
   "heading": 182.5,
-  "speed_ms": 12.3
+  "speed_ms": 12.3,
+  "confidence": 0.95,
+  "vertical_rate": -120,
+  "track_deg": 182.5,
+  "rot": 0.0
 }
+
 
 global savedtime
 savedtime = time.time()
@@ -155,7 +160,10 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
               ID="%05X"%int(ID)			# convert to hex
            aid="OGNF"+ID[-5:]			# build the ICAO ID for OGN
            unitid="37F"+ID[-5:]			# build the uniqueID for OGN
-           roc= 0 
+           if "vertical_rate" in j_obj:		# if provided
+              roc= j_obj['vertical_rate']*196.850394	# rate of climb in fpm
+           else:
+              roc= 0 
            flg=0
            ecat=''
            if "type" in j_obj:			# check if drone or bird
@@ -176,13 +184,18 @@ def subscribe(client: mqtt_client):		# subcribe to the mosquitto serve with a to
                   trk=0
            if trk > 360:
                   trk=0
+           if 'rot' in j_obj:			# if provided
+              rot= j_obj['rot']			# rate of turn in deg/s
+           else:
+              rot= 0.0
 
 
            vitlat = config.FLOGGER_LATITUDE	# get the distance to the dummy station 
            vitlon = config.FLOGGER_LONGITUDE
            distance = geodesic((lat, lon), (vitlat, vitlon)).km            # distance to the station
 						# the dict with the info
-           pos = {"ICAOID":aid, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'rot':0, 'UnitID':unitid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':ecat}  
+           pos = {"ICAOID":aid, 'date':date, 'time':tme, 'Lat' :lat, 'Long':lon, 'altitude':alt, 'speed': gs, 'course': trk, 'roc': roc, 'UnitID':unitid, 'extpos':'NO', 'dist':distance, 'GPS':'NO', 'flight':flg, 'FL':0, 'source':'ADSB', 'cat':ecat, 'rot':rot}  
+
            foundone = True			# mark that we found one
            userdata[1]["datafix"].append(pos)	# we added to the buffer
            userdata[0]["message_count"] += 1	# increase the counter on the buffer

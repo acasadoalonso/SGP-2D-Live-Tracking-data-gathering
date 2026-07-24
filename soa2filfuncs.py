@@ -232,21 +232,25 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
                nationality = pil['nationality']
            else:
                nationality = "UNKOWN"          	# report that we are extracting the flight of that pilot
-           if "live_track_id" in cnt:
-                 livetrk = cnt['live_track_id']# flarmID and OGN pair
+           if "live_track_id" in cnt:		# if we have the live track ID, we can use it to extract the IGC file from the FLARM messages
+                 livetrk = cnt['live_track_id'] # flarmID and OGN pair for example:  FLR123456:OGN654321
            else:
-                 livetrk = 'NOFLARM'
-                 print ("No FlarmID for:", pil)
-                 continue
+                 print ("No FlarmID for:", pil, regi,ognid)
+                 if ognid != '' and ognid != 'NOFLARM':		# if we have the OGN ID, we can use it as live track ID
+                    livetrk = ognid		# use the OGN ID as live track ID	
+                    idflarm = ognid		# use the OGN ID as live track ID	
+                 else:
+                    livetrk = 'NOFLARM'		# no live track ID, we will not be able to extract the IGC file from the FLARM messages
+                    continue			# we will not be able to extract the IGC file from the FLARM messages, so we skip it
            if len(livetrk) == 9:
                idflarm = livetrk[3:9]		# case that just the FlarmID, no piaring
            if len(livetrk) == 19:              	# format:  FLR123456 OGN654321
                idflarm = livetrk[3:9]		# case that just the FlarmID and OGN tracker pair
            if len(livetrk) == 6:               	# in case of missing FLR/ICA/OGN (deprecated)
                idflarm = livetrk[0:6]		# case that just the FlarmID, no piaring
-           if 'flight_recorders' in cnt:
-               fr = cnt['flight_recorders']
-               fr = fr.rstrip('\n')
+           if 'flight_recorders' in cnt:	# if we have the flight recorders information, we can use it to extract the IGC file from the FLARM messages
+               fr = cnt['flight_recorders']    	# flight recorders information, we can use it to extract the IGC file from the FLARM messages
+               fr = fr.rstrip('\n')   		# remove the new line at the end of the string
                fr = fr.rstrip('\r')
                fr = fr.replace ('\n', ' ')
                fr = fr.replace ('\r', ' ')
@@ -303,7 +307,7 @@ def soa2fil(client, secretkey,idx, FlarmID, execopt,prt=False, web=False):
 
        if not web: 
           print("Extracting the IGC file from embeded FLARM messages \nFrom CD:", cwd, "To:", dirpath)
-          print ("CMD:", cmd)
+          print ("CMD:\n\n", cmd, "\n\n")
           print("Resulting IGC file is on:", dirpath, "As: ", fname)
 
        os.system(cmd)
