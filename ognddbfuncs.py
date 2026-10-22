@@ -116,8 +116,8 @@ def getddbdata(prt=False):                  		# get the data from the API server
           r.close()			    # close the file now
           _ogninfo_ = j_obj                 # save the data on the global storage
        except:
-	  print("No .json file found")
-	  j_obj=''
+          print("No .json file found")
+          j_obj=''
 
     return j_obj                            # return the JSON object
 
