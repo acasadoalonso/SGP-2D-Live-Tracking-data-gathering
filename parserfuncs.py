@@ -15,7 +15,11 @@ import airportsdata
 from urllib.error import HTTPError
 from suntime import Sun, SunTimeException
 
-from ogn.parser import parse
+try:
+     from ogn.parser import parse
+except ImportError:
+     from ogn_parser import parse
+
 from datetime import datetime, timezone
 from dtfuncs  import naive_utcnow, naive_utcfromtimestamp
 
@@ -66,6 +70,7 @@ aprssources = {			# sources based on the APRS TOCALL
     "OGNPUR": "PURT",	   	# Pure track
     "OGNDLY": "DLYM",		# Delayed fixes (IGC mandated)
     "OGNVOL": "VOLA",		# Volandoo
+    "OGMLAT": "MLAT",		# OGN multilateration
     "OGAPIK": "APIK"		# ?
 }
 # --------------------------------------------------------------------------
@@ -430,6 +435,7 @@ def parseraprs(packet_str, msg):
            temp      = gdatal (data, 'F ')
            humidity  = gdatal (data, '% ')
            rain      = gdatal (data, 'mm/h')
+							# other data like Sun power, UVI is there as well but we do not need it for the time being
            msg['id']       = gid	        	# return the parsed data into the dict
            msg['path']     = path
            msg['relay']    = relay
