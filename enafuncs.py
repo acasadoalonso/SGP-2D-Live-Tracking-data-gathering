@@ -308,7 +308,7 @@ def enaaprspush(datafix, prt=False):
                aprsmsg += "fnA"+str(cat)+":"+flight+" "
            else:
                aprsmsg += "fn:"+flight+" "
-        regmodel = getadsbreg(id)
+        regmodel = getadsbreg(id, mem=False, prt=False)		# get the registration and model from the cache
         if FL > 0 :
            aprsmsg += " FL%03d " % int(FL)
         if regmodel:
